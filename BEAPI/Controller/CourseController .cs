@@ -1,7 +1,10 @@
-﻿using BEAPI.Dtos.Course;
-using BEAPI.Dtos.common;
+﻿using BEAPI.Dtos.common;
+using BEAPI.Dtos.Course;
+using BEAPI.Extension.SwagerUi;
 using BEAPI.Services.IService;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
+using Swashbuckle.AspNetCore.Filters;
 
 namespace BEAPI.Controller
 {
@@ -17,6 +20,12 @@ namespace BEAPI.Controller
         }
 
         [HttpPost("[action]")]
+        [SwaggerOperation(
+            Summary = "Tạo course mới",
+            Description = "Tạo một course cùng các sections đi kèm"
+        )]
+        [SwaggerResponse(200, "Tạo course cùng sections thành công", typeof(ResponseDto))]
+        [SwaggerResponseExample(200, typeof(CreateCourseResponseExample))]
         public async Task<IActionResult> CreateCourse([FromBody] CourseCreateDto dto)
         {
             var response = new ResponseDto();
@@ -35,6 +44,12 @@ namespace BEAPI.Controller
         }
 
         [HttpGet("[action]")]
+        [SwaggerOperation(
+     Summary = "Lấy danh sách course",
+     Description = "Trả về toàn bộ danh sách course và thông tin các sections"
+ )]
+        [SwaggerResponse(200, "Lấy danh sách course thành công", typeof(ResponseDto))]
+        [SwaggerResponseExample(200, typeof(GetAllCoursesResponseExample))]
         public async Task<IActionResult> GetAllCourses()
         {
             var response = new ResponseDto();

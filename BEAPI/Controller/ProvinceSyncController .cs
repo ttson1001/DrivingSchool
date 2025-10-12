@@ -1,9 +1,10 @@
 ﻿using Azure;
 using BEAPI.Dtos.common;
-using BEAPI.Dtos.location;
-using BEAPI.Dtos.Location;
+using BEAPI.Extension.SwagerUi;
 using BEAPI.Services.IService;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
+using Swashbuckle.AspNetCore.Filters;
 
 namespace BEAPI.Controller
 {
@@ -19,6 +20,9 @@ namespace BEAPI.Controller
         }
 
         [HttpPost("[action]")]
+        [SwaggerOperation(Summary = "Đồng bộ danh sách Tỉnh/Thành", Description = "Đồng bộ toàn bộ Tỉnh/Thành từ nguồn dữ liệu bên ngoài")]
+        [SwaggerResponse(200, "Đồng bộ thành công", typeof(ResponseDto))]
+        [SwaggerResponseExample(200, typeof(SyncResponseExample))]
         public async Task<IActionResult> SyncProvinces()
         {
             var response = new ResponseDto();
@@ -40,6 +44,9 @@ namespace BEAPI.Controller
         }
 
         [HttpPost("[action]")]
+        [SwaggerOperation(Summary = "Đồng bộ danh sách Phường/Xã", Description = "Đồng bộ toàn bộ Phường/Xã từ nguồn dữ liệu bên ngoài")]
+        [SwaggerResponse(200, "Đồng bộ thành công", typeof(ResponseDto))]
+        [SwaggerResponseExample(200, typeof(SyncResponseExample))]
         public async Task<IActionResult> SyncAllWardsAsync()
         {
             var response = new ResponseDto();
@@ -61,7 +68,10 @@ namespace BEAPI.Controller
         }
 
         [HttpGet("[action]")]
-        public async Task<ActionResult<ProvinceApiResponse>> GetAllProvinces()
+        [SwaggerOperation(Summary = "Lấy danh sách Tỉnh/Thành", Description = "Trả về danh sách tất cả Tỉnh/Thành")]
+        [SwaggerResponse(200, "Lấy dữ liệu thành công", typeof(ResponseDto))]
+        [SwaggerResponseExample(200, typeof(GetAllProvincesResponseExample))]
+        public async Task<IActionResult> GetAllProvinces()
         {
 
             var response = new ResponseDto();
@@ -82,7 +92,10 @@ namespace BEAPI.Controller
         }
 
         [HttpGet("[action]/{provinceCode}")]
-        public async Task<ActionResult<WardApiResponseDto>> GetWardsByProvinceCode(string provinceCode)
+        [SwaggerOperation(Summary = "Lấy danh sách Phường/Xã theo Tỉnh", Description = "Trả về danh sách Phường/Xã dựa trên mã Tỉnh")]
+        [SwaggerResponse(200, "Lấy dữ liệu thành công", typeof(ResponseDto))]
+        [SwaggerResponseExample(200, typeof(GetWardsByProvinceResponseExample))]
+        public async Task<IActionResult> GetWardsByProvinceCode(string provinceCode)
         {
             var response = new ResponseDto();
             try

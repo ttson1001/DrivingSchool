@@ -13,6 +13,8 @@ namespace BEAPI.Extension
             services.AddScoped<IProvinceSyncService, ProvinceSyncService>();
             services.AddScoped<IAccountService, AccountService>();
             services.AddScoped<IJwtService, JwtService>();
+            services.AddScoped<ICourseService, CourseService>();
+            services.AddScoped<IVehicleUsageHistoryService, VehicleUsageHistoryService>();
         }
     }
 }

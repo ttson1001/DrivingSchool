@@ -30,7 +30,7 @@ namespace BEAPI.Services
                 .ToListAsync();
         }
 
-        public async Task<VehicleDto?> CreateVehicleAsync(VehicleCreateDto dto)
+        public async Task CreateVehicleAsync(VehicleCreateDto dto)
         {
             var vehicle = new Vehicle
             {
@@ -42,21 +42,12 @@ namespace BEAPI.Services
 
             await _vehicleRepo.AddAsync(vehicle);
             await _vehicleRepo.SaveChangesAsync();
-
-            return new VehicleDto
-            {
-                Id = vehicle.Id,
-                PlateNumber = vehicle.PlateNumber,
-                Brand = vehicle.Brand,
-                Model = vehicle.Model,
-                Status = vehicle.Status
-            };
         }
 
-        public async Task<VehicleDto?> UpdateVehicleAsync( VehicleUpdateDto dto)
+        public async Task UpdateVehicleAsync( VehicleUpdateDto dto)
         {
             var vehicle = await _vehicleRepo.Get().FirstOrDefaultAsync( x => x.Id == dto.Id);
-            if (vehicle == null) return null;
+            if (vehicle == null) throw new Exception("Xe không tồn tại");
 
             vehicle.Brand = dto.Brand;
             vehicle.Model = dto.Model;
@@ -64,15 +55,6 @@ namespace BEAPI.Services
 
             _vehicleRepo.Update(vehicle);
             await _vehicleRepo.SaveChangesAsync();
-
-            return new VehicleDto
-            {
-                Id = vehicle.Id,
-                PlateNumber = vehicle.PlateNumber,
-                Brand = vehicle.Brand,
-                Model = vehicle.Model,
-                Status = vehicle.Status
-            };
         }
     }
 }

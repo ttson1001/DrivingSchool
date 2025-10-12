@@ -49,16 +49,19 @@
             return account;
         }
 
-        public async Task<string> LoginAsync(LoginDto dto)
+        public async Task<LoginReponseDto> LoginAsync(LoginDto dto)
         {
-            var user = await _accountRepo.Get().Include(x => x.Role).FirstOrDefaultAsync(u => u.Email == dto.UserName) ?? throw new KeyNotFoundException("User not found");
+            var user = await _accountRepo.Get().Include(x => x.Role).FirstOrDefaultAsync(u => u.Email == dto.Email) ?? throw new KeyNotFoundException("User not found");
 
             if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
                 throw new Exception(ExceptionConstant.InvalidCredentials);
 
             var token = _jwtService.GenerateToken(user, null);
             await _accountRepo.SaveChangesAsync();
-            return token;
+            return new LoginReponseDto
+            {
+                Token = token
+            };
         }
 
 

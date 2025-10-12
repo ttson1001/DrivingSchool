@@ -3,8 +3,12 @@
     using BEAPI.Dtos.account;
     using BEAPI.Dtos.common;
     using BEAPI.Exceptions;
+    using BEAPI.Extension;
+    using BEAPI.Extension.SwagerUi;
     using global::BEAPI.Services.IService;
     using Microsoft.AspNetCore.Mvc;
+    using Swashbuckle.AspNetCore.Annotations;
+    using Swashbuckle.AspNetCore.Filters;
 
     [ApiController]
     [Route("api/[controller]")]
@@ -16,7 +20,10 @@
         {
             _accountService = accountService;
         }
-
+ 
+        [SwaggerOperation(Summary = "Đăng ký tài khoản mới", Description = "Tạo tài khoản người dùng mới.")]
+        [SwaggerResponse(200, "Đăng ký thành công", typeof(ResponseDto))]
+        [SwaggerResponseExample(200, typeof(RegisterResponseExample))]
         [HttpPost("[action]")]
         public async Task<IActionResult> Register([FromBody] CreateAccountRequest dto)
         {
@@ -38,8 +45,13 @@
             }
         }
 
-
         [HttpPost("[action]")]
+        [SwaggerOperation(
+            Summary = "Đăng nhập tài khoản",
+            Description = "Trả về JWT token khi đăng nhập thành công."
+        )]
+        [SwaggerResponseExample(200, typeof(LoginResponseExample))]
+        [SwaggerResponse(200, "Đăng nhập thành công", typeof(ResponseDto))]
         public async Task<IActionResult> Login([FromBody] LoginDto dto)
         {
             var response = new ResponseDto();
