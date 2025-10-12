@@ -35,7 +35,7 @@ builder.Services.AddSwaggerGen(c =>
     {
         Name = "Authorization",
         Type = SecuritySchemeType.Http,
-        Scheme = "bearer",
+        Scheme = "bearer",      
         BearerFormat = "JWT",
         In = ParameterLocation.Header,
         Description = "Nhập token theo định dạng: Bearer {token}"
