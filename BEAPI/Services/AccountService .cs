@@ -46,6 +46,7 @@
             };
 
             await _accountRepo.AddAsync(account);
+            await _accountRepo.SaveChangesAsync();
             return account;
         }
 
