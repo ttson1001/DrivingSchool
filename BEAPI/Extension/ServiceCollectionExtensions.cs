@@ -14,6 +14,7 @@ namespace BEAPI.Extension
             services.AddScoped<IAccountService, AccountService>();
             services.AddScoped<IJwtService, JwtService>();
             services.AddScoped<ICourseService, CourseService>();
+            services.AddScoped<IVehicleService, VehicleService>();
             services.AddScoped<IVehicleUsageHistoryService, VehicleUsageHistoryService>();
         }
     }

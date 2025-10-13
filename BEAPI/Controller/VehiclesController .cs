@@ -43,6 +43,30 @@ namespace BEAPI.Controller
             }
         }
 
+        [HttpGet("[action]")]
+        [SwaggerOperation(
+           Summary = "Tìm kiếm và phân trang danh sách xe",
+           Description = "Cho phép tìm kiếm theo biển số, hãng, hoặc mẫu xe. Có hỗ trợ phân trang."
+       )]
+        [SwaggerResponse(200, "Lấy danh sách xe thành công", typeof(ResponseDto))]
+        [SwaggerResponseExample(200, typeof(SearchVehiclesResponseExample))]
+        public async Task<IActionResult> SearchVehicles([FromQuery] string? keyword, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        {
+            var response = new ResponseDto();
+            try
+            {
+                var result = await _vehicleService.SearchVehiclesAsync(keyword, page, pageSize);
+                response.Message = "Lấy danh sách xe thành công";
+                response.Data = result;
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                response.Message = $"Lỗi khi lấy dữ liệu: {ex.Message}";
+                return BadRequest(response);
+            }
+        }
+
         [HttpPost("[action]")]
         [SwaggerOperation(
            Summary = "Tạo xe mới",

@@ -1,4 +1,5 @@
-﻿using BEAPI.Dtos.Course;
+﻿using BEAPI.Dtos.Common;
+using BEAPI.Dtos.Course;
 
 namespace BEAPI.Services.IService
 {
@@ -6,5 +7,6 @@ namespace BEAPI.Services.IService
     {
         Task CreateCourseWithSectionsAsync(CourseCreateDto dto);
         Task<List<CourseDto>> GetAllCoursesAsync();
+        Task<PagedResult<CourseDto>> SearchCoursesAsync(string? keyword, int page, int pageSize);
     }
 }

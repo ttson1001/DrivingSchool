@@ -1,9 +1,9 @@
-﻿using BEAPI.Dtos.Vehicle;
+﻿using BEAPI.Dtos.Common;
+using BEAPI.Dtos.Vehicle;
 using BEAPI.Entities;
 using BEAPI.Repositories;
 using BEAPI.Services.IService;
 using Microsoft.EntityFrameworkCore;
-using System;
 
 namespace BEAPI.Services
 {
@@ -55,6 +55,42 @@ namespace BEAPI.Services
 
             _vehicleRepo.Update(vehicle);
             await _vehicleRepo.SaveChangesAsync();
+        }
+
+        public async Task<PagedResult<VehicleDto>> SearchVehiclesAsync(string? keyword, int page, int pageSize)
+        {
+            var query = _vehicleRepo.Get();
+
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                query = query.Where(v =>
+                    v.PlateNumber.Contains(keyword) ||
+                    v.Brand.Contains(keyword) ||
+                    v.Model.Contains(keyword));
+            }
+
+            var totalItems = await query.CountAsync();
+            var items = await query
+                .OrderByDescending(v => v.Id)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(v => new VehicleDto
+                {
+                    Id = v.Id,
+                    PlateNumber = v.PlateNumber,
+                    Brand = v.Brand,
+                    Model = v.Model,
+                    Status = v.Status
+                })
+                .ToListAsync();
+
+            return new PagedResult<VehicleDto>
+            {
+                TotalItems = totalItems,
+                Page = page,
+                PageSize = pageSize,
+                Items = items
+            };
         }
     }
 }

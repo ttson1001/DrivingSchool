@@ -3,7 +3,6 @@
     using BEAPI.Dtos.account;
     using BEAPI.Dtos.common;
     using BEAPI.Exceptions;
-    using BEAPI.Extension;
     using BEAPI.Extension.SwagerUi;
     using global::BEAPI.Services.IService;
     using Microsoft.AspNetCore.Mvc;

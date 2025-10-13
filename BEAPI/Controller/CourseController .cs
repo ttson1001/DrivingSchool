@@ -5,6 +5,7 @@ using BEAPI.Services.IService;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using Swashbuckle.AspNetCore.Filters;
+using static BEAPI.Extension.SwagerUi.SearchCoursesResponseExample;
 
 namespace BEAPI.Controller
 {
@@ -45,9 +46,8 @@ namespace BEAPI.Controller
 
         [HttpGet("[action]")]
         [SwaggerOperation(
-     Summary = "Lấy danh sách course",
-     Description = "Trả về toàn bộ danh sách course và thông tin các sections"
- )]
+         Summary = "Lấy danh sách course",
+         Description = "Trả về toàn bộ danh sách course và thông tin các sections")]
         [SwaggerResponse(200, "Lấy danh sách course thành công", typeof(ResponseDto))]
         [SwaggerResponseExample(200, typeof(GetAllCoursesResponseExample))]
         public async Task<IActionResult> GetAllCourses()
@@ -63,6 +63,36 @@ namespace BEAPI.Controller
             catch (Exception ex)
             {
                 response.Message = $"Lỗi khi lấy danh sách course: {ex.Message}";
+                return BadRequest(response);
+            }
+        }
+
+        [HttpGet("[action]")]
+        [SwaggerOperation(
+           Summary = "Tìm kiếm khóa học",
+           Description = "Tìm kiếm khóa học theo từ khóa và phân trang"
+       )]
+        [SwaggerResponse(200, "Lấy danh sách khóa học thành công", typeof(ResponseDto))]
+        [SwaggerResponseExample(200, typeof(SearchCoursesResponseExample))]
+        public async Task<IActionResult> SearchCourses(
+           [FromQuery] string? keyword,
+           [FromQuery] int page = 1,
+           [FromQuery] int pageSize = 10)
+        {
+            var response = new ResponseDto();
+
+            try
+            {
+                var result = await _courseService.SearchCoursesAsync(keyword, page, pageSize);
+
+                response.Message = "Lấy danh sách khóa học thành công";
+                response.Data = result;
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                response.Message = $"Lỗi khi lấy danh sách khóa học: {ex.Message}";
                 return BadRequest(response);
             }
         }

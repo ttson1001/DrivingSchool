@@ -14,7 +14,7 @@ namespace BEAPI.Services
         private readonly IRepository<Ward> _wardRepo;
         private readonly IRepository<Province> _provinceRepo;
 
-        private const string ApiUrl = "https://tinhthanhpho.com/api/v1/new-provinces";
+        private const string ApiUrl = "https://tinhthanhpho.com/api/v1/new-provinces?limit=999&page=1";
         private const string BaseUrl = "https://tinhthanhpho.com/api/v1";
         private const string ApiKey = "hvn_n4IsFUf8g2iSqjAPIfD9hvoxMlFgY1ms";
 

@@ -1,5 +1,6 @@
 ﻿using BEAPI.Dtos.account;
 using BEAPI.Dtos.common;
+using BEAPI.Dtos.Common;
 using BEAPI.Dtos.Course;
 using BEAPI.Dtos.location;
 using BEAPI.Dtos.Location;
@@ -16,6 +17,52 @@ namespace BEAPI.Extension.SwagerUi
             {
                 Message = "Đăng kí thành công",
                 Data = null
+            };
+        }
+    }
+
+    public class SearchVehiclesResponseExample : IExamplesProvider<ResponseDto>
+    {
+        public ResponseDto GetExamples()
+        {
+            var pagedResult = new PagedResult<VehicleDto>
+            {
+                TotalItems = 25,
+                Page = 1,
+                PageSize = 10,
+                Items = new List<VehicleDto>
+                {
+                    new VehicleDto
+                    {
+                        Id = 1,
+                        PlateNumber = "51F-12345",
+                        Brand = "Toyota",
+                        Model = "Vios",
+                        Status = "Đang hoạt động"
+                    },
+                    new VehicleDto
+                    {
+                        Id = 2,
+                        PlateNumber = "29A-67890",
+                        Brand = "Honda",
+                        Model = "Civic",
+                        Status = "Đang bảo dưỡng"
+                    },
+                    new VehicleDto
+                    {
+                        Id = 3,
+                        PlateNumber = "30G-22222",
+                        Brand = "Mazda",
+                        Model = "CX-5",
+                        Status = "Sẵn sàng cho thuê"
+                    }
+                }
+            };
+
+            return new ResponseDto
+            {
+                Message = "Lấy danh sách xe thành công",
+                Data = pagedResult
             };
         }
     }
@@ -46,7 +93,55 @@ namespace BEAPI.Extension.SwagerUi
             };
         }
     }
-    public class GetAllCoursesResponseExample : IExamplesProvider<ResponseDto>
+
+    public class SearchCoursesResponseExample : IExamplesProvider<ResponseDto>
+    {
+        public ResponseDto GetExamples()
+        {
+            return new ResponseDto
+            {
+                Message = "Lấy danh sách khóa học thành công",
+                Data = new PagedResult<CourseDto>
+                {
+                    Page = 1,
+                    PageSize = 10,
+                    TotalItems = 2,
+                    Items = new List<CourseDto>
+                {
+                    new CourseDto
+                    {
+                        Id = 1,
+                        Name = "Lập trình C# cơ bản",
+                        Description = "Học các khái niệm lập trình hướng đối tượng với C#",
+                        ImageUrl = "https://example.com/images/csharp.jpg",
+                        DurationDays = 30,
+                        Price = 1200000,
+                        Sections = new List<SectionDto>
+                        {
+                            new SectionDto { Id = 1, Title = "Giới thiệu C#", Description = "Tổng quan về ngôn ngữ C#" },
+                            new SectionDto { Id = 2, Title = "OOP trong C#", Description = "Các nguyên lý OOP" }
+                        }
+                    },
+                    new CourseDto
+                    {
+                        Id = 2,
+                        Name = "Spring Boot nâng cao",
+                        Description = "Phát triển API RESTful với Spring Boot",
+                        ImageUrl = "https://example.com/images/spring.jpg",
+                        DurationDays = 45,
+                        Price = 1800000,
+                        Sections = new List<SectionDto>
+                        {
+                            new SectionDto { Id = 1, Title = "Cấu trúc dự án", Description = "Tìm hiểu cấu trúc chuẩn của dự án Spring Boot" },
+                            new SectionDto { Id = 2, Title = "Bảo mật API", Description = "JWT, Spring Security" }
+                        }
+                    }
+                }
+                }
+            };
+        }
+    }
+        public class GetAllCoursesResponseExample : IExamplesProvider<ResponseDto>
     {
         public ResponseDto GetExamples()
         {
