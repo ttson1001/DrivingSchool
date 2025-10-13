@@ -1,10 +1,10 @@
-﻿using BEAPI.Dtos.Vehicle;
-using BEAPI.Entities;
-using BEAPI.Repositories;
-using BEAPI.Services.IService;
+﻿using TutorDrive.Dtos.Vehicle;
+using TutorDrive.Entities;
+using TutorDrive.Repositories;
+using TutorDrive.Services.IService;
 using Microsoft.EntityFrameworkCore;
 
-namespace BEAPI.Services
+namespace TutorDrive.Services
 {
     public class VehicleUsageHistoryService : IVehicleUsageHistoryService
     {

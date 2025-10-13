@@ -1,4 +1,4 @@
-﻿namespace BEAPI.Dtos.Vehicle
+﻿namespace TutorDrive.Dtos.Vehicle
 {
     public class VehicleUsageHistoryDto
     {

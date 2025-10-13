@@ -1,12 +1,12 @@
-﻿using BEAPI.Dtos.location;
-using BEAPI.Dtos.Location;
-using BEAPI.Entities;
-using BEAPI.Repositories;
-using BEAPI.Services.IService;
+﻿using TutorDrive.Dtos.location;
+using TutorDrive.Dtos.Location;
+using TutorDrive.Entities;
+using TutorDrive.Repositories;
+using TutorDrive.Services.IService;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 
-namespace BEAPI.Services
+namespace TutorDrive.Services
 {
     public class ProvinceSyncService : IProvinceSyncService
     {

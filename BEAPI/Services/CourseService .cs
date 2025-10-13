@@ -1,11 +1,11 @@
-﻿using BEAPI.Dtos.Common;
-using BEAPI.Dtos.Course;
-using BEAPI.Entities;
-using BEAPI.Repositories;
-using BEAPI.Services.IService;
+﻿using TutorDrive.Dtos.Common;
+using TutorDrive.Dtos.Course;
+using TutorDrive.Entities;
+using TutorDrive.Repositories;
+using TutorDrive.Services.IService;
 using Microsoft.EntityFrameworkCore;
 
-namespace BEAPI.Services
+namespace TutorDrive.Services
 {
     public class CourseService : ICourseService
     {

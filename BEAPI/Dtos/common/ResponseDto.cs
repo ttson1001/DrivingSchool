@@ -1,4 +1,4 @@
-﻿namespace BEAPI.Dtos.common
+﻿namespace TutorDrive.Dtos.common
 {
     public class ResponseDto
     {

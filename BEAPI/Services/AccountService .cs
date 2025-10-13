@@ -1,11 +1,11 @@
-﻿namespace BEAPI.Services
+﻿namespace TutorDrive.Services
 {
-    using BEAPI.Exceptions;
-    using BEAPI.Services.IServices;
-    using global::BEAPI.Dtos.account;
-    using global::BEAPI.Entities;
-    using global::BEAPI.Repositories;
-    using global::BEAPI.Services.IService;
+    using TutorDrive.Exceptions;
+    using TutorDrive.Services.IServices;
+    using global::TutorDrive.Dtos.account;
+    using global::TutorDrive.Entities;
+    using global::TutorDrive.Repositories;
+    using global::TutorDrive.Services.IService;
     using Microsoft.EntityFrameworkCore;
     using System.Security.Cryptography;
     using System.Text;

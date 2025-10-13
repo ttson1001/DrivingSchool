@@ -1,4 +1,4 @@
-﻿namespace BEAPI.Repositories
+﻿namespace TutorDrive.Repositories
 {
     public interface IRepository<T>
     {

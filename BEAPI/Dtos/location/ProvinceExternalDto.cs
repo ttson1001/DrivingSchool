@@ -1,4 +1,4 @@
-﻿namespace BEAPI.Dtos.location
+﻿namespace TutorDrive.Dtos.location
 {
     public class ProvinceExternalDto
     {

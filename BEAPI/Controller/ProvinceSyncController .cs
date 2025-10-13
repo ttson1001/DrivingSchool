@@ -1,12 +1,12 @@
 ﻿using Azure;
-using BEAPI.Dtos.common;
-using BEAPI.Extension.SwagerUi;
-using BEAPI.Services.IService;
+using TutorDrive.Dtos.common;
+using TutorDrive.Extension.SwagerUi;
+using TutorDrive.Services.IService;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using Swashbuckle.AspNetCore.Filters;
 
-namespace BEAPI.Controller
+namespace TutorDrive.Controller
 {
     [ApiController]
     [Route("api/[controller]")]

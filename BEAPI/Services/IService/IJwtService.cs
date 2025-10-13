@@ -1,7 +1,7 @@
-﻿using BEAPI.Entities;
+﻿using TutorDrive.Entities;
 using System.Security.Claims;
 
-namespace BEAPI.Services.IServices
+namespace TutorDrive.Services.IServices
 {
     public interface IJwtService
     {

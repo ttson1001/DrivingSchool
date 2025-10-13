@@ -1,11 +1,11 @@
-﻿using BEAPI.Dtos.common;
-using BEAPI.Dtos.Course;
-using BEAPI.Extension.SwagerUi;
-using BEAPI.Services.IService;
+﻿using TutorDrive.Dtos.common;
+using TutorDrive.Dtos.Course;
+using TutorDrive.Extension.SwagerUi;
+using TutorDrive.Services.IService;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using Swashbuckle.AspNetCore.Filters;
-using static BEAPI.Extension.SwagerUi.SearchCoursesResponseExample;
+using static TutorDrive.Extension.SwagerUi.SearchCoursesResponseExample;
 
 namespace BEAPI.Controller
 {

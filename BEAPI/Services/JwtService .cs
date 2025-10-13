@@ -1,11 +1,11 @@
-﻿using BEAPI.Entities;
-using BEAPI.Services.IServices;
+﻿using TutorDrive.Entities;
+using TutorDrive.Services.IServices;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace BEAPI.Services
+namespace TutorDrive.Services
 {
     public class JwtService : IJwtService
     {

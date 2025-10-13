@@ -1,9 +1,9 @@
-﻿using BEAPI.Repositories;
-using BEAPI.Services;
-using BEAPI.Services.IService;
-using BEAPI.Services.IServices;
+﻿using TutorDrive.Repositories;
+using TutorDrive.Services;
+using TutorDrive.Services.IService;
+using TutorDrive.Services.IServices;
 
-namespace BEAPI.Extension
+namespace TutorDrive.Extension
 { 
     public static class ServiceCollectionExtensions
     {

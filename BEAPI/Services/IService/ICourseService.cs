@@ -1,7 +1,7 @@
-﻿using BEAPI.Dtos.Common;
-using BEAPI.Dtos.Course;
+﻿using TutorDrive.Dtos.Common;
+using TutorDrive.Dtos.Course;
 
-namespace BEAPI.Services.IService
+namespace TutorDrive.Services.IService
 {
     public interface ICourseService
     {

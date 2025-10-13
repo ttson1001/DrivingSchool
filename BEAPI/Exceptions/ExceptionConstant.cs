@@ -1,4 +1,4 @@
-﻿namespace BEAPI.Exceptions
+﻿namespace TutorDrive.Exceptions
 {
     public static class ExceptionConstant
     {

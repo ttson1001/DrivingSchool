@@ -1,7 +1,7 @@
-﻿using BEAPI.Dtos.location;
-using BEAPI.Dtos.Location;
+﻿using TutorDrive.Dtos.location;
+using TutorDrive.Dtos.Location;
 
-namespace BEAPI.Services.IService
+namespace TutorDrive.Services.IService
 {
     public interface IProvinceSyncService
     {

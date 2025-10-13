@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace BEAPI.Entities
+namespace TutorDrive.Entities
 {
     public class ExamResult : IEntity
     {

@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.14.36301.6
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BEAPI", "BEAPI\BEAPI.csproj", "{EF0706E6-DF89-4A26-ADC9-6D083E3F7082}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TutorDrive", "BEAPI\TutorDrive.csproj", "{EF0706E6-DF89-4A26-ADC9-6D083E3F7082}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

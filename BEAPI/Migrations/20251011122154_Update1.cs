@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace BEAPI.Migrations
+namespace TutorDrive.Migrations
 {
     /// <inheritdoc />
     public partial class Update1 : Migration

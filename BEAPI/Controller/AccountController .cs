@@ -1,10 +1,10 @@
-﻿namespace BEAPI.Controller
+﻿namespace TutorDrive.Controller
 {
-    using BEAPI.Dtos.account;
-    using BEAPI.Dtos.common;
-    using BEAPI.Exceptions;
-    using BEAPI.Extension.SwagerUi;
-    using global::BEAPI.Services.IService;
+    using TutorDrive.Dtos.account;
+    using TutorDrive.Dtos.common;
+    using TutorDrive.Exceptions;
+    using TutorDrive.Extension.SwagerUi;
+    using global::TutorDrive.Services.IService;
     using Microsoft.AspNetCore.Mvc;
     using Swashbuckle.AspNetCore.Annotations;
     using Swashbuckle.AspNetCore.Filters;

@@ -1,7 +1,7 @@
-﻿using BEAPI.Entities;
+﻿using TutorDrive.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace BEAPI.Database
+namespace TutorDrive.Database
 {
     public class BeContext : DbContext
     {

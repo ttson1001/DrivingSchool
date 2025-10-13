@@ -1,7 +1,7 @@
-﻿using BEAPI.Dtos.Common;
-using BEAPI.Dtos.Vehicle;
+﻿using TutorDrive.Dtos.Common;
+using TutorDrive.Dtos.Vehicle;
 
-namespace BEAPI.Services.IService
+namespace TutorDrive.Services.IService
 {
     public interface IVehicleService
     {

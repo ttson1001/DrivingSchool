@@ -1,4 +1,4 @@
-﻿namespace BEAPI.Dtos.Common
+﻿namespace TutorDrive.Dtos.Common
 {
     public class PagedResult<T>
     {

@@ -1,7 +1,7 @@
 ﻿using Google.Api.Gax;
 using System.ComponentModel.DataAnnotations;
 
-namespace BEAPI.Entities
+namespace TutorDrive.Entities
 {
     public class Section : IEntity
     {

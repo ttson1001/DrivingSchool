@@ -1,5 +1,5 @@
-﻿using BEAPI.Database;
-using BEAPI.Extension;
+﻿using TutorDrive.Database;
+using TutorDrive.Extension;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;

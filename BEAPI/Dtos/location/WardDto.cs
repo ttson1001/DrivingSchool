@@ -1,4 +1,4 @@
-﻿namespace BEAPI.Dtos.Location
+﻿namespace TutorDrive.Dtos.Location
 {
     public class WardDto
     {

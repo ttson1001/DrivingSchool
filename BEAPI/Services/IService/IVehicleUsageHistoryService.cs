@@ -1,6 +1,6 @@
-﻿using BEAPI.Dtos.Vehicle;
+﻿using TutorDrive.Dtos.Vehicle;
 
-namespace BEAPI.Services.IService
+namespace TutorDrive.Services.IService
 {
     public interface IVehicleUsageHistoryService
     {

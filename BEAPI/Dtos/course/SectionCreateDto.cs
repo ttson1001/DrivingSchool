@@ -1,4 +1,4 @@
-﻿namespace BEAPI.Dtos.Course
+﻿namespace TutorDrive.Dtos.Course
 {
     public class SectionCreateDto
     {

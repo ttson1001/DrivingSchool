@@ -1,4 +1,4 @@
-﻿namespace BEAPI.Entities
+﻿namespace TutorDrive.Entities
 {
     public class LearningProgress : IEntity
     {

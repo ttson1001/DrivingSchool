@@ -1,13 +1,13 @@
-﻿using BEAPI.Dtos.account;
-using BEAPI.Dtos.common;
-using BEAPI.Dtos.Common;
-using BEAPI.Dtos.Course;
-using BEAPI.Dtos.location;
-using BEAPI.Dtos.Location;
-using BEAPI.Dtos.Vehicle;
+﻿using TutorDrive.Dtos.account;
+using TutorDrive.Dtos.common;
+using TutorDrive.Dtos.Common;
+using TutorDrive.Dtos.Course;
+using TutorDrive.Dtos.location;
+using TutorDrive.Dtos.Location;
+using TutorDrive.Dtos.Vehicle;
 using Swashbuckle.AspNetCore.Filters;
 
-namespace BEAPI.Extension.SwagerUi
+namespace TutorDrive.Extension.SwagerUi
 {
     public class RegisterResponseExample : IExamplesProvider<ResponseDto>
     {

@@ -1,9 +1,9 @@
-﻿using BEAPI.Database;
-using BEAPI.Entities;
+﻿using TutorDrive.Database;
+using TutorDrive.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
-namespace BEAPI.Repositories
+namespace TutorDrive.Repositories
 {
     public class Repository<T> : IRepository<T> where T : class, IEntity
     {

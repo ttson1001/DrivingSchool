@@ -1,4 +1,4 @@
-﻿namespace BEAPI.Dtos.account
+﻿namespace TutorDrive.Dtos.account
 {
     public class LoginDto
     {

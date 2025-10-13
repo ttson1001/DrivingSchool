@@ -1,7 +1,7 @@
-﻿using BEAPI.Dtos.account;
-using BEAPI.Entities;
+﻿using TutorDrive.Dtos.account;
+using TutorDrive.Entities;
 
-namespace BEAPI.Services.IService
+namespace TutorDrive.Services.IService
 {
     public interface IAccountService
     {
