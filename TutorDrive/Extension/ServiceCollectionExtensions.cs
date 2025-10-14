@@ -2,6 +2,7 @@
 using TutorDrive.Services;
 using TutorDrive.Services.IService;
 using TutorDrive.Services.IServices;
+using TutorDrive.Services.Service;
 
 namespace TutorDrive.Extension
 { 
@@ -16,6 +17,7 @@ namespace TutorDrive.Extension
             services.AddScoped<ICourseService, CourseService>();
             services.AddScoped<IVehicleService, VehicleService>();
             services.AddScoped<IVehicleUsageHistoryService, VehicleUsageHistoryService>();
+            services.AddScoped<IFeedbackService, FeedbackService>();
         }
     }
 }

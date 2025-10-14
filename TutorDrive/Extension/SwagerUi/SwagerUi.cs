@@ -1,11 +1,12 @@
-﻿using TutorDrive.Dtos.account;
+﻿using Swashbuckle.AspNetCore.Filters;
+using TutorDrive.Dtos.account;
 using TutorDrive.Dtos.common;
 using TutorDrive.Dtos.Common;
 using TutorDrive.Dtos.Course;
+using TutorDrive.Dtos.Feedbacks;
 using TutorDrive.Dtos.location;
 using TutorDrive.Dtos.Location;
 using TutorDrive.Dtos.Vehicle;
-using Swashbuckle.AspNetCore.Filters;
 
 namespace TutorDrive.Extension.SwagerUi
 {
@@ -19,6 +20,71 @@ namespace TutorDrive.Extension.SwagerUi
                 Data = null
             };
         }
+    }
+
+    public class CreateFeedbackResponseExample : IExamplesProvider<ResponseDto>
+    {
+        public ResponseDto GetExamples() => new ResponseDto
+        {
+            Message = "Tạo phản hồi thành công"
+        };
+    }
+
+    public class GetAllFeedbacksResponseExample : IExamplesProvider<ResponseDto>
+    {
+        public ResponseDto GetExamples() => new ResponseDto
+        {
+            Message = "Lấy danh sách phản hồi thành công",
+            Data = new List<FeedbackDto>
+                {
+                    new FeedbackDto { Id = 1, StudentProfileId = 2, StaffId = 5, Rating = 5, Comment = "Rất hài lòng", CreatedAt = DateTime.UtcNow },
+                    new FeedbackDto { Id = 2, StudentProfileId = 3, StaffId = 4, Rating = 4, Comment = "Ổn nhưng cần cải thiện", CreatedAt = DateTime.UtcNow }
+                }
+        };
+    }
+
+    public class GetFeedbackByIdResponseExample : IExamplesProvider<ResponseDto>
+    {
+        public ResponseDto GetExamples() => new ResponseDto
+        {
+            Message = "Lấy phản hồi thành công",
+            Data = new FeedbackDto
+            {
+                Id = 1,
+                StudentProfileId = 2,
+                StaffId = 5,
+                Rating = 5,
+                Comment = "Tutor rất nhiệt tình",
+                CreatedAt = DateTime.UtcNow
+            }
+        };
+    }
+
+    public class SearchFeedbacksResponseExample : IExamplesProvider<ResponseDto>
+    {
+        public ResponseDto GetExamples() => new ResponseDto
+        {
+            Message = "Lấy danh sách phản hồi thành công (phân trang)",
+            Data = new
+            {
+                Items = new List<FeedbackDto>
+                    {
+                        new FeedbackDto { Id = 1, Comment = "Tốt", Rating = 5 },
+                        new FeedbackDto { Id = 2, Comment = "Ổn", Rating = 4 }
+                    },
+                TotalItems = 2,
+                Page = 1,
+                PageSize = 10
+            }
+        };
+    }
+
+    public class UpdateFeedbackResponseExample : IExamplesProvider<ResponseDto>
+    {
+        public ResponseDto GetExamples() => new ResponseDto
+        {
+            Message = "Cập nhật phản hồi thành công"
+        };
     }
 
     public class SearchVehiclesResponseExample : IExamplesProvider<ResponseDto>
