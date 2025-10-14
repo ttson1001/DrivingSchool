@@ -18,6 +18,7 @@ namespace TutorDrive.Extension
             services.AddScoped<IVehicleService, VehicleService>();
             services.AddScoped<IVehicleUsageHistoryService, VehicleUsageHistoryService>();
             services.AddScoped<IFeedbackService, FeedbackService>();
+            services.AddScoped<IRoleService, RoleService>();
         }
     }
 }

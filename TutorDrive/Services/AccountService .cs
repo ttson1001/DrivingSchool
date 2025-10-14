@@ -1,7 +1,5 @@
 ﻿namespace TutorDrive.Services
 {
-    using TutorDrive.Exceptions;
-    using TutorDrive.Services.IServices;
     using global::TutorDrive.Dtos.account;
     using global::TutorDrive.Entities;
     using global::TutorDrive.Repositories;
@@ -9,6 +7,11 @@
     using Microsoft.EntityFrameworkCore;
     using System.Security.Cryptography;
     using System.Text;
+    using TutorDrive.Dtos.Account;
+    using TutorDrive.Dtos.Common;
+    using TutorDrive.Exceptions;
+    using TutorDrive.Services.IServices;
+
     public class AccountService : IAccountService
     {
         private readonly IRepository<Account> _accountRepo;
@@ -64,11 +67,86 @@
                 Token = token
             };
         }
+
         private string HashPassword(string password)
         {
             return BCrypt.Net.BCrypt.HashPassword(password);
         }
 
-    }
+        public async Task<PagedResult<AccountDto>> SearchAccountsAsync(string? keyword, int page, int pageSize)
+        {
+            IQueryable<Account> query = _accountRepo.Get().Include(x => x.Role);
 
+            if (!string.IsNullOrWhiteSpace(keyword))
+                query = query.Where(x => x.Email.Contains(keyword) || x.FullName.Contains(keyword));
+
+            var totalItems = await query.CountAsync();
+
+            var items = await query
+                .OrderByDescending(x => x.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(x => new AccountDto
+                {
+                    Id = x.Id,
+                    Email = x.Email,
+                    FullName = x.FullName,
+                    RoleName = x.Role.Name,
+                    CreatedAt = x.CreatedAt
+                })
+                .ToListAsync();
+
+            return new PagedResult<AccountDto>
+            {
+                Items = items,
+                TotalItems = totalItems,
+                Page = page,
+                PageSize = pageSize
+            };
+        }
+        public async Task<AccountDto> GetAccountByIdAsync(long id)
+        {
+            var account = await _accountRepo.Get()
+                .Include(x => x.Role)
+                .FirstOrDefaultAsync(x => x.Id == id)
+                ?? throw new KeyNotFoundException("Không tìm thấy tài khoản.");
+
+            return new AccountDto
+            {
+                Id = account.Id,
+                Email = account.Email,
+                FullName = account.FullName,
+                RoleName = account.Role.Name,
+                CreatedAt = account.CreatedAt
+            };
+        }
+        public async Task<AccountDto> UpdateAccountAsync(long id, AccountUpdateDto dto)
+        {
+            var account = await _accountRepo.Get()
+                .Include(x => x.Role)
+                .FirstOrDefaultAsync(x => x.Id == id)
+                ?? throw new KeyNotFoundException("Không tìm thấy tài khoản.");
+
+            if (!string.IsNullOrWhiteSpace(dto.FullName))
+                account.FullName = dto.FullName;
+
+            if (!string.IsNullOrWhiteSpace(dto.Password))
+                account.PasswordHash = HashPassword(dto.Password);
+
+            if (dto.RoleId.HasValue)
+                account.RoleId = dto.RoleId.Value;
+
+            _accountRepo.Update(account);
+            await _accountRepo.SaveChangesAsync();
+
+            return new AccountDto
+            {
+                Id = account.Id,
+                Email = account.Email,
+                FullName = account.FullName,
+                RoleName = account.Role.Name,
+                CreatedAt = account.CreatedAt
+            };
+        }
+    }
 }

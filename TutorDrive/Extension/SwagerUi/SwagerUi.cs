@@ -1,11 +1,13 @@
 ﻿using Swashbuckle.AspNetCore.Filters;
 using TutorDrive.Dtos.account;
+using TutorDrive.Dtos.Account;
 using TutorDrive.Dtos.common;
 using TutorDrive.Dtos.Common;
 using TutorDrive.Dtos.Course;
 using TutorDrive.Dtos.Feedbacks;
 using TutorDrive.Dtos.location;
 using TutorDrive.Dtos.Location;
+using TutorDrive.Dtos.Role;
 using TutorDrive.Dtos.Vehicle;
 
 namespace TutorDrive.Extension.SwagerUi
@@ -20,6 +22,75 @@ namespace TutorDrive.Extension.SwagerUi
                 Data = null
             };
         }
+    }
+
+    public class GetAllRolesResponseExample : IExamplesProvider<ResponseDto>
+    {
+        public ResponseDto GetExamples()
+        {
+            return new ResponseDto
+            {
+                Message = "Lấy danh sách vai trò thành công.",
+                Data = new List<RoleDto>
+                {
+                    new RoleDto { Id = 1, Name = "Admin" },
+                    new RoleDto { Id = 2, Name = "Tutor" },
+                    new RoleDto { Id = 3, Name = "Student" }
+                }
+            };
+        }
+    }
+
+    public class SearchAccountsResponseExample : IExamplesProvider<ResponseDto>
+    {
+        public ResponseDto GetExamples() =>
+            new ResponseDto
+            {
+                Message = "Lấy danh sách tài khoản thành công",
+                Data = new PagedResult<AccountDto>
+                {
+                    Page = 1,
+                    PageSize = 10,
+                    TotalItems = 25,
+                    Items = new List<AccountDto>
+                    {
+                        new AccountDto { Id = 1, Email = "user1@gmail.com", FullName = "Nguyễn Văn A", RoleName = "Student" },
+                        new AccountDto { Id = 2, Email = "teacher1@gmail.com", FullName = "Trần Thị B", RoleName = "Tutor" }
+                    }
+                }
+            };
+    }
+
+    public class GetAccountByIdResponseExample : IExamplesProvider<ResponseDto>
+    {
+        public ResponseDto GetExamples() =>
+            new ResponseDto
+            {
+                Message = "Lấy chi tiết tài khoản thành công",
+                Data = new AccountDto
+                {
+                    Id = 1,
+                    Email = "user1@gmail.com",
+                    FullName = "Nguyễn Văn A",
+                    RoleName = "Student"
+                }
+            };
+    }
+
+    public class UpdateAccountResponseExample : IExamplesProvider<ResponseDto>
+    {
+        public ResponseDto GetExamples() =>
+            new ResponseDto
+            {
+                Message = "Cập nhật tài khoản thành công",
+                Data = new AccountDto
+                {
+                    Id = 1,
+                    Email = "user1@gmail.com",
+                    FullName = "Nguyễn Văn A (đã cập nhật)",
+                    RoleName = "Student"
+                }
+            };
     }
 
     public class CreateFeedbackResponseExample : IExamplesProvider<ResponseDto>

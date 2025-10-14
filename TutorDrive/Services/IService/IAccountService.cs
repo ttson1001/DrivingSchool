@@ -1,4 +1,6 @@
 ﻿using TutorDrive.Dtos.account;
+using TutorDrive.Dtos.Account;
+using TutorDrive.Dtos.Common;
 using TutorDrive.Entities;
 
 namespace TutorDrive.Services.IService
@@ -7,5 +9,8 @@ namespace TutorDrive.Services.IService
     {
         Task<Account> RegisterAsync(CreateAccountRequest request);
         Task<LoginReponseDto> LoginAsync(LoginDto dto);
+        Task<PagedResult<AccountDto>> SearchAccountsAsync(string? keyword, int page, int pageSize);
+        Task<AccountDto> GetAccountByIdAsync(long id);
+        Task<AccountDto> UpdateAccountAsync(long id, AccountUpdateDto dto);
     }
 }
