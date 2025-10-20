@@ -21,6 +21,7 @@ namespace TutorDrive.Database
         public DbSet<Exam> Exams { get; set; }
         public DbSet<ExamResult> ExamResults { get; set; }
         public DbSet<Feedback> Feedbacks { get; set; }
+        public DbSet<DriverLicense> DriverLicenses { get; set; }
         public DbSet<LearningProgress> LearningProgresses { get; set; }
         public BeContext(DbContextOptions<BeContext> options) : base(options) { }
         protected override void OnModelCreating(ModelBuilder modelBuilder)

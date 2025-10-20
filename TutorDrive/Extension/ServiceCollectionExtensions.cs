@@ -19,6 +19,8 @@ namespace TutorDrive.Extension
             services.AddScoped<IVehicleUsageHistoryService, VehicleUsageHistoryService>();
             services.AddScoped<IFeedbackService, FeedbackService>();
             services.AddScoped<IRoleService, RoleService>();
+            services.AddScoped<IDriverLicenseService, DriverLicenseService>();
+            services.AddScoped<ICloudinaryService, CloudinaryService>();
         }
     }
 }

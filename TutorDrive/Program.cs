@@ -1,11 +1,12 @@
-﻿using TutorDrive.Database;
-using TutorDrive.Extension;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Filters;
 using System.Text;
+using TutorDrive.Database;
+using TutorDrive.Extension;
+using TutorDrive.Extension.Cloudary;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -79,6 +80,9 @@ builder.Services.AddAuthentication(options =>
         RoleClaimType = "Role"
     };
 });
+builder.Services.Configure<CloudinarySettings>(
+    builder.Configuration.GetSection("CloudinarySettings")
+);
 builder.Services.Register();
 builder.Services.AddAuthorization();
 builder.Services.AddHttpClient();

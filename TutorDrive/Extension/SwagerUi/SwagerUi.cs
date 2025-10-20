@@ -396,6 +396,89 @@ namespace TutorDrive.Extension.SwagerUi
         }
     }
 
+    public class UploadImageResponseExample : IExamplesProvider<ResponseDto>
+    {
+        public ResponseDto GetExamples()
+        {
+            return new ResponseDto
+            {
+                Message = "Upload hình ảnh thành công",
+                Data = new UploadImageResponseDto
+                {
+                    Url = "https://res.cloudinary.com/drectazvt/image/upload/v123456789/sample.jpg"
+                }
+            };
+        }
+    }
+
+    public class CreateDriverLicenseResponseExample : IExamplesProvider<ResponseDto>
+    {
+        public ResponseDto GetExamples()
+        {
+            return new ResponseDto
+            {
+                Message = "Tạo bằng lái thành công",
+                Data = new
+                {
+                    Id = 1,
+                    Name = "B2",
+                    Description = "Ô tô dưới 9 chỗ, tải < 3.5 tấn"
+                }
+            };
+        }
+    }
+
+    public class UpdateDriverLicenseResponseExample : IExamplesProvider<ResponseDto>
+    {
+        public ResponseDto GetExamples()
+        {
+            return new ResponseDto
+            {
+                Message = "Cập nhật bằng lái thành công",
+                Data = new
+                {
+                    Id = 1,
+                    Name = "C",
+                    Description = "Xe tải trên 3.5 tấn"
+                }
+            };
+        }
+    }
+
+    public class SearchDriverLicenseResponseExample : IExamplesProvider<ResponseDto>
+    {
+        public ResponseDto GetExamples()
+        {
+            return new ResponseDto
+            {
+                Message = "Lấy danh sách bằng lái thành công",
+                Data = new
+                {
+                    Page = 1,
+                    PageSize = 10,
+                    TotalItems = 2,
+                    Items = new[]
+                    {
+                            new { Id = 1, Name = "A1", Description = "Xe máy dưới 175cc" },
+                            new { Id = 2, Name = "B2", Description = "Ô tô dưới 9 chỗ" }
+                        }
+                }
+            };
+        }
+    }
+
+    public class GetDriverLicenseByIdResponseExample : IExamplesProvider<ResponseDto>
+    {
+        public ResponseDto GetExamples()
+        {
+            return new ResponseDto
+            {
+                Message = "Lấy chi tiết bằng lái thành công",
+                Data = new { Id = 1, Name = "A1", Description = "Xe máy dưới 175cc" }
+            };
+        }
+    }
+
     public class VehicleCreateResponseExample : IExamplesProvider<ResponseDto>
     {
         public ResponseDto GetExamples()
