@@ -5,6 +5,7 @@ using TutorDrive.Dtos.Address;
 using TutorDrive.Dtos.common;
 using TutorDrive.Dtos.Common;
 using TutorDrive.Dtos.Course;
+using TutorDrive.Dtos.ExamDto;
 using TutorDrive.Dtos.Feedbacks;
 using TutorDrive.Dtos.location;
 using TutorDrive.Dtos.Location;
@@ -423,6 +424,22 @@ namespace TutorDrive.Extension.SwagerUi
                 Street = "Nguyễn Trãi",
                 WardId = 101,
                 ProvinceId = 79
+            };
+        }
+    }
+
+    public class ExamResponseExample : IExamplesProvider<ExamDto>
+    {
+        public ExamDto GetExamples()
+        {
+            return new ExamDto
+            {
+                Id = 1,
+                CourseId = 101,
+                CourseName = "Lập trình Java nâng cao",
+                Date = new DateTime(2025, 12, 10),
+                Type = "Final Exam",
+                Location = "Phòng 204 - Cơ sở 2"
             };
         }
     }
