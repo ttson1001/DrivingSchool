@@ -1,6 +1,7 @@
 ﻿using Swashbuckle.AspNetCore.Filters;
 using TutorDrive.Dtos.account;
 using TutorDrive.Dtos.Account;
+using TutorDrive.Dtos.Address;
 using TutorDrive.Dtos.common;
 using TutorDrive.Dtos.Common;
 using TutorDrive.Dtos.Course;
@@ -407,6 +408,21 @@ namespace TutorDrive.Extension.SwagerUi
                 {
                     Url = "https://res.cloudinary.com/drectazvt/image/upload/v123456789/sample.jpg"
                 }
+            };
+        }
+    }
+
+    public class AddressResponseExample : IExamplesProvider<UpdateAddressDto>
+    {
+        public UpdateAddressDto GetExamples()
+        {
+            return new UpdateAddressDto
+            {
+                Id = 1,
+                FullAddress = "123 Nguyễn Trãi, Quận 1, TP.HCM",
+                Street = "Nguyễn Trãi",
+                WardId = 101,
+                ProvinceId = 79
             };
         }
     }

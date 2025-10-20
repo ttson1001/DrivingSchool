@@ -1,6 +1,7 @@
 ﻿using TutorDrive.Repositories;
 using TutorDrive.Services;
 using TutorDrive.Services.IService;
+using TutorDrive.Services.IService.TutorDrive.Services.IService;
 using TutorDrive.Services.IServices;
 using TutorDrive.Services.Service;
 
@@ -22,6 +23,7 @@ namespace TutorDrive.Extension
             services.AddScoped<IDriverLicenseService, DriverLicenseService>();
             services.AddScoped<ICloudinaryService, CloudinaryService>();
             services.AddScoped<IEmailService, EmailService>();
+            services.AddScoped<IAddressService, AddressService>();
         }
     }
 }
