@@ -3,13 +3,13 @@ FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 
 # Copy solution and restore dependencies
-COPY BEAPI.sln ./
-COPY BEAPI/BEAPI.csproj BEAPI/
-RUN dotnet restore BEAPI/BEAPI.csproj
+COPY TutorDrive.sln ./
+COPY TutorDrive/TutorDrive.csproj TutorDrive/
+RUN dotnet restore TutorDrive/TutorDrive.csproj
 
 # Copy all source code
 COPY . .
-WORKDIR /src/BEAPI
+WORKDIR /src/TutorDrive
 
 # Publish app
 RUN dotnet publish -c Release -o /app/publish
@@ -22,7 +22,8 @@ COPY --from=build /app/publish .
 EXPOSE 80
 EXPOSE 443
 
-ENTRYPOINT ["dotnet", "BEAPI.dll"]
-
+# Cài đặt timezone (tuỳ chọn)
 RUN apt-get update && apt-get install -y tzdata
 ENV TZ=Asia/Ho_Chi_Minh
+
+ENTRYPOINT ["dotnet", "TutorDrive.dll"]
