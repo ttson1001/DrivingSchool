@@ -4,6 +4,7 @@ using Swashbuckle.AspNetCore.Filters;
 using TutorDrive.Dtos.account;
 using TutorDrive.Dtos.Account;
 using TutorDrive.Dtos.common;
+using TutorDrive.Dtos.Staff.TutorDrive.Dtos.Accounts;
 using TutorDrive.Exceptions;
 using TutorDrive.Extension.SwagerUi;
 using TutorDrive.Services.IService;
@@ -110,5 +111,20 @@ namespace TutorDrive.Controller
                 return BadRequest(new ResponseDto { Message = ex.Message });
             }
         }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateAccount([FromBody] AccountCreateDto dto)
+        {
+            try
+            {
+                await _accountService.CreateAccountAsync(dto);
+                return Ok(new { message = "Tạo tài khoản thành công"});
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System;
 using TutorDrive.Dtos.Common;
+using TutorDrive.Dtos.ExamDto;
 using TutorDrive.Dtos.Feedbacks;
 using TutorDrive.Entities;
 using TutorDrive.Repositories;
@@ -11,10 +12,12 @@ namespace TutorDrive.Services.Service
     public class FeedbackService : IFeedbackService
     {
         private readonly IRepository<Feedback> _repository;
+        private readonly IRepository<Staff> _staffRepository;
 
-        public FeedbackService(IRepository<Feedback> repository)
+        public FeedbackService(IRepository<Feedback> repository, IRepository<Staff> staffRepository)
         {
             _repository = repository;
+            _staffRepository = staffRepository;
         }
 
         public async Task CreateAsync(FeedbackCreateDto dto)
@@ -112,6 +115,46 @@ namespace TutorDrive.Services.Service
             entity.Comment = dto.Comment;
 
             await _repository.SaveChangesAsync();
+        }
+
+        public async Task<List<TopTeacherDto>> GetTopTeachersAsync(int top = 5)
+        {
+            var query = _repository.Get()
+                .Where(f => f.StaffId != null)
+                .GroupBy(f => f.StaffId)
+                .Select(g => new
+                {
+                    StaffId = g.Key.Value,
+                    AverageRating = g.Average(f => f.Rating),
+                    TotalFeedbacks = g.Count()
+                })
+                .OrderByDescending(x => x.AverageRating)
+                .ThenByDescending(x => x.TotalFeedbacks)
+                .Take(top);
+
+            var topFeedbacks = await query.ToListAsync();
+
+            var staffIds = topFeedbacks.Select(x => x.StaffId).ToList();
+
+            var staffs = await _staffRepository.Get()
+                .Include(s => s.Account)
+                .Where(s => staffIds.Contains(s.Id))
+                .ToListAsync();
+
+            var result = (from f in topFeedbacks
+                          join s in staffs on f.StaffId equals s.Id
+                          select new TopTeacherDto
+                          {
+                              StaffId = s.Id,
+                              TeacherName = s.Account.FullName,
+                              Email = s.Account.Email,
+                              AverageRating = Math.Round(f.AverageRating, 2),
+                              TotalFeedbacks = f.TotalFeedbacks
+                          })
+                          .OrderByDescending(x => x.AverageRating)
+                          .ToList();
+
+            return result;
         }
     }
 }

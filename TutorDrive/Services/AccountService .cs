@@ -5,10 +5,9 @@
     using global::TutorDrive.Repositories;
     using global::TutorDrive.Services.IService;
     using Microsoft.EntityFrameworkCore;
-    using System.Security.Cryptography;
-    using System.Text;
     using TutorDrive.Dtos.Account;
     using TutorDrive.Dtos.Common;
+    using TutorDrive.Dtos.Staff.TutorDrive.Dtos.Accounts;
     using TutorDrive.Exceptions;
     using TutorDrive.Services.IServices;
 
@@ -18,17 +17,20 @@
         private readonly IRepository<Role> _roleRepo;
         private readonly IJwtService _jwtService;
         private readonly IRepository<StudentProfile> _studentRepo;
+        private readonly IRepository<Staff> _staffRepo;
 
         public AccountService(
             IRepository<Account> accountRepo,
             IJwtService jwtService,
             IRepository<Role> roleRepo,
-            IRepository<StudentProfile> studentRepo)
+            IRepository<StudentProfile> studentRepo,
+            IRepository<Staff> staffRepo)
         {
             _accountRepo = accountRepo;
             _studentRepo = studentRepo;
             _roleRepo = roleRepo;
             _jwtService = jwtService;
+            _staffRepo = staffRepo;
         }
 
         public async Task<Account> RegisterAsync(CreateAccountRequest request)
@@ -119,6 +121,40 @@
                 RoleName = account.Role.Name,
                 CreatedAt = account.CreatedAt
             };
+        }
+
+
+        public async Task CreateAccountAsync(AccountCreateDto dto)
+        {
+            var role = await _roleRepo.Get().Where(r => r.Id == dto.RoleId).FirstAsync();
+            if (role == null)
+                throw new Exception("Role không tồn tại.");
+
+            if (await _accountRepo.Get().FirstOrDefaultAsync(a => a.Email == dto.Email) != null)
+                throw new Exception("Email đã tồn tại.");
+
+            var account = new Account
+            {
+                Email = dto.Email,
+                FullName = dto.FullName,
+                PhoneNumber = dto.PhoneNumber,
+                PasswordHash = HashPassword(dto.Password),
+                RoleId = dto.RoleId
+            };
+
+            await _accountRepo.AddAsync(account);
+
+            if (role.Name.Equals("Teacher", StringComparison.OrdinalIgnoreCase))
+            {
+                var staff = new Staff
+                {
+                    AccountId = account.Id,
+                    LicenseNumber = dto.LicenseNumber ?? "N/A",
+                    ExperienceYears = dto.ExperienceYears ?? 0
+                };
+                await _staffRepo.AddAsync(staff);
+                await _staffRepo.SaveChangesAsync();
+            }
         }
         public async Task<AccountDto> UpdateAccountAsync(long id, AccountUpdateDto dto)
         {

@@ -2,6 +2,7 @@
 using Swashbuckle.AspNetCore.Annotations;
 using Swashbuckle.AspNetCore.Filters;
 using TutorDrive.Dtos.common;
+using TutorDrive.Dtos.ExamDto;
 using TutorDrive.Dtos.Feedbacks;
 using TutorDrive.Extension.SwagerUi;
 using TutorDrive.Services.IService;
@@ -135,6 +136,33 @@ namespace TutorDrive.Controller
             catch (Exception ex)
             {
                 response.Message = $"Lỗi khi cập nhật phản hồi: {ex.Message}";
+                return BadRequest(response);
+            }
+        }
+
+        [HttpGet("[action]")]
+        [SwaggerOperation(
+            Summary = "Top giáo viên có đánh giá cao nhất",
+            Description = "Trả về danh sách N giáo viên có điểm trung bình cao nhất theo phản hồi học viên"
+        )]
+        [SwaggerResponse(200, "Danh sách top giáo viên", typeof(IEnumerable<TopTeacherDto>))]
+        public async Task<IActionResult> GetTopTeachers([FromQuery] int top = 5)
+        {
+            var response = new ResponseDto();
+
+            try
+            {
+                var result = await _feedbackService.GetTopTeachersAsync(top);
+
+                response.Message = "Lấy danh sách giáo viên thành công";
+                response.Data = result;
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                response.Message = $"Lỗi khi lấy danh sách giáo viên: {ex.Message}";
+                response.Data = null;
                 return BadRequest(response);
             }
         }
