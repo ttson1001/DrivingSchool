@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System;
+using TutorDrive.Dtos.Common;
 using TutorDrive.Dtos.Registration;
 using TutorDrive.Entities;
 using TutorDrive.Repositories;
@@ -44,16 +44,142 @@ namespace TutorDrive.Services
                 StudentProfileId = profile.Id,
                 CourseId = dto.CourseId,
                 Note = dto.Note,
-                Status = "Pending",
+                Status = Entities.Enum.RegistrationStatus.Pending,
                 RegisterDate = DateTime.UtcNow,
                 Files = new List<RegistrationFile>()
             };
 
-                registration.Files.Add(new RegistrationFile { Url = dto.CCCDFront, FileType = Entities.Enum.FileType.CCCD_Front });
-                registration.Files.Add(new RegistrationFile { Url = dto.CCCDBack, FileType = Entities.Enum.FileType.CCCD_Back });
+            registration.Files.Add(new RegistrationFile { Url = dto.CCCDFront, FileType = Entities.Enum.FileType.CCCD_Front });
+            registration.Files.Add(new RegistrationFile { Url = dto.CCCDBack, FileType = Entities.Enum.FileType.CCCD_Back });
 
             await _repositoryRegistration.AddAsync(registration);
             await _repositoryRegistration.SaveChangesAsync();
+        }
+
+        public async Task<PagedResult<RegistrationListItemDto>> GetByProfileAsync(long studentProfileId, RegistrationSearchDto filter)
+        {
+            var query = _repositoryRegistration.Get()
+                .Include(r => r.StudentProfile).ThenInclude(s => s.Account)
+                .Include(r => r.Course)
+                .Include(r => r.Files)
+                .Where(r => r.StudentProfileId == studentProfileId)
+                .AsQueryable();
+
+            if (filter.Status.HasValue)
+                query = query.Where(r => r.Status == filter.Status.Value);
+
+            if (filter.FromDate.HasValue)
+                query = query.Where(r => r.RegisterDate >= filter.FromDate.Value);
+            if (filter.ToDate.HasValue)
+                query = query.Where(r => r.RegisterDate <= filter.ToDate.Value);
+
+            var totalItems = await query.CountAsync();
+
+            var items = await query
+                .OrderByDescending(r => r.RegisterDate)
+                .Skip((filter.Page - 1) * filter.PageSize)
+                .Take(filter.PageSize)
+                .Select(r => new RegistrationListItemDto
+                {
+                    Id = r.Id,
+                    StudentId = r.StudentProfileId,
+                    StudentName = r.StudentProfile.Account.FullName,
+                    StudentEmail = r.StudentProfile.Account.Email,
+                    CourseId = r.CourseId,
+                    CourseName = r.Course.Name,
+                    Status = r.Status,
+                    Note = r.Note,
+                    RegisterDate = r.RegisterDate,
+                    FileUrls = r.Files.Select(f => f.Url).ToList()
+                })
+                .ToListAsync();
+
+            return new PagedResult<RegistrationListItemDto>
+            {
+                TotalItems = totalItems,
+                Page = filter.Page,
+                PageSize = filter.PageSize,
+                Items = items
+            };
+        }
+
+        public async Task UpdateStatusAsync(UpdateRegistrationStatusDto dto)
+        {
+            var registration = await _repositoryRegistration.Get()
+                .FirstOrDefaultAsync(r => r.Id == dto.RegistrationId);
+
+            if (registration == null)
+                throw new Exception("Không tìm thấy đơn đăng ký.");
+
+            registration.Status = dto.Status;
+            if (!string.IsNullOrEmpty(dto.Note))
+                registration.Note = dto.Note;
+
+            _repositoryRegistration.Update(registration);
+            await _repositoryRegistration.SaveChangesAsync();
+
+        }
+
+
+        public async Task<PagedResult<RegistrationListItemDto>> GetByAccountIdAsync(long accountId, RegistrationSearchDto filter)
+        {
+            var studentProfile = await _repositoryStudentProfile.Get()
+                .Include(p => p.Account)
+                .FirstOrDefaultAsync(p => p.AccountId == accountId);
+
+            if (studentProfile == null)
+                throw new Exception("Không tìm thấy hồ sơ học viên cho tài khoản này.");
+
+            var query = _repositoryRegistration.Get()
+                .Include(r => r.StudentProfile).ThenInclude(s => s.Account)
+                .Include(r => r.Course)
+                .Include(r => r.Files)
+                .Where(r => r.StudentProfileId == studentProfile.Id)
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(filter.Keyword))
+            {
+                query = query.Where(r =>
+                    r.Course.Name.Contains(filter.Keyword) ||
+                    (r.Note != null && r.Note.Contains(filter.Keyword)));
+            }
+
+            if (filter.Status.HasValue)
+                query = query.Where(r => r.Status == filter.Status.Value);
+
+            if (filter.FromDate.HasValue)
+                query = query.Where(r => r.RegisterDate >= filter.FromDate.Value);
+            if (filter.ToDate.HasValue)
+                query = query.Where(r => r.RegisterDate <= filter.ToDate.Value);
+
+            var totalItems = await query.CountAsync();
+
+            var items = await query
+                .OrderByDescending(r => r.RegisterDate)
+                .Skip((filter.Page - 1) * filter.PageSize)
+                .Take(filter.PageSize)
+                .Select(r => new RegistrationListItemDto
+                {
+                    Id = r.Id,
+                    StudentId = r.StudentProfileId,
+                    StudentName = r.StudentProfile.Account.FullName,
+                    StudentEmail = r.StudentProfile.Account.Email,
+                    CourseId = r.CourseId,
+                    CourseName = r.Course.Name,
+                    Status = r.Status,
+                    Note = r.Note,
+                    RegisterDate = r.RegisterDate,
+                    FileUrls = r.Files.Select(f => f.Url).ToList()
+                })
+                .ToListAsync();
+
+            return new PagedResult<RegistrationListItemDto>
+            {
+                TotalItems = totalItems,
+                Page = filter.Page,
+                PageSize = filter.PageSize,
+                Items = items
+            };
         }
     }
 }

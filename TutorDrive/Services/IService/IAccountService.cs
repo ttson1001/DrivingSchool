@@ -13,6 +13,6 @@ namespace TutorDrive.Services.IService
         Task<PagedResult<AccountDto>> SearchAccountsAsync(string? keyword, int page, int pageSize);
         Task<AccountDto> GetAccountByIdAsync(long id);
         Task<AccountDto> UpdateAccountAsync(long id, AccountUpdateDto dto);
-        Task<long> CreateAccountAsync(AccountCreateDto dto);
+        Task CreateAccountAsync(AccountCreateDto dto);
     }
 }

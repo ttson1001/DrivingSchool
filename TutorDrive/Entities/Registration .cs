@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using TutorDrive.Entities.Enum;
 
 namespace TutorDrive.Entities
 {
@@ -10,7 +11,7 @@ namespace TutorDrive.Entities
         public long CourseId { get; set; }
         public Course Course { get; set; }
         public DateTime RegisterDate { get; set; } = DateTime.UtcNow;
-        public string Status { get; set; }
+        public RegistrationStatus Status { get; set; }
         public string Note { get; set; }
         public ICollection<RegistrationFile> Files { get; set; }
     }

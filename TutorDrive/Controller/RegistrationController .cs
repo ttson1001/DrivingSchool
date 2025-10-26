@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using TutorDrive.Dtos.common;
-using TutorDrive.Dtos.Common;
 using TutorDrive.Dtos.Registration;
 using TutorDrive.Services.IService;
 
@@ -20,7 +19,7 @@ namespace TutorDrive.Controller
             _service = service;
         }
 
-        [HttpPost("full")]
+        [HttpPost("[action]")]
         [SwaggerOperation(
             Summary = "Đăng ký khóa học đầy đủ",
             Description = "Thực hiện đăng ký khóa học mới, kèm thông tin hồ sơ và upload file CCCD (mặt trước/mặt sau)"
@@ -54,5 +53,80 @@ namespace TutorDrive.Controller
                 return BadRequest(response);
             }
         }
+
+        [HttpGet("[search]")]
+        [SwaggerOperation(
+            Summary = "Tìm kiếm đơn đăng ký học",
+            Description = "Tìm kiếm đơn đăng ký học theo từ khóa, trạng thái và phân trang"
+        )]
+        [SwaggerResponse(200, "Lấy danh sách đăng ký thành công", typeof(ResponseDto))]
+        public async Task<IActionResult> SearchRegistrations([FromQuery] RegistrationSearchDto filter)
+        {
+            var response = new ResponseDto();
+
+            try
+            {
+                var result = await _service.SearchAsync(filter);
+
+                response.Message = "Lấy danh sách đăng ký thành công";
+                response.Data = result;
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                response.Message = $"Lỗi khi tìm kiếm đăng ký: {ex.Message}";
+                return BadRequest(response);
+            }
+        }
+
+        [HttpGet("[action]/{accountId}")]
+        [SwaggerOperation(
+           Summary = "Lấy danh sách đơn đăng ký theo tài khoản",
+           Description = "Trả về danh sách đăng ký học của học viên dựa trên AccountId (tự join qua StudentProfile). Có thể lọc theo trạng thái, từ khóa và ngày."
+       )]
+        [SwaggerResponse(200, "Lấy danh sách đăng ký thành công", typeof(ResponseDto))]
+        public async Task<IActionResult> GetByAccount(long accountId, [FromQuery] RegistrationSearchDto filter)
+        {
+            var response = new ResponseDto();
+            try
+            {
+                var result = await _service.GetByAccountIdAsync(accountId, filter);
+
+                response.Message = "Lấy danh sách đăng ký thành công";
+                response.Data = result;
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                response.Message = $"Lỗi khi lấy danh sách đăng ký: {ex.Message}";
+                return BadRequest(response);
+            }
+        }
+
+        [HttpPut("update-status")]
+        [SwaggerOperation(
+          Summary = "Cập nhật trạng thái đơn đăng ký",
+          Description = "Cho phép admin hoặc giáo viên thay đổi trạng thái đơn đăng ký của học viên (Pending, Approved, Rejected, Cancelled...)."
+      )]
+        [SwaggerResponse(200, "Cập nhật trạng thái thành công", typeof(ResponseDto))]
+        public async Task<IActionResult> UpdateStatus([FromBody] UpdateRegistrationStatusDto dto)
+        {
+            var response = new ResponseDto();
+            try
+            {
+                await _service.UpdateStatusAsync(dto);
+
+                response.Message = "Cập nhật trạng thái đơn đăng ký thành công.";
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                response.Message = $"Lỗi khi cập nhật trạng thái: {ex.Message}";
+                return BadRequest(response);
+            }
+        }
+
     }
 }
