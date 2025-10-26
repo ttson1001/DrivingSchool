@@ -6,5 +6,6 @@ namespace TutorDrive.Services.IService
     public interface ICloudinaryService
     {
         Task<string> UploadImageAsync(IFormFile file);
+        Task<string> UploadFileAsync(IFormFile file);
     }
 }

@@ -19,20 +19,19 @@ namespace TutorDrive.Controllers
             _cloudinaryService = cloudinaryService;
         }
 
-        //[HttpPost("upload")]
-        //[Consumes("multipart/form-data")]
-        //[SwaggerResponse(StatusCodes.Status200OK, "Upload thành công")]
-        //public async Task<IActionResult> UploadImage([FromForm] UploadImageRequest request)
-        //{
-        //    var file = request.File;
-
-        //    if (file == null || file.Length == 0)
-        //        return BadRequest("No file uploaded");
-
-        //    var result = await _cloudinaryService.UploadImageAsync(file);
-        //    return Ok(new { url = result });
-        //}
-
+        [HttpPost("upload-file")]
+        public async Task<IActionResult> UploadFile(IFormFile file)
+        {
+            try
+            {
+                var url = await _cloudinaryService.UploadFileAsync(file);
+                return Ok(new { message = "Upload file thành công!", url });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = $"Lỗi khi upload file: {ex.Message}" });
+            }
+        }
 
         [HttpPost("upload")]
         [Consumes("multipart/form-data")]

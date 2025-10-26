@@ -12,7 +12,6 @@ namespace TutorDrive.Entities
         public long? AddressId { get; set; }
         public Address Address { get; set; }
         public string Status { get; set; }
-
         public IList<Registration> Registrations { get; set; }
         public IList<ExamResult> ExamResults { get; set; }
         public IList<Feedback> Feedbacks { get; set; }

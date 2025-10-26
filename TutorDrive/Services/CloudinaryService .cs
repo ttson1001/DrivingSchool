@@ -29,7 +29,33 @@ namespace TutorDrive.Services
             var uploadParams = new ImageUploadParams
             {
                 File = new FileDescription(file.FileName, stream),
-                Folder = "tutordrive_uploads"
+                Folder = "tutordrive_uploads/images"
+            };
+
+            var uploadResult = await _cloudinary.UploadAsync(uploadParams);
+
+            if (uploadResult.Error != null)
+                throw new Exception(uploadResult.Error.Message);
+
+            return uploadResult.SecureUrl.AbsoluteUri;
+        }
+
+        public async Task<string> UploadFileAsync(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                throw new Exception("Không có file để upload.");
+
+            var allowedExtensions = new[] { ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".zip" };
+            var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
+
+            if (!allowedExtensions.Contains(ext))
+                throw new Exception($"Định dạng file {ext} không được hỗ trợ.");
+
+            await using var stream = file.OpenReadStream();
+            var uploadParams = new RawUploadParams
+            {
+                File = new FileDescription(file.FileName, stream),
+                Folder = "tutordrive_uploads/files"
             };
 
             var uploadResult = await _cloudinary.UploadAsync(uploadParams);
