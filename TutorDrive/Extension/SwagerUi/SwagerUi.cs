@@ -9,8 +9,10 @@ using TutorDrive.Dtos.ExamDto;
 using TutorDrive.Dtos.Feedbacks;
 using TutorDrive.Dtos.location;
 using TutorDrive.Dtos.Location;
+using TutorDrive.Dtos.Registration;
 using TutorDrive.Dtos.Role;
 using TutorDrive.Dtos.Vehicle;
+using TutorDrive.Entities.Enum;
 
 namespace TutorDrive.Extension.SwagerUi
 {
@@ -461,7 +463,57 @@ namespace TutorDrive.Extension.SwagerUi
         }
     }
 
-    public class UpdateDriverLicenseResponseExample : IExamplesProvider<ResponseDto>
+    public class RegistrationListResponseExample : IExamplesProvider<ResponseDto>
+    {
+        public ResponseDto GetExamples()
+        {
+            return new ResponseDto
+            {
+                Message = "Lấy danh sách đăng ký thành công",
+                Data = new
+                {
+                    Page = 1,
+                    PageSize = 10,
+                    TotalItems = 2,
+                    Items = new[]
+                    {
+                        new RegistrationListItemDto
+                        {
+                            Id = 1,
+                            StudentId = 101,
+                            StudentName = "Nguyen Van A",
+                            StudentEmail = "nguyenvana@example.com",
+                            CourseId = 10,
+                            CourseName = "Spring Boot Masterclass",
+                            Status = RegistrationStatus.Approved,
+                            Note = "Approved by admin",
+                            RegisterDate = DateTime.UtcNow,
+                            FileUrls = new List<string>
+                            {
+                                "https://example.com/file1.pdf",
+                                "https://example.com/file2.pdf"
+                            }
+                        },
+                        new RegistrationListItemDto
+                        {
+                            Id = 2,
+                            StudentId = 102,
+                            StudentName = "Tran Thi B",
+                            StudentEmail = "tranthib@example.com",
+                            CourseId = 11,
+                            CourseName = "Angular từ cơ bản đến nâng cao",
+                            Status = RegistrationStatus.Pending,
+                            Note = null,
+                            RegisterDate = DateTime.UtcNow,
+                            FileUrls = new List<string>()
+                        }
+                    }
+                }
+            };
+        }
+    }
+
+        public class UpdateDriverLicenseResponseExample : IExamplesProvider<ResponseDto>
     {
         public ResponseDto GetExamples()
         {

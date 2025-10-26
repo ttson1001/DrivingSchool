@@ -2,6 +2,7 @@
 using TutorDrive.Dtos.Common;
 using TutorDrive.Dtos.Registration;
 using TutorDrive.Entities;
+using TutorDrive.Entities.Enum;
 using TutorDrive.Repositories;
 using TutorDrive.Services.IService;
 
@@ -56,13 +57,12 @@ namespace TutorDrive.Services
             await _repositoryRegistration.SaveChangesAsync();
         }
 
-        public async Task<PagedResult<RegistrationListItemDto>> GetByProfileAsync(long studentProfileId, RegistrationSearchDto filter)
+        public async Task<PagedResult<RegistrationListItemDto>> SearchAsync(RegistrationSearchDto filter)
         {
             var query = _repositoryRegistration.Get()
                 .Include(r => r.StudentProfile).ThenInclude(s => s.Account)
                 .Include(r => r.Course)
                 .Include(r => r.Files)
-                .Where(r => r.StudentProfileId == studentProfileId)
                 .AsQueryable();
 
             if (filter.Status.HasValue)
@@ -115,7 +115,7 @@ namespace TutorDrive.Services
             if (!string.IsNullOrEmpty(dto.Note))
                 registration.Note = dto.Note;
 
-            _repositoryRegistration.Update(registration);
+                _repositoryRegistration.Update(registration);
             await _repositoryRegistration.SaveChangesAsync();
 
         }

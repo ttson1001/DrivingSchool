@@ -25,6 +25,7 @@ namespace TutorDrive.Extension
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<IAddressService, AddressService>();
             services.AddScoped<IRegistrationFullService, RegistrationFullService>();
+            services.AddScoped<ILearningProgressService, LearningProgressService>();
         }
     }
 }

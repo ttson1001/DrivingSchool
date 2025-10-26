@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
+using Swashbuckle.AspNetCore.Filters;
 using TutorDrive.Dtos.common;
 using TutorDrive.Dtos.Registration;
+using TutorDrive.Extension.SwagerUi;
 using TutorDrive.Services.IService;
 
 namespace TutorDrive.Controller
@@ -25,6 +27,7 @@ namespace TutorDrive.Controller
             Description = "Thực hiện đăng ký khóa học mới, kèm thông tin hồ sơ và upload file CCCD (mặt trước/mặt sau)"
         )]
         [SwaggerResponse(200, "Đăng ký thành công", typeof(ResponseDto))]
+        [SwaggerResponseExample(200, typeof(RegistrationListResponseExample))]
         public async Task<IActionResult> RegisterFull([FromBody] RegistrationFullCreateDto dto)
         {
             var response = new ResponseDto();
@@ -54,12 +57,13 @@ namespace TutorDrive.Controller
             }
         }
 
-        [HttpGet("[search]")]
+        [HttpGet("[action]")]
         [SwaggerOperation(
             Summary = "Tìm kiếm đơn đăng ký học",
             Description = "Tìm kiếm đơn đăng ký học theo từ khóa, trạng thái và phân trang"
         )]
         [SwaggerResponse(200, "Lấy danh sách đăng ký thành công", typeof(ResponseDto))]
+        [SwaggerResponseExample(200, typeof(RegistrationListResponseExample))]
         public async Task<IActionResult> SearchRegistrations([FromQuery] RegistrationSearchDto filter)
         {
             var response = new ResponseDto();
@@ -105,7 +109,7 @@ namespace TutorDrive.Controller
             }
         }
 
-        [HttpPut("update-status")]
+        [HttpPut("[action]")]
         [SwaggerOperation(
           Summary = "Cập nhật trạng thái đơn đăng ký",
           Description = "Cho phép admin hoặc giáo viên thay đổi trạng thái đơn đăng ký của học viên (Pending, Approved, Rejected, Cancelled...)."
