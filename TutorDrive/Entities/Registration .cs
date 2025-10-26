@@ -15,7 +15,7 @@ namespace TutorDrive.Entities
         public Course Course { get; set; }
         public DateTime RegisterDate { get; set; } = DateTime.UtcNow;
         public RegistrationStatus Status { get; set; }
-        public string Note { get; set; }
+        public string? Note { get; set; }
         public ICollection<RegistrationFile> Files { get; set; }
     }
 }

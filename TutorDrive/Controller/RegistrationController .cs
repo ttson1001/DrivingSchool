@@ -33,7 +33,7 @@ namespace TutorDrive.Controller
 
             try
             {
-                var accountIdClaim = User.FindFirst("AccountId")?.Value;
+                var accountIdClaim = User.FindFirst("UserId")?.Value;
                 if (accountIdClaim == null)
                 {
                     response.Message = "Không tìm thấy thông tin tài khoản.";
