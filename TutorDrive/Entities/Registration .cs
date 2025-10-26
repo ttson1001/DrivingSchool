@@ -8,6 +8,9 @@ namespace TutorDrive.Entities
         public long Id { get; set; }
         public long StudentProfileId { get; set; }
         public StudentProfile StudentProfile { get; set; }
+        public string? FullName { get; set; }
+        public string? Email { get; set; }
+        public string? PhoneNumber { get; set; }
         public long CourseId { get; set; }
         public Course Course { get; set; }
         public DateTime RegisterDate { get; set; } = DateTime.UtcNow;

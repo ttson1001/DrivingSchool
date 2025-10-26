@@ -27,7 +27,6 @@ namespace TutorDrive.Controller
             Description = "Thực hiện đăng ký khóa học mới, kèm thông tin hồ sơ và upload file CCCD (mặt trước/mặt sau)"
         )]
         [SwaggerResponse(200, "Đăng ký thành công", typeof(ResponseDto))]
-        [SwaggerResponseExample(200, typeof(RegistrationListResponseExample))]
         public async Task<IActionResult> RegisterFull([FromBody] RegistrationFullCreateDto dto)
         {
             var response = new ResponseDto();

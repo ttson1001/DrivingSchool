@@ -10,6 +10,12 @@ namespace TutorDrive.Dtos.Registration
         public string StudentName { get; set; }
         public string StudentEmail { get; set; }
 
+        public string CCCD { get; set; }
+
+        public string? FullName { get; set; }
+        public string? Email { get; set; }
+        public string? PhoneNumber { get; set; }
+
         public long CourseId { get; set; }
         public string CourseName { get; set; }
 
