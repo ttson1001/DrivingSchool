@@ -12,10 +12,14 @@ namespace TutorDrive.Services
     public class AddressService : IAddressService
     {
         private readonly IRepository<Address> _repository;
+        private readonly IRepository<Account> _accoutnRepository;
+        private readonly IRepository<StudentProfile> _studentRepo;
 
-        public AddressService(IRepository<Address> repository)
+        public AddressService(IRepository<Address> repository, IRepository<Account> accoutnRepository, IRepository<StudentProfile> studentRepo)
         {
             _repository = repository;
+            _accoutnRepository = accoutnRepository;
+            _studentRepo = studentRepo;
         }
 
         public async Task<List<UpdateAddressDto>> GetAllAsync()
@@ -32,20 +36,39 @@ namespace TutorDrive.Services
                 .ToListAsync();
         }
 
-
         public async Task CreateAddressAsync(AddressDto dto)
         {
-            var address = new Address
+            if (dto.AccountId == null)
+                throw new Exception("AccountId là bắt buộc để tạo địa chỉ");
+
+            var student = await _studentRepo.Get()
+                .Include(s => s.Address)
+                .FirstOrDefaultAsync(s => s.AccountId == dto.AccountId);
+
+            if (student == null)
+                throw new Exception("Không tìm thấy hồ sơ học viên tương ứng với tài khoản này");
+
+            if (student.AddressId.HasValue && student.Address != null)
             {
-                FullAddress = dto.FullAddress,
-                Street = dto.Street,
-                WardId = dto.WardId,
-                ProvinceId = dto.ProvinceId
+                _repository.Delete(student.Address);
+                await _repository.SaveChangesAsync();
+            }
+
+            var newAddress = new Address
+            {
+                FullAddress = dto.FullAddress ?? "",
+                Street = dto.Street ?? "",
+                WardId = dto.WardId ?? 0,
+                ProvinceId = dto.ProvinceId ?? 0
             };
 
-            await _repository.AddAsync(address);
+            await _repository.AddAsync(newAddress);
+            await _repository.SaveChangesAsync();
+
+            student.AddressId = newAddress.Id;
             await _repository.SaveChangesAsync();
         }
+
 
         public async Task UpdateAddressAsync(UpdateAddressDto dto)
         {

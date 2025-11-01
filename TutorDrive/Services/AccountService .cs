@@ -5,7 +5,9 @@
     using global::TutorDrive.Repositories;
     using global::TutorDrive.Services.IService;
     using Microsoft.EntityFrameworkCore;
+    using TutorDrive.Database;
     using TutorDrive.Dtos.Account;
+    using TutorDrive.Dtos.Address.TutorDrive.Dtos.Address;
     using TutorDrive.Dtos.Common;
     using TutorDrive.Dtos.Staff.TutorDrive.Dtos.Accounts;
     using TutorDrive.Exceptions;
@@ -183,6 +185,65 @@
                 RoleName = account.Role.Name,
                 CreatedAt = account.CreatedAt
             };
+        }
+
+        public async Task<MeDto> GetMeAsync(long accountId)
+        {
+            var account = await _accountRepo.Get()
+                .Include(a => a.Role)
+                .FirstOrDefaultAsync(a => a.Id == accountId);
+
+            if (account == null)
+                throw new Exception("Account not found");
+
+            var roleName = account.Role.Name.ToLower();
+
+            var me = new MeDto
+            {
+                AccountId = account.Id,
+                Email = account.Email,
+                FullName = account.FullName,
+                Role = account.Role.Name
+            };
+
+            if (roleName == "Teacher")
+            {
+                var staff = await _staffRepo.Get().FirstOrDefaultAsync(s => s.AccountId == account.Id);
+                if (staff != null)
+                {
+                    me.LicenseNumber = staff.LicenseNumber;
+                    me.ExperienceYears = staff.ExperienceYears;
+                }
+            }
+            else if (roleName == "Student")
+            {
+                var student = await _studentRepo.Get()
+                    .Include(s => s.Address)
+                        .ThenInclude(a => a.Ward)
+                    .Include(s => s.Address)
+                        .ThenInclude(a => a.Province)
+                    .FirstOrDefaultAsync(s => s.AccountId == account.Id);
+
+                if (student != null)
+                {
+                    me.CMND = student.CMND;
+                    me.DOB = student.DOB;
+                    me.Status = student.Status;
+
+                    if (student.Address != null)
+                    {
+                        me.Address = new AddressDto
+                        {
+                            FullAddress = student.Address.FullAddress,
+                            Street = student.Address.Street,
+                            WardName = student.Address.Ward?.Name,
+                            ProvinceName = student.Address.Province?.Name
+                        };
+                    }
+                }
+            }
+
+            return me;
         }
     }
 }

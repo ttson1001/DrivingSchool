@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using Swashbuckle.AspNetCore.Filters;
+using System.Security.Claims;
 using TutorDrive.Dtos.account;
 using TutorDrive.Dtos.Account;
 using TutorDrive.Dtos.common;
@@ -123,6 +125,38 @@ namespace TutorDrive.Controller
             catch (Exception ex)
             {
                 return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpGet("me")]
+        [Authorize]
+        public async Task<IActionResult> GetMe()
+        {
+            try
+            {
+                var accountIdStr = User.FindFirstValue("UserId");
+                if (string.IsNullOrEmpty(accountIdStr))
+                    return Unauthorized(new { message = "Không tìm thấy thông tin người dùng trong token" });
+
+                if (!long.TryParse(accountIdStr, out var accountId))
+                    return BadRequest(new { message = "ID tài khoản không hợp lệ" });
+
+                var me = await _accountService.GetMeAsync(accountId);
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Lấy thông tin tài khoản thành công",
+                    data = me
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = ex.Message
+                });
             }
         }
 
