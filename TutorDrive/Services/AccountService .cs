@@ -248,14 +248,15 @@
             return me;
         }
 
-        public async Task<StudentProfile> UpdateAsync(long id, UpdateStudentProfileDto dto)
+        public async Task<StudentProfile> UpdateAsync(long accountId, UpdateStudentProfileDto dto)
         {
             var profile = await _studentRepo.Get()
                 .Include(x => x.Address)
-                .FirstOrDefaultAsync(x => x.Id == id);
+                .Include(x => x.Account)
+                .FirstOrDefaultAsync(x => x.AccountId == accountId);
 
             if (profile == null)
-                throw new Exception("Student profile not found");
+                throw new Exception("Không tìm thấy hồ sơ học viên");
 
             if (!string.IsNullOrWhiteSpace(dto.CMND))
                 profile.CMND = dto.CMND;
@@ -263,8 +264,17 @@
             if (dto.DOB.HasValue)
                 profile.DOB = dto.DOB;
 
-            if (!string.IsNullOrWhiteSpace(dto.Status))
-                profile.Status = dto.Status;
+            if (profile.Account != null)
+            {
+                if (!string.IsNullOrWhiteSpace(dto.FullName))
+                    profile.Account.FullName = dto.FullName;
+
+                if (!string.IsNullOrWhiteSpace(dto.PhoneNumber))
+                    profile.Account.PhoneNumber = dto.PhoneNumber;
+
+                if (!string.IsNullOrWhiteSpace(dto.Avalar))
+                    profile.Account.Avalar = dto.Avalar;
+            }
 
             if (dto.Address != null)
             {
@@ -272,7 +282,7 @@
                 {
                     var address = await _addressRepo.Get().FirstOrDefaultAsync(x => x.Id == dto.Address.Id);
                     if (address == null)
-                        throw new Exception("Address not found");
+                        throw new Exception("Không tìm thấy địa chỉ");
 
                     if (!string.IsNullOrWhiteSpace(dto.Address.FullAddress))
                         address.FullAddress = dto.Address.FullAddress;
@@ -290,13 +300,13 @@
                 {
                     var newAddress = new Address
                     {
-                        FullAddress = dto.Address.FullAddress,
-                        Street = dto.Address.Street,
+                        FullAddress = dto.Address.FullAddress ?? "",
+                        Street = dto.Address.Street ?? "",
                         WardId = dto.Address.WardId,
                         ProvinceId = dto.Address.ProvinceId
                     };
-                    await _addressRepo.AddAsync(newAddress);
 
+                    await _addressRepo.AddAsync(newAddress);
                     profile.AddressId = newAddress.Id;
                     profile.Address = newAddress;
                 }
@@ -304,7 +314,9 @@
 
             _studentRepo.Update(profile);
             await _studentRepo.SaveChangesAsync();
+
             return profile;
         }
+
     }
 }
