@@ -160,5 +160,37 @@ namespace TutorDrive.Controller
             }
         }
 
+        [HttpPut("update-profile")]
+        [Authorize]
+        public async Task<IActionResult> UpdateProfile([FromBody] UpdateStudentProfileDto dto)
+        {
+            try
+            {
+                var userIdStr = User.FindFirstValue("UserId");
+                if (string.IsNullOrEmpty(userIdStr))
+                    return Unauthorized(new { success = false, message = "Không tìm thấy thông tin người dùng trong token" });
+
+                if (!long.TryParse(userIdStr, out var userId))
+                    return BadRequest(new { success = false, message = "ID người dùng không hợp lệ" });
+
+                var updatedProfile = await _accountService.UpdateAsync(userId, dto);
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Cập nhật hồ sơ học viên thành công",
+                    data = updatedProfile
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
+        }
+
     }
 }
