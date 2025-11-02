@@ -7,6 +7,7 @@ using System.Text;
 using TutorDrive.Database;
 using TutorDrive.Extension;
 using TutorDrive.Extension.Cloudary;
+using TutorDrive.Model;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -83,6 +84,7 @@ builder.Services.AddAuthentication(options =>
 builder.Services.Configure<CloudinarySettings>(
     builder.Configuration.GetSection("CloudinarySettings")
 );
+builder.Services.Configure<VnPaySettings>(builder.Configuration.GetSection("VNPAY"));
 builder.Services.Register();
 builder.Services.AddAuthorization();
 builder.Services.AddHttpClient();

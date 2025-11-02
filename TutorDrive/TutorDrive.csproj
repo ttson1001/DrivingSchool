@@ -45,7 +45,6 @@
     <Folder Include="Constants\" />
     <Folder Include="Helper\" />
     <Folder Include="Migrations\" />
-    <Folder Include="Model\" />
   </ItemGroup>
 
 </Project>

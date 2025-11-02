@@ -5,7 +5,6 @@
     using global::TutorDrive.Repositories;
     using global::TutorDrive.Services.IService;
     using Microsoft.EntityFrameworkCore;
-    using TutorDrive.Database;
     using TutorDrive.Dtos.Account;
     using TutorDrive.Dtos.Address.TutorDrive.Dtos.Address;
     using TutorDrive.Dtos.Common;
@@ -20,12 +19,14 @@
         private readonly IJwtService _jwtService;
         private readonly IRepository<StudentProfile> _studentRepo;
         private readonly IRepository<Staff> _staffRepo;
+        private readonly IRepository<Address> _addressRepo;
 
         public AccountService(
             IRepository<Account> accountRepo,
             IJwtService jwtService,
             IRepository<Role> roleRepo,
             IRepository<StudentProfile> studentRepo,
+            IRepository<Address> addressRepo,
             IRepository<Staff> staffRepo)
         {
             _accountRepo = accountRepo;
@@ -33,6 +34,7 @@
             _roleRepo = roleRepo;
             _jwtService = jwtService;
             _staffRepo = staffRepo;
+            _addressRepo = addressRepo;
         }
 
         public async Task<Account> RegisterAsync(CreateAccountRequest request)
@@ -244,6 +246,65 @@
             }
 
             return me;
+        }
+
+        public async Task<StudentProfile> UpdateAsync(long id, UpdateStudentProfileDto dto)
+        {
+            var profile = await _studentRepo.Get()
+                .Include(x => x.Address)
+                .FirstOrDefaultAsync(x => x.Id == id);
+
+            if (profile == null)
+                throw new Exception("Student profile not found");
+
+            if (!string.IsNullOrWhiteSpace(dto.CMND))
+                profile.CMND = dto.CMND;
+
+            if (dto.DOB.HasValue)
+                profile.DOB = dto.DOB;
+
+            if (!string.IsNullOrWhiteSpace(dto.Status))
+                profile.Status = dto.Status;
+
+            if (dto.Address != null)
+            {
+                if (dto.Address.Id > 0)
+                {
+                    var address = await _addressRepo.Get().FirstOrDefaultAsync(x => x.Id == dto.Address.Id);
+                    if (address == null)
+                        throw new Exception("Address not found");
+
+                    if (!string.IsNullOrWhiteSpace(dto.Address.FullAddress))
+                        address.FullAddress = dto.Address.FullAddress;
+
+                    if (!string.IsNullOrWhiteSpace(dto.Address.Street))
+                        address.Street = dto.Address.Street;
+
+                    address.WardId = dto.Address.WardId;
+                    address.ProvinceId = dto.Address.ProvinceId;
+
+                    _addressRepo.Update(address);
+                    profile.AddressId = address.Id;
+                }
+                else
+                {
+                    var newAddress = new Address
+                    {
+                        FullAddress = dto.Address.FullAddress,
+                        Street = dto.Address.Street,
+                        WardId = dto.Address.WardId,
+                        ProvinceId = dto.Address.ProvinceId
+                    };
+                    await _addressRepo.AddAsync(newAddress);
+
+                    profile.AddressId = newAddress.Id;
+                    profile.Address = newAddress;
+                }
+            }
+
+            _studentRepo.Update(profile);
+            await _studentRepo.SaveChangesAsync();
+            return profile;
         }
     }
 }
