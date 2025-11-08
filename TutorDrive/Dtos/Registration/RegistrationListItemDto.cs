@@ -27,6 +27,7 @@ namespace TutorDrive.Dtos.Registration
 
         public DateTime StartDateTime { get; set; }
         public string StudyDays { get; set; }
+        public decimal? Price { get; set; }
     }
 
 }

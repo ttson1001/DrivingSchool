@@ -268,7 +268,7 @@ namespace TutorDrive.Services
                     Id = student.Student.Id,
                     FullName = student.Student.Account.FullName,
                     Email = student.Student.Account.Email,
-                    Avatar = student.Student.Account.Avalar
+                    Avatar = student.Student.Account.Avatar
                 };
 
                 if (student.IsCompleted)

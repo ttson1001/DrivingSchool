@@ -204,7 +204,7 @@
             if (account == null)
                 throw new Exception("Account not found");
 
-            var roleName = account.Role.Name.ToLower();
+            var roleName = account.Role.Name;
 
             var me = new MeDto
             {
@@ -214,7 +214,7 @@
                 Role = account.Role.Name
             };
 
-            if (roleName == "Teacher")
+            if (roleName == "Instructor")
             {
                 var staff = await _staffRepo.Get().FirstOrDefaultAsync(s => s.AccountId == account.Id);
                 if (staff != null)
@@ -245,7 +245,9 @@
                             FullAddress = student.Address.FullAddress,
                             Street = student.Address.Street,
                             WardName = student.Address.Ward?.Name,
-                            ProvinceName = student.Address.Province?.Name
+                            ProvinceName = student.Address.Province?.Name,
+                            WardId = student.Address.WardId,
+                            ProvinceId = student.Address.ProvinceId
                         };
                     }
                 }
@@ -278,8 +280,8 @@
                 if (!string.IsNullOrWhiteSpace(dto.PhoneNumber))
                     profile.Account.PhoneNumber = dto.PhoneNumber;
 
-                if (!string.IsNullOrWhiteSpace(dto.Avalar))
-                    profile.Account.Avalar = dto.Avalar;
+                if (!string.IsNullOrWhiteSpace(dto.Avatar))
+                    profile.Account.Avatar = dto.Avatar;
             }
 
             if (dto.Address != null)

@@ -13,6 +13,7 @@ namespace TutorDrive.Entities
         public string? PhoneNumber { get; set; }
         public long CourseId { get; set; }
         public Course Course { get; set; }
+        public decimal? Price { get; set; }
         public DateTime RegisterDate { get; set; } = DateTime.UtcNow;
         public RegistrationStatus Status { get; set; }
         public string? Note { get; set; }

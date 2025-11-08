@@ -7,7 +7,7 @@ namespace TutorDrive.Dtos.account
         public string? CMND { get; set; }
         public DateTime? DOB { get; set; }
         public UpdateAddressDto? Address { get; set; }
-        public string? Avalar { get; set; }
+        public string? Avatar { get; set; }
         public string? FullName { get; set; }
         public string? PhoneNumber { get; set; }
     }

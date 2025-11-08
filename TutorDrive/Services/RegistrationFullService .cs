@@ -13,12 +13,14 @@ namespace TutorDrive.Services
         private readonly IRepository<Registration> _repositoryRegistration;
         private readonly IRepository<StudentProfile> _repositoryStudentProfile;
         private readonly IRepository<Account> _repositoryAccount;
+        private readonly IRepository<Course> _courseRepo;
 
-        public RegistrationFullService(IRepository<StudentProfile> repositoryStudentProfile, IRepository<Account> repositoryAccount, IRepository<Registration> repositoryRegistration)
+        public RegistrationFullService(IRepository<StudentProfile> repositoryStudentProfile, IRepository<Account> repositoryAccount, IRepository<Registration> repositoryRegistration, IRepository<Course> courseRepo)
         {
             _repositoryStudentProfile = repositoryStudentProfile;
             _repositoryAccount = repositoryAccount;
             _repositoryRegistration = repositoryRegistration;
+            _courseRepo = courseRepo;
         }
 
         public async Task RegisterFullAsync(long accountId, RegistrationFullCreateDto dto)
@@ -30,6 +32,11 @@ namespace TutorDrive.Services
             if (profile == null)
             {
                 throw new InvalidOperationException("Học viên chưa có hồ sơ cá nhân. Vui lòng hoàn tất hồ sơ trước khi đăng ký.");
+            }
+            var course = await _courseRepo.Get().FirstOrDefaultAsync(x => x.Id == dto.CourseId);
+            if (course == null)
+            {
+                throw new Exception("Không tìm thấy khóa học.");
             }
 
             StudyDay studyDays = StudyDay.None;
@@ -44,6 +51,7 @@ namespace TutorDrive.Services
                 StudentProfileId = profile.Id,
                 CourseId = dto.CourseId,
                 FullName = dto.FullName,
+                Price = course.Price,
                 Email = dto.Email,
                 PhoneNumber = dto.PhoneNumber,
                 Note = dto.Note,
@@ -117,7 +125,8 @@ namespace TutorDrive.Services
                 StudyDays = string.Join(", ", Enum.GetValues(typeof(StudyDay))
                     .Cast<StudyDay>()
                     .Where(d => d != StudyDay.None && r.StudyDays.HasFlag(d))
-                    .Select(d => d.ToString()))
+                    .Select(d => d.ToString())),
+                Price = r.Price
             })
             .ToList();
 
@@ -146,7 +155,6 @@ namespace TutorDrive.Services
             await _repositoryRegistration.SaveChangesAsync();
 
         }
-
 
         public async Task<PagedResult<RegistrationListItemDto>> GetByAccountIdAsync(long accountId, RegistrationSearchDto filter)
         {
@@ -207,7 +215,8 @@ namespace TutorDrive.Services
                 StudyDays = string.Join(", ", Enum.GetValues(typeof(StudyDay))
                     .Cast<StudyDay>()
                     .Where(d => d != StudyDay.None && r.StudyDays.HasFlag(d))
-                    .Select(d => d.ToString()))
+                    .Select(d => d.ToString())),
+                Price = r.Price
             })
             .ToList();
 
