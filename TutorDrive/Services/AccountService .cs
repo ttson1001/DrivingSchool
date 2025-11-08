@@ -18,8 +18,10 @@
         private readonly IRepository<Role> _roleRepo;
         private readonly IJwtService _jwtService;
         private readonly IRepository<StudentProfile> _studentRepo;
-        private readonly IRepository<Staff> _staffRepo;
+        private readonly IRepository<InstructorProfile> _staffRepo;
         private readonly IRepository<Address> _addressRepo;
+        private readonly IRepository<Ward> _wardRepo;
+        private readonly IRepository<Province> _provinceRepo;
 
         public AccountService(
             IRepository<Account> accountRepo,
@@ -27,7 +29,9 @@
             IRepository<Role> roleRepo,
             IRepository<StudentProfile> studentRepo,
             IRepository<Address> addressRepo,
-            IRepository<Staff> staffRepo)
+            IRepository<InstructorProfile> staffRepo,
+            IRepository<Ward> wardRepo,
+            IRepository<Province> provinceRepo)
         {
             _accountRepo = accountRepo;
             _studentRepo = studentRepo;
@@ -35,6 +39,8 @@
             _jwtService = jwtService;
             _staffRepo = staffRepo;
             _addressRepo = addressRepo;
+            _wardRepo = wardRepo;
+            _provinceRepo = provinceRepo;
         }
 
         public async Task<Account> RegisterAsync(CreateAccountRequest request)
@@ -150,7 +156,7 @@
 
             if (role.Name.Equals("Teacher", StringComparison.OrdinalIgnoreCase))
             {
-                var staff = new Staff
+                var staff = new InstructorProfile
                 {
                     AccountId = account.Id,
                     LicenseNumber = dto.LicenseNumber ?? "N/A",
@@ -278,6 +284,8 @@
 
             if (dto.Address != null)
             {
+                var ward = await _wardRepo.Get().FirstOrDefaultAsync(x => x.Code == dto.Address.WardCode);
+                var province = await _provinceRepo.Get().FirstOrDefaultAsync(x => x.Code == dto.Address.ProvinceCode);
                 if (dto.Address.Id > 0)
                 {
                     var address = await _addressRepo.Get().FirstOrDefaultAsync(x => x.Id == dto.Address.Id);
@@ -289,12 +297,12 @@
 
                     if (!string.IsNullOrWhiteSpace(dto.Address.Street))
                         address.Street = dto.Address.Street;
-
-                    address.WardId = dto.Address.WardId;
-                    address.ProvinceId = dto.Address.ProvinceId;
+                 
+                    address.Ward = ward;
+                    address.Province = province;
 
                     _addressRepo.Update(address);
-                    profile.AddressId = address.Id;
+                    profile.Address = address;
                 }
                 else
                 {
@@ -302,12 +310,11 @@
                     {
                         FullAddress = dto.Address.FullAddress ?? "",
                         Street = dto.Address.Street ?? "",
-                        WardId = dto.Address.WardId,
-                        ProvinceId = dto.Address.ProvinceId
+                        Ward = ward,
+                        Province = province,
                     };
 
                     await _addressRepo.AddAsync(newAddress);
-                    profile.AddressId = newAddress.Id;
                     profile.Address = newAddress;
                 }
             }

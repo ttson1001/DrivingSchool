@@ -6,8 +6,8 @@
         public long StudentProfileId { get; set; }
         public StudentProfile StudentProfile { get; set; }
 
-        public long? StaffId { get; set; }
-        public Staff Staff { get; set; }
+        public long? InstructorProfileId { get; set; }
+        public InstructorProfile InstructorProfile { get; set; }
 
         public int Rating { get; set; }
         public string Comment { get; set; }

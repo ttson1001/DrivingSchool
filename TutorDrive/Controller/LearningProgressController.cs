@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using TutorDrive.Dtos.common;
 using TutorDrive.Dtos.LearningProgress;
@@ -77,8 +76,7 @@ namespace TutorDrive.Controllers
             }
         }
 
-        [HttpPut("change-staff")]
-        [Authorize(Roles = "Staff,Admin")]
+        [HttpPut("[action]")]
         [SwaggerOperation(
     Summary = "Đổi giáo viên phụ trách hàng loạt",
     Description = "Thay đổi giáo viên cho toàn bộ tiến độ học của học viên trong một khóa học, chỉ đổi khi chưa hoàn thành"
@@ -89,7 +87,6 @@ namespace TutorDrive.Controllers
 
             try
             {
-                // 🔐 Lấy accountId từ token
                 var accountIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
                 if (string.IsNullOrEmpty(accountIdClaim))
                 {
@@ -111,12 +108,10 @@ namespace TutorDrive.Controllers
             }
         }
 
-        [HttpGet("{id}")]
-        [Authorize(Roles = "Staff,Admin")]
+        [HttpGet("[action]/{id}")]
         [SwaggerOperation(
     Summary = "Lấy chi tiết tiến độ học",
-    Description = "Trả về thông tin chi tiết về tiến độ học của học viên bao gồm khóa học, phần học, giáo viên và trạng thái"
-)]
+    Description = "Trả về thông tin chi tiết về tiến độ học của học viên bao gồm khóa học, phần học, giáo viên và trạng thái")]
         [SwaggerResponse(200, "Lấy tiến độ học thành công", typeof(ResponseDto))]
         public async Task<IActionResult> GetById(long id)
         {
@@ -136,11 +131,10 @@ namespace TutorDrive.Controllers
             }
         }
 
-        [HttpGet("stats")]
+        [HttpGet("[action]")]
         [SwaggerOperation(
     Summary = "Thống kê danh sách học viên của giáo viên",
-    Description = "Trả về danh sách học viên đang học, đã hoàn thành và tổng số học viên của giáo viên hiện tại"
-)]
+    Description = "Trả về danh sách học viên đang học, đã hoàn thành và tổng số học viên của giáo viên hiện tại")]
         public async Task<IActionResult> GetTeacherStats()
         {
             var response = new ResponseDto();
@@ -169,7 +163,7 @@ namespace TutorDrive.Controllers
             }
         }
 
-        [HttpGet]
+        [HttpGet("[action]")]
         [SwaggerOperation(
            Summary = "Lấy danh sách tiến độ học giữa giáo viên và học viên",
            Description = "Trả về danh sách các phần học (LearningProgress) giữa giáo viên và học viên cụ thể"

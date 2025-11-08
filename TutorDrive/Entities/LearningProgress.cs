@@ -15,8 +15,8 @@ namespace TutorDrive.Entities
         public long? SectionId { get; set; }
         public Section Section { get; set; }
 
-        public long? StaffId { get; set; }
-        public Staff? Staff { get; set; }
+        public long? InstructorProfileId { get; set; }
+        public InstructorProfile? InstructorProfile { get; set; }
 
         public bool IsCompleted { get; set; } = false;
         public string? Comment { get; set; }

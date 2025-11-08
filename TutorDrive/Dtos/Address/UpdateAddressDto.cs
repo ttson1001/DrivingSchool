@@ -5,7 +5,8 @@
         public long Id { get; set; }
         public string? FullAddress { get; set; }
         public string? Street { get; set; }
-        public long WardId { get; set; }
-        public long ProvinceId { get; set; }
+        public string ProvinceCode { get; set; }
+        public string WardCode { get; set; }
+
     }
 }

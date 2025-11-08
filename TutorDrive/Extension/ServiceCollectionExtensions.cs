@@ -1,4 +1,5 @@
-﻿using TutorDrive.Repositories;
+﻿using BEAPI.PaymentService.VnPay;
+using TutorDrive.Repositories;
 using TutorDrive.Services;
 using TutorDrive.Services.IService;
 using TutorDrive.Services.IService.TutorDrive.Services.IService;
@@ -26,6 +27,8 @@ namespace TutorDrive.Extension
             services.AddScoped<IAddressService, AddressService>();
             services.AddScoped<IRegistrationFullService, RegistrationFullService>();
             services.AddScoped<ILearningProgressService, LearningProgressService>();
+            services.AddScoped<VNPayService>();
+            services.AddScoped<ISystemConfigService, SystemConfigService>();
         }
     }
 }

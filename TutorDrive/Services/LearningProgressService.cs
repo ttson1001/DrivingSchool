@@ -3,6 +3,7 @@ using TutorDrive.Dtos.LearningProgress;
 using TutorDrive.Dtos.LearningProgress.TutorDrive.Dtos.LearningProgress;
 using TutorDrive.Dtos.Student;
 using TutorDrive.Entities;
+using TutorDrive.Entities.Enum;
 using TutorDrive.Repositories;
 using TutorDrive.Services.IService;
 
@@ -12,19 +13,22 @@ namespace TutorDrive.Services
     {
         private readonly IRepository<LearningProgress> _repository;
         private readonly IRepository<StudentProfile> _studentProfileRepository;
-        private readonly IRepository<Staff> _staffRepository;
+        private readonly IRepository<InstructorProfile> _staffRepository;
         private readonly IRepository<Section> _sectionRepository;
+        private readonly IRepository<Registration> _registrationRepository;
 
         public LearningProgressService(
             IRepository<LearningProgress> repository,
             IRepository<StudentProfile> studentProfileRepository,
-            IRepository<Staff> staffRepository,
-            IRepository<Section> sectionRepository)
+            IRepository<InstructorProfile> staffRepository,
+            IRepository<Section> sectionRepository,
+            IRepository<Registration> registrationRepository)
         {
             _repository = repository;
             _studentProfileRepository = studentProfileRepository;
             _staffRepository = staffRepository;
             _sectionRepository = sectionRepository;
+            _registrationRepository = registrationRepository;
         }
 
         public async Task GenerateProgressForCourseAsync(GenerateProgressDto dto)
@@ -48,8 +52,22 @@ namespace TutorDrive.Services
             if (!sections.Any())
                 throw new Exception("Khóa học chưa có phần học (Section)");
 
-            foreach (var section in sections)
+            // Lấy Registration để biết StudyDays
+            var registration = await _registrationRepository.Get()
+                .FirstOrDefaultAsync(r => r.StudentProfileId == dto.StudentId && r.CourseId == dto.CourseId);
+
+            if (registration == null)
+                throw new Exception("Không tìm thấy thông tin đăng ký học");
+
+            // Tính danh sách ngày học theo StudyDays
+            var studyDates = GenerateStudyDates(registration.StartDateTime, registration.StudyDays, sections.Count);
+
+            // Gắn ngày học cho từng Section
+            for (int i = 0; i < sections.Count; i++)
             {
+                var section = sections[i];
+                var lessonDate = studyDates.ElementAtOrDefault(i);
+
                 bool exists = await _repository.Get()
                     .AnyAsync(lp => lp.StudentProfileId == dto.StudentId && lp.SectionId == section.Id);
 
@@ -60,10 +78,10 @@ namespace TutorDrive.Services
                         StudentProfileId = dto.StudentId,
                         CourseId = dto.CourseId,
                         SectionId = section.Id,
-                        StaffId = dto.TeacherId,
+                        InstructorProfileId = dto.TeacherId,
                         Comment = "",
                         IsCompleted = false,
-                        StartDate = dto.StartDate,
+                        StartDate = lessonDate != default ? lessonDate : dto.StartDate,
                         LastUpdated = DateTime.UtcNow
                     };
 
@@ -73,6 +91,39 @@ namespace TutorDrive.Services
 
             await _repository.SaveChangesAsync();
         }
+
+        private List<DateTime> GenerateStudyDates(DateTime startDate, StudyDay studyDays, int count)
+        {
+            var dates = new List<DateTime>();
+            var date = startDate.Date;
+            int added = 0;
+
+            while (added < count)
+            {
+                var dayOfWeek = date.DayOfWeek switch
+                {
+                    DayOfWeek.Monday => StudyDay.Monday,
+                    DayOfWeek.Tuesday => StudyDay.Tuesday,
+                    DayOfWeek.Wednesday => StudyDay.Wednesday,
+                    DayOfWeek.Thursday => StudyDay.Thursday,
+                    DayOfWeek.Friday => StudyDay.Friday,
+                    DayOfWeek.Saturday => StudyDay.Saturday,
+                    DayOfWeek.Sunday => StudyDay.Sunday,
+                    _ => StudyDay.None
+                };
+
+                if (studyDays.HasFlag(dayOfWeek))
+                {
+                    dates.Add(date.Add(startDate.TimeOfDay));
+                    added++;
+                }
+
+                date = date.AddDays(1);
+            }
+
+            return dates;
+        }
+
 
         public async Task UpdateProgressAsync(LearningProgressUpdateDto dto, long accountId)
         {
@@ -91,7 +142,7 @@ namespace TutorDrive.Services
             progress.IsCompleted = dto.IsCompleted;
             progress.Comment = dto.Comment ?? progress.Comment;
             progress.LastUpdated = DateTime.UtcNow;
-            progress.StaffId = teacher.Id;
+            progress.InstructorProfileId = teacher.Id;
 
             if (dto.StartDate.HasValue)
                 progress.StartDate = dto.StartDate.Value;
@@ -121,10 +172,10 @@ namespace TutorDrive.Services
 
             foreach (var lp in progresses)
             {
-                if (lp.StaffId != currentTeacher.Id)
+                if (lp.InstructorProfileId != currentTeacher.Id)
                     throw new Exception($"Bạn không có quyền đổi tiến độ ID {lp.Id}");
 
-                lp.StaffId = dto.NewStaffId;
+                lp.InstructorProfileId = dto.NewStaffId;
                 lp.LastUpdated = DateTime.UtcNow;
             }
             await _repository.SaveChangesAsync();
@@ -135,7 +186,7 @@ namespace TutorDrive.Services
             var progress = await _repository.Get()
                 .Include(lp => lp.Course)
                 .Include(lp => lp.Section)
-                .Include(lp => lp.Staff)
+                .Include(lp => lp.InstructorProfile)
                     .ThenInclude(s => s.Account)
                 .Include(lp => lp.StudentProfile)
                     .ThenInclude(sp => sp.Account)
@@ -158,9 +209,9 @@ namespace TutorDrive.Services
                 SectionId = progress.SectionId,
                 SectionTitle = progress.Section?.Title,
 
-                TeacherId = progress.StaffId,
-                TeacherName = progress.Staff?.Account?.FullName,
-                TeacherEmail = progress.Staff?.Account?.Email,
+                TeacherId = progress.InstructorProfileId,
+                TeacherName = progress.InstructorProfile?.Account?.FullName,
+                TeacherEmail = progress.InstructorProfile?.Account?.Email,
 
                 IsCompleted = progress.IsCompleted,
                 Comment = progress.Comment,
@@ -183,7 +234,7 @@ namespace TutorDrive.Services
             var progresses = await _repository.Get()
                 .Include(lp => lp.StudentProfile)
                     .ThenInclude(sp => sp.Account)
-                .Where(lp => lp.StaffId == teacher.Id)
+                .Where(lp => lp.InstructorProfileId == teacher.Id)
                 .ToListAsync();
 
             if (!progresses.Any())
@@ -234,9 +285,9 @@ namespace TutorDrive.Services
             var list = await _repository.Get()
                 .Include(lp => lp.Course)
                 .Include(lp => lp.Section)
-                .Include(lp => lp.Staff).ThenInclude(s => s.Account)
+                .Include(lp => lp.InstructorProfile).ThenInclude(s => s.Account)
                 .Include(lp => lp.StudentProfile).ThenInclude(sp => sp.Account)
-                .Where(lp => lp.StaffId == teacherId && lp.StudentProfileId == studentId)
+                .Where(lp => lp.InstructorProfileId == teacherId && lp.StudentProfileId == studentId)
                 .OrderBy(lp => lp.StartDate)
                 .ToListAsync();
 
@@ -257,9 +308,9 @@ namespace TutorDrive.Services
                 SectionId = lp.SectionId,
                 SectionTitle = lp.Section?.Title,
 
-                TeacherId = lp.StaffId,
-                TeacherName = lp.Staff?.Account?.FullName,
-                TeacherEmail = lp.Staff?.Account?.Email,
+                TeacherId = lp.InstructorProfileId,
+                TeacherName = lp.InstructorProfile?.Account?.FullName,
+                TeacherEmail = lp.InstructorProfile?.Account?.Email,
 
                 IsCompleted = lp.IsCompleted,
                 Comment = lp.Comment,

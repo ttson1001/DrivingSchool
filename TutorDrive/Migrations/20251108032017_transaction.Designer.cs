@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TutorDrive.Database;
 
@@ -11,9 +12,11 @@ using TutorDrive.Database;
 namespace TutorDrive.Migrations
 {
     [DbContext(typeof(BeContext))]
-    partial class BeContextModelSnapshot : ModelSnapshot
+    [Migration("20251108032017_transaction")]
+    partial class transaction
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -217,47 +220,22 @@ namespace TutorDrive.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<long?>("InstructorProfileId")
-                        .HasColumnType("bigint");
-
                     b.Property<int>("Rating")
                         .HasColumnType("int");
+
+                    b.Property<long?>("StaffId")
+                        .HasColumnType("bigint");
 
                     b.Property<long>("StudentProfileId")
                         .HasColumnType("bigint");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("InstructorProfileId");
+                    b.HasIndex("StaffId");
 
                     b.HasIndex("StudentProfileId");
 
                     b.ToTable("Feedbacks");
-                });
-
-            modelBuilder.Entity("TutorDrive.Entities.InstructorProfile", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
-
-                    b.Property<long>("AccountId")
-                        .HasColumnType("bigint");
-
-                    b.Property<int?>("ExperienceYears")
-                        .HasColumnType("int");
-
-                    b.Property<string>("LicenseNumber")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AccountId");
-
-                    b.ToTable("Staffs");
                 });
 
             modelBuilder.Entity("TutorDrive.Entities.LearningProgress", b =>
@@ -277,9 +255,6 @@ namespace TutorDrive.Migrations
                     b.Property<DateTime?>("EndDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<long?>("InstructorProfileId")
-                        .HasColumnType("bigint");
-
                     b.Property<bool>("IsCompleted")
                         .HasColumnType("bit");
 
@@ -287,6 +262,9 @@ namespace TutorDrive.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<long?>("SectionId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("StaffId")
                         .HasColumnType("bigint");
 
                     b.Property<DateTime?>("StartDate")
@@ -299,9 +277,9 @@ namespace TutorDrive.Migrations
 
                     b.HasIndex("CourseId");
 
-                    b.HasIndex("InstructorProfileId");
-
                     b.HasIndex("SectionId");
+
+                    b.HasIndex("StaffId");
 
                     b.HasIndex("StudentProfileId")
                         .IsUnique();
@@ -426,6 +404,35 @@ namespace TutorDrive.Migrations
                     b.ToTable("Role");
                 });
 
+            modelBuilder.Entity("TutorDrive.Entities.Schedule", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<bool>("CheckedIn")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("ScheduledAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("SectionId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("StaffId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SectionId");
+
+                    b.HasIndex("StaffId");
+
+                    b.ToTable("Schedules");
+                });
+
             modelBuilder.Entity("TutorDrive.Entities.Section", b =>
                 {
                     b.Property<long>("Id")
@@ -450,6 +457,31 @@ namespace TutorDrive.Migrations
                     b.HasIndex("CourseId");
 
                     b.ToTable("Sections");
+                });
+
+            modelBuilder.Entity("TutorDrive.Entities.Staff", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<long>("AccountId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int?>("ExperienceYears")
+                        .HasColumnType("int");
+
+                    b.Property<string>("LicenseNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccountId");
+
+                    b.ToTable("Staffs");
                 });
 
             modelBuilder.Entity("TutorDrive.Entities.StudentProfile", b =>
@@ -483,30 +515,6 @@ namespace TutorDrive.Migrations
                     b.HasIndex("AddressId");
 
                     b.ToTable("StudentProfiles");
-                });
-
-            modelBuilder.Entity("TutorDrive.Entities.SystemConfig", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
-
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Key")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Value")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("SystemConfigs");
                 });
 
             modelBuilder.Entity("TutorDrive.Entities.Transaction", b =>
@@ -690,9 +698,9 @@ namespace TutorDrive.Migrations
 
             modelBuilder.Entity("TutorDrive.Entities.Feedback", b =>
                 {
-                    b.HasOne("TutorDrive.Entities.InstructorProfile", "InstructorProfile")
+                    b.HasOne("TutorDrive.Entities.Staff", "Staff")
                         .WithMany()
-                        .HasForeignKey("InstructorProfileId");
+                        .HasForeignKey("StaffId");
 
                     b.HasOne("TutorDrive.Entities.StudentProfile", "StudentProfile")
                         .WithMany("Feedbacks")
@@ -700,20 +708,9 @@ namespace TutorDrive.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("InstructorProfile");
+                    b.Navigation("Staff");
 
                     b.Navigation("StudentProfile");
-                });
-
-            modelBuilder.Entity("TutorDrive.Entities.InstructorProfile", b =>
-                {
-                    b.HasOne("TutorDrive.Entities.Account", "Account")
-                        .WithMany()
-                        .HasForeignKey("AccountId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Account");
                 });
 
             modelBuilder.Entity("TutorDrive.Entities.LearningProgress", b =>
@@ -722,13 +719,13 @@ namespace TutorDrive.Migrations
                         .WithMany()
                         .HasForeignKey("CourseId");
 
-                    b.HasOne("TutorDrive.Entities.InstructorProfile", "InstructorProfile")
-                        .WithMany()
-                        .HasForeignKey("InstructorProfileId");
-
                     b.HasOne("TutorDrive.Entities.Section", "Section")
                         .WithMany()
                         .HasForeignKey("SectionId");
+
+                    b.HasOne("TutorDrive.Entities.Staff", "Staff")
+                        .WithMany()
+                        .HasForeignKey("StaffId");
 
                     b.HasOne("TutorDrive.Entities.StudentProfile", "StudentProfile")
                         .WithOne("LearningProgress")
@@ -738,9 +735,9 @@ namespace TutorDrive.Migrations
 
                     b.Navigation("Course");
 
-                    b.Navigation("InstructorProfile");
-
                     b.Navigation("Section");
+
+                    b.Navigation("Staff");
 
                     b.Navigation("StudentProfile");
                 });
@@ -775,6 +772,21 @@ namespace TutorDrive.Migrations
                     b.Navigation("Registration");
                 });
 
+            modelBuilder.Entity("TutorDrive.Entities.Schedule", b =>
+                {
+                    b.HasOne("TutorDrive.Entities.Section", "Section")
+                        .WithMany()
+                        .HasForeignKey("SectionId");
+
+                    b.HasOne("TutorDrive.Entities.Staff", "Staff")
+                        .WithMany()
+                        .HasForeignKey("StaffId");
+
+                    b.Navigation("Section");
+
+                    b.Navigation("Staff");
+                });
+
             modelBuilder.Entity("TutorDrive.Entities.Section", b =>
                 {
                     b.HasOne("TutorDrive.Entities.Course", "Course")
@@ -784,6 +796,17 @@ namespace TutorDrive.Migrations
                         .IsRequired();
 
                     b.Navigation("Course");
+                });
+
+            modelBuilder.Entity("TutorDrive.Entities.Staff", b =>
+                {
+                    b.HasOne("TutorDrive.Entities.Account", "Account")
+                        .WithMany()
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Account");
                 });
 
             modelBuilder.Entity("TutorDrive.Entities.StudentProfile", b =>

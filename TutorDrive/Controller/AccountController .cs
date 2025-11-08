@@ -160,7 +160,7 @@ namespace TutorDrive.Controller
             }
         }
 
-        [HttpPut("update-profile")]
+        [HttpPut("[action]")]
         [Authorize]
         public async Task<IActionResult> UpdateProfile([FromBody] UpdateStudentProfileDto dto)
         {

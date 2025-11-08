@@ -424,8 +424,8 @@ namespace TutorDrive.Extension.SwagerUi
                 Id = 1,
                 FullAddress = "123 Nguyễn Trãi, Quận 1, TP.HCM",
                 Street = "Nguyễn Trãi",
-                WardId = 101,
-                ProvinceId = 79
+                WardCode = "91",
+                ProvinceCode = "79"
             };
         }
     }

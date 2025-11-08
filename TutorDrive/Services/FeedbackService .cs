@@ -12,9 +12,9 @@ namespace TutorDrive.Services.Service
     public class FeedbackService : IFeedbackService
     {
         private readonly IRepository<Feedback> _repository;
-        private readonly IRepository<Staff> _staffRepository;
+        private readonly IRepository<InstructorProfile> _staffRepository;
 
-        public FeedbackService(IRepository<Feedback> repository, IRepository<Staff> staffRepository)
+        public FeedbackService(IRepository<Feedback> repository, IRepository<InstructorProfile> staffRepository)
         {
             _repository = repository;
             _staffRepository = staffRepository;
@@ -25,7 +25,7 @@ namespace TutorDrive.Services.Service
             var entity = new Feedback
             {
                 StudentProfileId = dto.StudentProfileId,
-                StaffId = dto.StaffId,
+                InstructorProfileId = dto.StaffId,
                 Rating = dto.Rating,
                 Comment = dto.Comment,
                 CreatedAt = DateTime.UtcNow
@@ -39,12 +39,12 @@ namespace TutorDrive.Services.Service
         {
             return await _repository.Get()
                 .Include(f => f.StudentProfile)
-                .Include(f => f.Staff)
+                .Include(f => f.InstructorProfile)
                 .Select(f => new FeedbackDto
                 {
                     Id = f.Id,
                     StudentProfileId = f.StudentProfileId,
-                    StaffId = f.StaffId,
+                    StaffId = f.InstructorProfileId,
                     Rating = f.Rating,
                     Comment = f.Comment,
                     CreatedAt = f.CreatedAt
@@ -61,7 +61,7 @@ namespace TutorDrive.Services.Service
             {
                 Id = f.Id,
                 StudentProfileId = f.StudentProfileId,
-                StaffId = f.StaffId,
+                StaffId = f.InstructorProfileId,
                 Rating = f.Rating,
                 Comment = f.Comment,
                 CreatedAt = f.CreatedAt
@@ -87,7 +87,7 @@ namespace TutorDrive.Services.Service
                 {
                     Id = f.Id,
                     StudentProfileId = f.StudentProfileId,
-                    StaffId = f.StaffId,
+                    StaffId = f.InstructorProfileId,    
                     Rating = f.Rating,
                     Comment = f.Comment,
                     CreatedAt = f.CreatedAt
@@ -120,8 +120,8 @@ namespace TutorDrive.Services.Service
         public async Task<List<TopTeacherDto>> GetTopTeachersAsync(int top = 5)
         {
             var query = _repository.Get()
-                .Where(f => f.StaffId != null)
-                .GroupBy(f => f.StaffId)
+                .Where(f => f.InstructorProfileId != null)
+                .GroupBy(f => f.InstructorProfileId)
                 .Select(g => new
                 {
                     StaffId = g.Key.Value,

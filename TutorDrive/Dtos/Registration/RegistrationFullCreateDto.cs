@@ -15,5 +15,8 @@
 
         public string CCCDFront { get; set; }
         public string CCCDBack { get; set; }
+
+        public DateTime StartDateTime { get; set; }
+        public List<string> StudyDays { get; set; } = new();
     }
 }

@@ -10,7 +10,7 @@ namespace TutorDrive.Entities
         public decimal? Amount { get; set; }
         public long UserId { get; set; }
         public Account User { get; set; }
-        public string? PaymentMenthod { get; set; }
+        public string? PaymentMethod{ get; set; }
         public PaymentStatus PaymentStatus { get; set; }
         public long? RegistrationId { get; set; }
         public Registration? Registration { get; set; }

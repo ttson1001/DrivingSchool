@@ -14,24 +14,28 @@ namespace TutorDrive.Services
         private readonly IRepository<Address> _repository;
         private readonly IRepository<Account> _accoutnRepository;
         private readonly IRepository<StudentProfile> _studentRepo;
+        private readonly IRepository<Ward> _wardRepo;
+        private readonly IRepository<Province> _provinceRepo;
 
-        public AddressService(IRepository<Address> repository, IRepository<Account> accoutnRepository, IRepository<StudentProfile> studentRepo)
+        public AddressService(IRepository<Address> repository, IRepository<Account> accoutnRepository, IRepository<StudentProfile> studentRepo, IRepository<Ward> wardRepo, IRepository<Province> provinceRepo)
         {
             _repository = repository;
             _accoutnRepository = accoutnRepository;
             _studentRepo = studentRepo;
+            _wardRepo = wardRepo;
+            _provinceRepo = provinceRepo;
         }
 
         public async Task<List<UpdateAddressDto>> GetAllAsync()
         {
-            return await _repository.Get()
+            return await _repository.Get().Include(x => x.Ward).Include(x => x.Province)
                 .Select(a => new UpdateAddressDto
                 {
                     Id = a.Id,
                     FullAddress = a.FullAddress,
                     Street = a.Street,
-                    WardId = a.WardId,
-                    ProvinceId = a.ProvinceId
+                    WardCode = a.Ward.Code,
+                    ProvinceCode = a.Province.Code
                 })
                 .ToListAsync();
         }
@@ -74,11 +78,12 @@ namespace TutorDrive.Services
         {
             var address = await _repository.Get().FirstOrDefaultAsync(x => x.Id == dto.Id);
             if (address == null) throw new Exception("Address không tìm thấy");
-
+            var ward = await _wardRepo.Get().FirstOrDefaultAsync(x => x.Code == dto.WardCode);
+            var province = await _provinceRepo.Get().FirstOrDefaultAsync(x => x.Code == dto.ProvinceCode);
             address.FullAddress = dto.FullAddress;
             address.Street = dto.Street;
-            address.WardId = dto.WardId;
-            address.ProvinceId = dto.ProvinceId;
+            address.WardId = ward.Id;
+            address.ProvinceId = province.Id;
 
             await _repository.SaveChangesAsync();
         }

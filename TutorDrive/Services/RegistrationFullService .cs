@@ -29,15 +29,14 @@ namespace TutorDrive.Services
 
             if (profile == null)
             {
-                profile = new StudentProfile
-                {
-                    AccountId = accountId,
-                    CMND = dto.CCCD,
-                    DOB = dto.DOB,
-                    Status = "Active"
-                };
-                await _repositoryStudentProfile.AddAsync(profile);
-                await _repositoryStudentProfile.SaveChangesAsync();
+                throw new InvalidOperationException("Học viên chưa có hồ sơ cá nhân. Vui lòng hoàn tất hồ sơ trước khi đăng ký.");
+            }
+
+            StudyDay studyDays = StudyDay.None;
+            foreach (var day in dto.StudyDays)
+            {
+                if (Enum.TryParse<StudyDay>(day, true, out var parsedDay))
+                    studyDays |= parsedDay;
             }
 
             var registration = new Registration
@@ -50,16 +49,30 @@ namespace TutorDrive.Services
                 Note = dto.Note,
                 Status = Entities.Enum.RegistrationStatus.Pending,
                 RegisterDate = DateTime.UtcNow,
+
+                StartDateTime = dto.StartDateTime,
+                StudyDays = studyDays,
+
                 Files = new List<RegistrationFile>()
             };
 
-            registration.Files.Add(new RegistrationFile { Url = dto.CCCDFront, FileType = Entities.Enum.FileType.CCCD_Front });
-            registration.Files.Add(new RegistrationFile { Url = dto.CCCDBack, FileType = Entities.Enum.FileType.CCCD_Back });
+            if (!string.IsNullOrEmpty(dto.CCCDFront))
+                registration.Files.Add(new RegistrationFile
+                {
+                    Url = dto.CCCDFront,
+                    FileType = Entities.Enum.FileType.CCCD_Front
+                });
+
+            if (!string.IsNullOrEmpty(dto.CCCDBack))
+                registration.Files.Add(new RegistrationFile
+                {
+                    Url = dto.CCCDBack,
+                    FileType = Entities.Enum.FileType.CCCD_Back
+                });
 
             await _repositoryRegistration.AddAsync(registration);
             await _repositoryRegistration.SaveChangesAsync();
         }
-
         public async Task<PagedResult<RegistrationListItemDto>> SearchAsync(RegistrationSearchDto filter)
         {
             var query = _repositoryRegistration.Get()
@@ -78,28 +91,35 @@ namespace TutorDrive.Services
 
             var totalItems = await query.CountAsync();
 
-            var items = await query
-                .OrderByDescending(r => r.RegisterDate)
-                .Skip((filter.Page - 1) * filter.PageSize)
-                .Take(filter.PageSize)
-                .Select(r => new RegistrationListItemDto
-                {
-                    Id = r.Id,
-                    StudentId = r.StudentProfileId,
-                    StudentName = r.StudentProfile.Account.FullName,
-                    StudentEmail = r.StudentProfile.Account.Email,
-                    CourseId = r.CourseId,
-                    CourseName = r.Course.Name,
-                    FullName = r.FullName,
-                    CCCD = r.StudentProfile.CMND,
-                    Email = r.Email,
-                    PhoneNumber = r.PhoneNumber,
-                    Status = r.Status,
-                    Note = r.Note,
-                    RegisterDate = r.RegisterDate,
-                    FileUrls = r.Files.Select(f => f.Url).ToList()
-                })
-                .ToListAsync();
+            var items = query
+            .OrderByDescending(r => r.RegisterDate)
+            .Skip((filter.Page - 1) * filter.PageSize)
+            .Take(filter.PageSize)
+            .AsEnumerable()
+            .Select(r => new RegistrationListItemDto
+            {
+                Id = r.Id,
+                StudentId = r.StudentProfileId,
+                StudentName = r.StudentProfile.Account.FullName,
+                StudentEmail = r.StudentProfile.Account.Email,
+                CourseId = r.CourseId,
+                CourseName = r.Course.Name,
+                FullName = r.FullName,
+                CCCD = r.StudentProfile.CMND,
+                Email = r.Email,
+                PhoneNumber = r.PhoneNumber,
+                Status = r.Status,
+                Note = r.Note,
+                RegisterDate = r.RegisterDate,
+                FileUrls = r.Files.Select(f => f.Url).ToList(),
+                StartDateTime = r.StartDateTime,
+
+                StudyDays = string.Join(", ", Enum.GetValues(typeof(StudyDay))
+                    .Cast<StudyDay>()
+                    .Where(d => d != StudyDay.None && r.StudyDays.HasFlag(d))
+                    .Select(d => d.ToString()))
+            })
+            .ToList();
 
             return new PagedResult<RegistrationListItemDto>
             {
@@ -122,7 +142,7 @@ namespace TutorDrive.Services
             if (!string.IsNullOrEmpty(dto.Note))
                 registration.Note = dto.Note;
 
-                _repositoryRegistration.Update(registration);
+            _repositoryRegistration.Update(registration);
             await _repositoryRegistration.SaveChangesAsync();
 
         }
@@ -161,28 +181,35 @@ namespace TutorDrive.Services
 
             var totalItems = await query.CountAsync();
 
-            var items = await query
-                .OrderByDescending(r => r.RegisterDate)
-                .Skip((filter.Page - 1) * filter.PageSize)
-                .Take(filter.PageSize)
-                .Select(r => new RegistrationListItemDto
-                {
-                    Id = r.Id,
-                    StudentId = r.StudentProfileId,
-                    StudentName = r.StudentProfile.Account.FullName,
-                    StudentEmail = r.StudentProfile.Account.Email,
-                    CourseId = r.CourseId,
-                    CourseName = r.Course.Name,
-                    FullName = r.FullName,
-                    CCCD = r.StudentProfile.CMND,
-                    Email = r.Email,
-                    PhoneNumber = r.PhoneNumber,
-                    Status = r.Status,
-                    Note = r.Note,
-                    RegisterDate = r.RegisterDate,
-                    FileUrls = r.Files.Select(f => f.Url).ToList()
-                })
-                .ToListAsync();
+            var items = query
+            .OrderByDescending(r => r.RegisterDate)
+            .Skip((filter.Page - 1) * filter.PageSize)
+            .Take(filter.PageSize)
+            .AsEnumerable()
+            .Select(r => new RegistrationListItemDto
+            {
+                Id = r.Id,
+                StudentId = r.StudentProfileId,
+                StudentName = r.StudentProfile.Account.FullName,
+                StudentEmail = r.StudentProfile.Account.Email,
+                CourseId = r.CourseId,
+                CourseName = r.Course.Name,
+                FullName = r.FullName,
+                CCCD = r.StudentProfile.CMND,
+                Email = r.Email,
+                PhoneNumber = r.PhoneNumber,
+                Status = r.Status,
+                Note = r.Note,
+                RegisterDate = r.RegisterDate,
+                FileUrls = r.Files.Select(f => f.Url).ToList(),
+                StartDateTime = r.StartDateTime,
+
+                StudyDays = string.Join(", ", Enum.GetValues(typeof(StudyDay))
+                    .Cast<StudyDay>()
+                    .Where(d => d != StudyDay.None && r.StudyDays.HasFlag(d))
+                    .Select(d => d.ToString()))
+            })
+            .ToList();
 
             return new PagedResult<RegistrationListItemDto>
             {
