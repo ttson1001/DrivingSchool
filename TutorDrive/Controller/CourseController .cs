@@ -44,6 +44,30 @@ namespace BEAPI.Controller
             }
         }
 
+        [HttpPut("[action]")]
+        [SwaggerOperation(
+             Summary = "Cập nhật khóa học",
+             Description = "Cập nhật thông tin khóa học và danh sách sections (có thể thêm/sửa/xóa sections)"
+         )]
+        [SwaggerResponse(200, "Cập nhật khóa học thành công", typeof(ResponseDto))]
+        public async Task<IActionResult> UpdateCourse([FromBody] CourseDto dto)
+        {
+            var response = new ResponseDto();
+            try
+            {
+                await _courseService.UpdateCourseWithSectionsAsync(dto);
+
+                response.Message = "Cập nhật khóa học thành công";
+                response.Data = null;
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                response.Message = $"Lỗi khi cập nhật khóa học: {ex.Message}";
+                return BadRequest(response);
+            }
+        }
+
         [HttpGet("[action]")]
         [SwaggerOperation(
          Summary = "Lấy danh sách course",

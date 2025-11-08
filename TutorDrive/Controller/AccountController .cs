@@ -114,7 +114,7 @@ namespace TutorDrive.Controller
             }
         }
 
-        [HttpPost]
+        [HttpPost("[action]")]
         public async Task<IActionResult> CreateAccount([FromBody] AccountCreateDto dto)
         {
             try
@@ -128,7 +128,7 @@ namespace TutorDrive.Controller
             }
         }
 
-        [HttpGet("me")]
+        [HttpGet("[action]")]
         [Authorize]
         public async Task<IActionResult> GetMe()
         {

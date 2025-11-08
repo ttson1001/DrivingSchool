@@ -6,6 +6,7 @@ namespace TutorDrive.Services.IService
     public interface ICourseService
     {
         Task CreateCourseWithSectionsAsync(CourseCreateDto dto);
+        Task UpdateCourseWithSectionsAsync(CourseDto dto);
         Task<List<CourseDto>> GetAllCoursesAsync();
         Task<PagedResult<CourseDto>> SearchCoursesAsync(string? keyword, int page, int pageSize);
     }

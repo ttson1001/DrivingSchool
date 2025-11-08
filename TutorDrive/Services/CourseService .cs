@@ -10,10 +10,12 @@ namespace TutorDrive.Services
     public class CourseService : ICourseService
     {
         private readonly IRepository<Course> _courseRepo;
+        private readonly IRepository<Section> _sectionRepo;
 
-        public CourseService(IRepository<Course> courseRepo)
+        public CourseService(IRepository<Course> courseRepo, IRepository<Section> sectionRepo)
         {
             _courseRepo = courseRepo;
+            _sectionRepo = sectionRepo;
         }
 
         public async Task CreateCourseWithSectionsAsync(CourseCreateDto dto)
@@ -33,6 +35,52 @@ namespace TutorDrive.Services
             };
 
             await _courseRepo.AddAsync(course);
+            await _courseRepo.SaveChangesAsync();
+        }
+        public async Task UpdateCourseWithSectionsAsync(CourseDto dto)
+        {
+            var course = await _courseRepo.Get()
+                .Include(c => c.Sections)
+                .FirstOrDefaultAsync(c => c.Id == dto.Id);
+
+            if (course == null)
+                throw new Exception("Không tìm thấy khóa học.");
+
+            course.Name = dto.Name;
+            course.Description = dto.Description;
+            course.ImageUrl = dto.ImageUrl;
+            course.Price = dto.Price;
+            course.DurationDays = dto.DurationDays;
+
+            var existingSections = course.Sections.ToList();
+
+            foreach (var sectionDto in dto.Sections)
+            {
+                if (sectionDto.Id > 0)
+                {
+                    var existing = existingSections.FirstOrDefault(s => s.Id == sectionDto.Id);
+                    if (existing != null)
+                    {
+                        existing.Title = sectionDto.Title;
+                        existing.Description = sectionDto.Description;
+                    }
+                }
+                else
+                {
+                    course.Sections.Add(new Section
+                    {
+                        Title = sectionDto.Title,
+                        Description = sectionDto.Description
+                    });
+                }
+            }
+
+            var dtoSectionIds = dto.Sections.Select(s => s.Id).ToList();
+            var sectionsToRemove = existingSections
+                .Where(s => !dtoSectionIds.Contains(s.Id))
+                .ToList();
+
+            _sectionRepo.DeleteRange(sectionsToRemove);
             await _courseRepo.SaveChangesAsync();
         }
 
