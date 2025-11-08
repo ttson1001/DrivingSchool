@@ -154,11 +154,11 @@
 
             await _accountRepo.AddAsync(account);
 
-            if (role.Name.Equals("Teacher", StringComparison.OrdinalIgnoreCase))
+            if (role.Name.Equals("Instructor", StringComparison.OrdinalIgnoreCase))
             {
                 var staff = new InstructorProfile
                 {
-                    AccountId = account.Id,
+                    Account = account,
                     LicenseNumber = dto.LicenseNumber ?? "N/A",
                     ExperienceYears = dto.ExperienceYears ?? 0
                 };

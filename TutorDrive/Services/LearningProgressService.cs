@@ -54,7 +54,7 @@ namespace TutorDrive.Services
 
             // Lấy Registration để biết StudyDays
             var registration = await _registrationRepository.Get()
-                .FirstOrDefaultAsync(r => r.StudentProfileId == dto.StudentId && r.CourseId == dto.CourseId);
+                .FirstOrDefaultAsync(r => r.Id == dto.RegisterId);
 
             if (registration == null)
                 throw new Exception("Không tìm thấy thông tin đăng ký học");
@@ -97,9 +97,17 @@ namespace TutorDrive.Services
             var dates = new List<DateTime>();
             var date = startDate.Date;
             int added = 0;
+            int safetyCounter = 0; // tránh vòng lặp vô tận
 
             while (added < count)
             {
+                if (date > DateTime.MaxValue.AddDays(-1))
+                    throw new Exception("Lịch học vượt quá giới hạn thời gian hợp lệ.");
+
+                safetyCounter++;
+                if (safetyCounter > 10000)
+                    throw new Exception("Không thể sinh đủ ngày học. Có thể StudyDays không chứa ngày nào hợp lệ.");
+
                 var dayOfWeek = date.DayOfWeek switch
                 {
                     DayOfWeek.Monday => StudyDay.Monday,
@@ -123,6 +131,7 @@ namespace TutorDrive.Services
 
             return dates;
         }
+
 
 
         public async Task UpdateProgressAsync(LearningProgressUpdateDto dto, long accountId)

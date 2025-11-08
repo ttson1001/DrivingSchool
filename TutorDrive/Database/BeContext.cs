@@ -11,7 +11,6 @@ namespace TutorDrive.Database
         public DbSet<Ward> Wards { get; set; }
         public DbSet<Address> Addresses { get; set; }
         public DbSet<StudentProfile> StudentProfiles { get; set; }
-        public DbSet<InstructorProfile> Staffs { get; set; }
         public DbSet<Course> Courses { get; set; }
         public DbSet<Registration> Registrations { get; set; }
         public DbSet<Section> Sections { get; set; }
@@ -24,6 +23,7 @@ namespace TutorDrive.Database
         public DbSet<LearningProgress> LearningProgresses { get; set; }
         public DbSet<Transaction> Transactions { get; set; }
         public DbSet<SystemConfig> SystemConfigs { get; set; }
+        public DbSet<InstructorProfile> InstructorProfiles { get; set; }
         public BeContext(DbContextOptions<BeContext> options) : base(options) { }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

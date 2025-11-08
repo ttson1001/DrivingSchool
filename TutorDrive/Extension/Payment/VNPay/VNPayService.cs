@@ -44,7 +44,7 @@ namespace BEAPI.PaymentService.VnPay
             var MGT = DateTime.Now.Ticks;
 
             var courseAmmount = await _repository.Get().Include(x => x.Course)
-                                                 .Where(x => x.Id == vnPayRequest.RegistrationId).Select(x => x.Course.Price).FirstAsync();
+                                                 .Where(x => x.Id == vnPayRequest.RegistrationId).Select(x => x.Price).FirstAsync();
             var vnpAmmount = (long)(courseAmmount * 100);
 
             var orderInfo = $"RegistrationId={vnPayRequest.RegistrationId}";
@@ -118,12 +118,12 @@ namespace BEAPI.PaymentService.VnPay
             await _transactionRepository.AddAsync(transaction);
             if (isSuccess)
             {
-                // ✅ Cập nhật trạng thái đăng ký
+                // Cập nhật trạng thái đăng ký
                 registration.Status = RegistrationStatus.Paid;
                 registration.Note = $"Đã thanh toán VNPay ({txnRef}) - {DateTime.Now:dd/MM/yyyy HH:mm}";
                 _repository.Update(registration);
 
-                // ✅ Tạm chọn giáo viên bất kỳ (có thể chọn theo ExperienceYears)
+                // Tạm chọn giáo viên bất kỳ (có thể chọn theo ExperienceYears)
                 var teacher = await _staffRepository.Get()
                     .OrderByDescending(s => s.ExperienceYears)
                     .FirstOrDefaultAsync();
@@ -131,12 +131,13 @@ namespace BEAPI.PaymentService.VnPay
                 if (teacher == null)
                     throw new Exception("Không tìm thấy giáo viên khả dụng.");
 
-                // ✅ Gọi service tạo tiến trình học theo lịch đăng ký (thứ, ngày bắt đầu)
+                // Gọi service tạo tiến trình học theo lịch đăng ký (thứ, ngày bắt đầu)
                 var dto = new GenerateProgressDto
                 {
                     StudentId = registration.StudentProfileId,
                     TeacherId = teacher.Id,
                     CourseId = registration.CourseId,
+                    RegisterId = registrationId,
                     StartDate = registration.StartDateTime
                 };
 
