@@ -211,7 +211,8 @@
                 AccountId = account.Id,
                 Email = account.Email,
                 FullName = account.FullName,
-                Role = account.Role.Name
+                Role = account.Role.Name,
+                PhoneNumber = account.PhoneNumber
             };
 
             if (roleName == "Instructor")
@@ -263,8 +264,21 @@
                 .Include(x => x.Account)
                 .FirstOrDefaultAsync(x => x.AccountId == accountId);
 
+            bool isNewProfile = false;
+
             if (profile == null)
-                throw new Exception("Không tìm thấy hồ sơ học viên");
+            {
+                var account = await _accountRepo.Get().FirstOrDefaultAsync(x => x.Id == accountId);
+                if (account == null)
+                    throw new Exception("Không tìm thấy tài khoản tương ứng");
+
+                profile = new StudentProfile
+                {
+                    Account = account
+                };
+
+                isNewProfile = true;
+            }
 
             if (!string.IsNullOrWhiteSpace(dto.CMND))
                 profile.CMND = dto.CMND;
@@ -288,6 +302,7 @@
             {
                 var ward = await _wardRepo.Get().FirstOrDefaultAsync(x => x.Code == dto.Address.WardCode);
                 var province = await _provinceRepo.Get().FirstOrDefaultAsync(x => x.Code == dto.Address.ProvinceCode);
+
                 if (dto.Address.Id > 0)
                 {
                     var address = await _addressRepo.Get().FirstOrDefaultAsync(x => x.Id == dto.Address.Id);
@@ -299,7 +314,7 @@
 
                     if (!string.IsNullOrWhiteSpace(dto.Address.Street))
                         address.Street = dto.Address.Street;
-                 
+
                     address.Ward = ward;
                     address.Province = province;
 
@@ -321,7 +336,9 @@
                 }
             }
 
-            _studentRepo.Update(profile);
+            if (!isNewProfile)
+                _studentRepo.Update(profile);
+
             await _studentRepo.SaveChangesAsync();
 
             return profile;
