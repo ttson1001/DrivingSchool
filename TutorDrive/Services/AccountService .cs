@@ -212,7 +212,8 @@
                 Email = account.Email,
                 FullName = account.FullName,
                 Role = account.Role.Name,
-                PhoneNumber = account.PhoneNumber
+                PhoneNumber = account.PhoneNumber,
+                Avatar = account.Avatar
             };
 
             if (roleName == "Instructor")

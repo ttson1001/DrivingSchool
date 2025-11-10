@@ -9,6 +9,7 @@ namespace TutorDrive.Dtos.account
         public string FullName { get; set; }
         public string Role { get; set; }
         public string? PhoneNumber { get; set; }
+        public string? Avatar { get; set; }
 
         // Staff
         public string? LicenseNumber { get; set; }
