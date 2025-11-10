@@ -2,7 +2,6 @@
 using Swashbuckle.AspNetCore.Annotations;
 using Swashbuckle.AspNetCore.Filters;
 using TutorDrive.Dtos.common;
-using TutorDrive.Dtos.Common;
 using TutorDrive.Extension.SwagerUi;
 using TutorDrive.Services.IService;
 

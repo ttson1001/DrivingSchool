@@ -127,6 +127,7 @@ namespace TutorDrive.Services
 
             return result;
         }
+
         public async Task<List<CourseLearningProgressGroupDto>> GetHistoryByStudentGroupedAsync(long accountId)
         {
             var result = await _repository.Get()
