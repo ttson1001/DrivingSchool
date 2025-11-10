@@ -338,7 +338,10 @@
 
             if (!isNewProfile)
                 _studentRepo.Update(profile);
-
+            else
+            {
+                await _studentRepo.AddAsync(profile);
+            }
             await _studentRepo.SaveChangesAsync();
 
             return profile;
