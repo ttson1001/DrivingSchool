@@ -92,6 +92,77 @@ namespace TutorDrive.Services
             await _repository.SaveChangesAsync();
         }
 
+        public async Task<List<CourseLearningProgressGroupDto>> GetIncompleteByStudentGroupedAsync(long accountId)
+        {
+            var result = await _repository.Get()
+                .Include(lp => lp.Course)
+                .Include(lp => lp.Section)
+                .Include(lp => lp.InstructorProfile).ThenInclude(i => i.Account)
+                .Include(lp => lp.StudentProfile).ThenInclude(sp => sp.Account)
+                .Where(lp => lp.StudentProfile.AccountId == accountId && !lp.IsCompleted)
+                .OrderBy(lp => lp.StartDate)
+                .GroupBy(lp => new { lp.CourseId, lp.Course.Name })
+                .Select(g => new CourseLearningProgressGroupDto
+                {
+                    CourseId = g.Key.CourseId,
+                    CourseName = g.Key.Name,
+                    Progresses = g.OrderBy(p => p.StartDate)
+                        .Select(p => new LearningProgressItemDto
+                        {
+                            Id = p.Id,
+                            SectionId = p.SectionId,
+                            SectionName = p.Section.Title,
+                            StartDate = p.StartDate,
+                            EndDate = p.EndDate,
+                            IsCompleted = p.IsCompleted,
+                            InstructorId = p.InstructorProfileId,
+                            InstructorName = p.InstructorProfile != null
+                                ? p.InstructorProfile.Account.FullName
+                                : null,
+                            Comment = p.Comment
+                        })
+                        .ToList()
+                })
+                .ToListAsync();
+
+            return result;
+        }
+        public async Task<List<CourseLearningProgressGroupDto>> GetHistoryByStudentGroupedAsync(long accountId)
+        {
+            var result = await _repository.Get()
+                .Include(lp => lp.Course)
+                .Include(lp => lp.Section)
+                .Include(lp => lp.InstructorProfile).ThenInclude(i => i.Account)
+                .Include(lp => lp.StudentProfile).ThenInclude(sp => sp.Account)
+                .Where(lp => lp.StudentProfile.AccountId == accountId && lp.IsCompleted)
+                .OrderBy(lp => lp.StartDate)
+                .GroupBy(lp => new { lp.CourseId, lp.Course.Name })
+                .Select(g => new CourseLearningProgressGroupDto
+                {
+                    CourseId = g.Key.CourseId,
+                    CourseName = g.Key.Name,
+                    Progresses = g.OrderBy(p => p.StartDate)
+                        .Select(p => new LearningProgressItemDto
+                        {
+                            Id = p.Id,
+                            SectionId = p.SectionId,
+                            SectionName = p.Section.Title,
+                            StartDate = p.StartDate,
+                            EndDate = p.EndDate,
+                            IsCompleted = p.IsCompleted,
+                            InstructorId = p.InstructorProfileId,
+                            InstructorName = p.InstructorProfile != null
+                                ? p.InstructorProfile.Account.FullName
+                                : null,
+                            Comment = p.Comment
+                        })
+                        .ToList()
+                })
+                .ToListAsync();
+
+            return result;
+        }
+
         private List<DateTime> GenerateStudyDates(DateTime startDate, StudyDay studyDays, int count)
         {
             var dates = new List<DateTime>();

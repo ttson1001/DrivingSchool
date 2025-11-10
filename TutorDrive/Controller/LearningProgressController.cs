@@ -165,6 +165,79 @@ namespace TutorDrive.Controllers
 
         [HttpGet("[action]")]
         [SwaggerOperation(
+            Summary = "Lấy danh sách tiến trình học chưa hoàn thành của học viên",
+            Description = "Trả về danh sách các khóa học đang học (IsCompleted = false), nhóm theo khóa học và sắp xếp theo StartDate tăng dần."
+        )]
+        [SwaggerResponse(200, "Lấy danh sách tiến trình học thành công", typeof(ResponseDto))]
+        [SwaggerResponse(401, "Token không hợp lệ")]
+        [SwaggerResponse(400, "Lỗi khi lấy dữ liệu")]
+        public async Task<IActionResult> GetMyLearningProgress()
+        {
+            var response = new ResponseDto();
+
+            try
+            {
+                var accountIdClaim = User.FindFirst("UserId")?.Value;
+                if (string.IsNullOrEmpty(accountIdClaim))
+                {
+                    response.Message = "Token không hợp lệ";
+                    return Unauthorized(response);
+                }
+
+                long accountId = long.Parse(accountIdClaim);
+
+                var result = await _service.GetIncompleteByStudentGroupedAsync(accountId);
+
+                response.Message = "Lấy danh sách tiến trình học thành công";
+                response.Data = result;
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                response.Message = $"Lỗi khi lấy danh sách tiến trình học: {ex.Message}";
+                return BadRequest(response);
+            }
+        }
+
+        [HttpGet("[action]")]
+        [SwaggerOperation(
+    Summary = "Lấy lịch sử học tập của học viên",
+    Description = "Trả về danh sách các khóa học và phần học mà học viên đã hoàn thành (IsCompleted = true), nhóm theo khóa học và sắp xếp theo StartDate tăng dần."
+)]
+        [SwaggerResponse(200, "Lấy lịch sử học tập thành công", typeof(ResponseDto))]
+        [SwaggerResponse(401, "Token không hợp lệ")]
+        [SwaggerResponse(400, "Lỗi khi lấy dữ liệu")]
+        public async Task<IActionResult> GetMyLearningHistory()
+        {
+            var response = new ResponseDto();
+
+            try
+            {
+                var accountIdClaim = User.FindFirst("UserId")?.Value;
+                if (string.IsNullOrEmpty(accountIdClaim))
+                {
+                    response.Message = "Token không hợp lệ";
+                    return Unauthorized(response);
+                }
+
+                long accountId = long.Parse(accountIdClaim);
+
+                var result = await _service.GetHistoryByStudentGroupedAsync(accountId);
+
+                response.Message = "Lấy lịch sử học tập thành công";
+                response.Data = result;
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                response.Message = $"Lỗi khi lấy lịch sử học tập: {ex.Message}";
+                return BadRequest(response);
+            }
+        }
+
+
+        [HttpGet("[action]")]
+        [SwaggerOperation(
            Summary = "Lấy danh sách tiến độ học giữa giáo viên và học viên",
            Description = "Trả về danh sách các phần học (LearningProgress) giữa giáo viên và học viên cụ thể"
        )]
