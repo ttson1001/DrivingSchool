@@ -275,7 +275,8 @@
 
                 profile = new StudentProfile
                 {
-                    Account = account
+                    Account = account,
+                    Status = "Active"
                 };
 
                 isNewProfile = true;
