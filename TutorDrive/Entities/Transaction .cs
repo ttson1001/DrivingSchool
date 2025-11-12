@@ -14,5 +14,6 @@ namespace TutorDrive.Entities
         public PaymentStatus PaymentStatus { get; set; }
         public long? RegistrationId { get; set; }
         public Registration? Registration { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }

@@ -29,6 +29,7 @@ namespace TutorDrive.Extension
             services.AddScoped<ILearningProgressService, LearningProgressService>();
             services.AddScoped<VNPayService>();
             services.AddScoped<ISystemConfigService, SystemConfigService>();
+            services.AddScoped<ITransactionService, TransactionService>();
         }
     }
 }
