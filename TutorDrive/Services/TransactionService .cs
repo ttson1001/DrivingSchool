@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using TutorDrive.Dtos.Account;
 using TutorDrive.Dtos.Common;
 using TutorDrive.Dtos.Transaction;
 using TutorDrive.Entities;
@@ -17,9 +18,12 @@ namespace TutorDrive.Services
             _transactionRepository = transactionRepository;
         }
 
+        // --- USER: xem lịch sử cá nhân ---
         public async Task<PagedResult<TransactionDto>> GetByUserPagedAsync(long userId, TransactionSearchRequest request)
         {
-            var query = _transactionRepository.Get().Where(t => t.UserId == userId);
+            var query = _transactionRepository.Get()
+                .Where(t => t.UserId == userId);
+
             return await ApplyFilterAndPagingAsync(query, request.Page, request.PageSize, request.PaymentStatus, request.FromDate, request.ToDate);
         }
 
@@ -28,10 +32,11 @@ namespace TutorDrive.Services
             var query = _transactionRepository.Get();
 
             if (request.UserId.HasValue)
-                query = query.Where(t => t.UserId == request.UserId.Value);
+                query = query.Where(t => t.UserId == request.UserId);
 
             return await ApplyFilterAndPagingAsync(query, request.Page, request.PageSize, request.PaymentStatus, request.FromDate, request.ToDate);
         }
+
         private async Task<PagedResult<TransactionDto>> ApplyFilterAndPagingAsync(
             IQueryable<Transaction> query, int page, int pageSize,
             PaymentStatus? paymentStatus, DateTime? fromDate, DateTime? toDate)
@@ -47,7 +52,7 @@ namespace TutorDrive.Services
 
             var totalRecords = await query.CountAsync();
 
-            var items = await query
+            var items = await query.Include(x => x.User).ThenInclude(x => x.Role)
                 .OrderByDescending(t => t.CreatedAt)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
@@ -58,7 +63,16 @@ namespace TutorDrive.Services
                     PaymentMethod = t.PaymentMethod,
                     PaymentStatus = t.PaymentStatus,
                     CreatedAt = t.CreatedAt,
-                    RegistrationId = t.RegistrationId
+                    RegistrationId = t.RegistrationId,
+                    User = t.User == null ? null : new AccountDto
+                    {
+                        Id = t.User.Id,
+                        Email = t.User.Email,
+                        FullName = t.User.FullName,
+                        Avatar = t.User.Avatar,
+                        RoleName =  t.User.Role.Name,
+                        CreatedAt = t.User.CreatedAt
+                    }
                 })
                 .ToListAsync();
 

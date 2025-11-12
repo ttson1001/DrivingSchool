@@ -104,6 +104,7 @@
                     Email = x.Email,
                     FullName = x.FullName,
                     RoleName = x.Role.Name,
+                    Avatar = x.Avatar,
                     CreatedAt = x.CreatedAt
                 })
                 .ToListAsync();
@@ -128,6 +129,7 @@
                 Id = account.Id,
                 Email = account.Email,
                 FullName = account.FullName,
+                Avatar = account.Avatar,
                 RoleName = account.Role.Name,
                 CreatedAt = account.CreatedAt
             };
@@ -190,6 +192,7 @@
                 Id = account.Id,
                 Email = account.Email,
                 FullName = account.FullName,
+                Avatar = account.Avatar,
                 RoleName = account.Role.Name,
                 CreatedAt = account.CreatedAt
             };
