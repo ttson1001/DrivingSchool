@@ -48,6 +48,20 @@ namespace TutorDrive.Controller
         }
 
         [HttpPost("[action]")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest dto)
+        {
+            await _accountService.ForgotPasswordAsync(dto);
+            return Ok(new { message = "OTP đã được gửi đến email." });
+        }
+
+        [HttpPost("[action]")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest dto)
+        {
+            await _accountService.ResetPasswordAsync(dto);
+            return Ok(new { message = "Đặt lại mật khẩu thành công." });
+        }
+
+        [HttpPost("[action]")]
         [SwaggerOperation(Summary = "Đăng nhập tài khoản", Description = "Trả về JWT token khi đăng nhập thành công.")]
         [SwaggerResponse(200, "Đăng nhập thành công", typeof(ResponseDto))]
         [SwaggerResponseExample(200, typeof(LoginResponseExample))]

@@ -10,6 +10,7 @@
     using TutorDrive.Dtos.Common;
     using TutorDrive.Dtos.Staff.TutorDrive.Dtos.Accounts;
     using TutorDrive.Exceptions;
+    using TutorDrive.Services.IService.TutorDrive.Services.IService;
     using TutorDrive.Services.IServices;
 
     public class AccountService : IAccountService
@@ -22,6 +23,7 @@
         private readonly IRepository<Address> _addressRepo;
         private readonly IRepository<Ward> _wardRepo;
         private readonly IRepository<Province> _provinceRepo;
+        private readonly IEmailService _emailService;
 
         public AccountService(
             IRepository<Account> accountRepo,
@@ -31,7 +33,8 @@
             IRepository<Address> addressRepo,
             IRepository<InstructorProfile> staffRepo,
             IRepository<Ward> wardRepo,
-            IRepository<Province> provinceRepo)
+            IRepository<Province> provinceRepo,
+            IEmailService emailService)
         {
             _accountRepo = accountRepo;
             _studentRepo = studentRepo;
@@ -41,6 +44,7 @@
             _addressRepo = addressRepo;
             _wardRepo = wardRepo;
             _provinceRepo = provinceRepo;
+            _emailService = emailService;
         }
 
         public async Task<Account> RegisterAsync(CreateAccountRequest request)
@@ -63,6 +67,55 @@
             await _accountRepo.AddAsync(account);
             await _accountRepo.SaveChangesAsync();
             return account;
+        }
+
+        public async Task ResetPasswordAsync(ResetPasswordRequest dto)
+        {
+            var account = await _accountRepo.Get()
+                .FirstOrDefaultAsync(x => x.Email == dto.Email);
+
+            if (account == null)
+                throw new Exception("Email không tồn tại");
+
+            if (account.ResetOtp == null || account.ResetOtpExpiry == null)
+                throw new Exception("OTP chưa được tạo");
+
+            if (DateTime.UtcNow > account.ResetOtpExpiry)
+                throw new Exception("OTP đã hết hạn");
+
+            if (!account.ResetOtp.Equals(dto.Otp))
+                throw new Exception("OTP không đúng");
+
+            account.PasswordHash = HashPassword(dto.NewPassword);
+            account.ResetOtp = null;
+            account.ResetOtpExpiry = null;
+
+            _accountRepo.Update(account);
+            await _accountRepo.SaveChangesAsync();
+        }
+
+        public async Task ForgotPasswordAsync(ForgotPasswordRequest dto)
+        {
+            var account = await _accountRepo.Get()
+                .FirstOrDefaultAsync(x => x.Email == dto.Email);
+
+            if (account == null)
+                throw new Exception("Email không tồn tại trong hệ thống");
+
+            string otp = GenerateOtp();
+
+            account.ResetOtp = otp;
+            account.ResetOtpExpiry = DateTime.UtcNow.AddMinutes(5);
+
+            _accountRepo.Update(account);
+            await _accountRepo.SaveChangesAsync();
+
+            await _emailService.SendOtpEmailAsync(account.Email, otp);
+        }
+
+        private string GenerateOtp()
+        {
+            return new Random().Next(100000, 999999).ToString();
         }
 
         public async Task<LoginReponseDto> LoginAsync(LoginDto dto)

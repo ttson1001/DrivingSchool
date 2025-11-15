@@ -28,5 +28,23 @@ namespace TutorDrive.Services
             await smtp.SendAsync(email);
             await smtp.DisconnectAsync(true);
         }
+
+        public async Task SendOtpEmailAsync(string toEmail, string otp)
+        {
+            string subject = "TutorDrive - OTP đặt lại mật khẩu";
+
+            string body = $@"
+        <div style='font-family: Arial, sans-serif;'>
+            <h2>OTP Đặt Lại Mật Khẩu</h2>
+            <p>Mã OTP của bạn là:</p>
+            <h1 style='color:#2d89ef; letter-spacing: 4px;'>{otp}</h1>
+            <p>OTP có hiệu lực trong 5 phút.</p>
+            <hr />
+            <p>Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này.</p>
+        </div>
+    ";
+
+            await SendEmailAsync(toEmail, subject, body);
+        }
     }
 }

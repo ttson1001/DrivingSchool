@@ -9,6 +9,8 @@ namespace TutorDrive.Services.IService
     public interface IAccountService
     {
         Task<Account> RegisterAsync(CreateAccountRequest request);
+        Task ForgotPasswordAsync(ForgotPasswordRequest dto);
+        Task ResetPasswordAsync(ResetPasswordRequest dto);
         Task<LoginReponseDto> LoginAsync(LoginDto dto);
         Task<PagedResult<AccountDto>> SearchAccountsAsync(string? keyword, int page, int pageSize);
         Task<AccountDto> GetAccountByIdAsync(long id);

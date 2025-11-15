@@ -11,6 +11,8 @@ namespace TutorDrive.Entities
         public string? PhoneNumber { get; set; }
         public long RoleId { get; set; }
         public Role Role { get; set; }
+        public string? ResetOtp { get; set; }
+        public DateTime? ResetOtpExpiry { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }
