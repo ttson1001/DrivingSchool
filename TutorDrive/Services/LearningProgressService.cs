@@ -189,51 +189,56 @@ namespace TutorDrive.Services
             return result;
         }
 
-
-        public async Task<List<StudentLearningProgressGroupDto>> GetByInstructorGroupedAsync(
-    long instructorAccountId, bool? isCompleted = null)
+        public async Task<List<CourseProgressGroupDto>> GetByInstructorGroupedAsync(
+       long instructorAccountId, bool? isCompleted = null)
         {
             var query = _repository.Get()
-                .Include(lp => lp.StudentProfile).ThenInclude(sp => sp.Account)
-                .Include(lp => lp.Section)
                 .Include(lp => lp.Course)
+                .Include(lp => lp.Section)
+                .Include(lp => lp.StudentProfile).ThenInclude(sp => sp.Account)
                 .Include(lp => lp.InstructorProfile).ThenInclude(ip => ip.Account)
                 .Where(lp => lp.InstructorProfile.AccountId == instructorAccountId);
 
-            // Filter theo hoàn thành
             if (isCompleted.HasValue)
                 query = query.Where(lp => lp.IsCompleted == isCompleted.Value);
 
-            var result = await query
-                .OrderBy(lp => lp.StartDate)
-                .GroupBy(lp => new
-                {
-                    lp.StudentProfileId,
-                    lp.StudentProfile.Account.FullName
-                })
-                .Select(g => new StudentLearningProgressGroupDto
-                {
-                    StudentId = g.Key.StudentProfileId,
-                    StudentName = g.Key.FullName,
+            return await query
+                .OrderBy(lp => lp.CourseId)
+                .ThenBy(lp => lp.StudentProfileId)
+                .ThenBy(lp => lp.StartDate)
 
-                    Progresses = g.OrderBy(p => p.StartDate)
-                        .Select(p => new LearningProgressItemDto
+                .GroupBy(lp => new { lp.CourseId, lp.Course.Name })
+                .Select(courseGroup => new CourseProgressGroupDto
+                {
+                    CourseId = courseGroup.Key.CourseId ?? 0,
+                    CourseName = courseGroup.Key.Name,
+
+                    Students = courseGroup
+                        .GroupBy(lp => new { lp.StudentProfileId, lp.StudentProfile.Account.FullName })
+                        .Select(studentGroup => new AdminStudentProgressGroupDto
                         {
-                            Id = p.Id,
-                            SectionId = p.SectionId,
-                            SectionName = p.Section.Title,
-                            StartDate = p.StartDate,
-                            EndDate = p.EndDate,
-                            IsCompleted = p.IsCompleted,
-                            InstructorId = p.InstructorProfileId,
-                            InstructorName = p.InstructorProfile.Account.FullName,
-                            Comment = p.Comment
+                            StudentId = studentGroup.Key.StudentProfileId,
+                            StudentName = studentGroup.Key.FullName,
+
+                            Progresses = studentGroup
+                                .OrderBy(lp => lp.StartDate)
+                                .Select(lp => new LearningProgressItemDto
+                                {
+                                    Id = lp.Id,
+                                    SectionId = lp.SectionId,
+                                    SectionName = lp.Section.Title,
+                                    StartDate = lp.StartDate,
+                                    EndDate = lp.EndDate,
+                                    IsCompleted = lp.IsCompleted,
+                                    InstructorId = lp.InstructorProfileId,
+                                    InstructorName = lp.InstructorProfile.Account.FullName,
+                                    Comment = lp.Comment
+                                })
+                                .ToList()
                         })
                         .ToList()
                 })
                 .ToListAsync();
-
-            return result;
         }
 
         private List<DateTime> GenerateStudyDates(DateTime startDate, StudyDay studyDays, int count)
