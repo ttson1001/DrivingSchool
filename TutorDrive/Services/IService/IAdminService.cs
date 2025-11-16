@@ -4,6 +4,6 @@ namespace TutorDrive.Services.IService
 {
     public interface IAdminService
     {
-        Task<AdminDashboardDto> GetDashboardAsync()
+        Task<AdminDashboardDto> GetDashboardAsync();
     }
 }
