@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TutorDrive.Dtos.Account;
 using TutorDrive.Dtos.Common;
+using TutorDrive.Dtos.Registration;
 using TutorDrive.Dtos.Transaction;
 using TutorDrive.Entities;
 using TutorDrive.Entities.Enum;
@@ -18,63 +19,124 @@ namespace TutorDrive.Services
             _transactionRepository = transactionRepository;
         }
 
-        // --- USER: xem lịch sử cá nhân ---
-        public async Task<PagedResult<TransactionDto>> GetByUserPagedAsync(long userId, TransactionSearchRequest request)
+        public async Task<PagedResult<TransactionDto>> GetByUserPagedAsync(
+            long userId,
+            TransactionSearchRequest request)
         {
             var query = _transactionRepository.Get()
                 .Where(t => t.UserId == userId);
 
-            return await ApplyFilterAndPagingAsync(query, request.Page, request.PageSize, request.PaymentStatus, request.FromDate, request.ToDate);
+            return await ApplyFilterAndPagingAsync(
+                query,
+                request.Page,
+                request.PageSize,
+                request.PaymentStatus,
+                request.FromDate,
+                request.ToDate
+            );
         }
 
-        public async Task<PagedResult<TransactionDto>> GetAllPagedAsync(TransactionSearchAdminRequest request)
+        public async Task<PagedResult<TransactionDto>> GetAllPagedAsync(
+            TransactionSearchAdminRequest request)
         {
             var query = _transactionRepository.Get();
 
             if (request.UserId.HasValue)
                 query = query.Where(t => t.UserId == request.UserId);
 
-            return await ApplyFilterAndPagingAsync(query, request.Page, request.PageSize, request.PaymentStatus, request.FromDate, request.ToDate);
+            return await ApplyFilterAndPagingAsync(
+                query,
+                request.Page,
+                request.PageSize,
+                request.PaymentStatus,
+                request.FromDate,
+                request.ToDate
+            );
         }
 
         private async Task<PagedResult<TransactionDto>> ApplyFilterAndPagingAsync(
-            IQueryable<Transaction> query, int page, int pageSize,
-            PaymentStatus? paymentStatus, DateTime? fromDate, DateTime? toDate)
+            IQueryable<Transaction> query,
+            int page,
+            int pageSize,
+            PaymentStatus? paymentStatus,
+            DateTime? fromDate,
+            DateTime? toDate)
         {
             if (paymentStatus.HasValue)
-                query = query.Where(t => t.PaymentStatus == paymentStatus.Value);
+                query = query.Where(t => t.PaymentStatus == paymentStatus);
 
             if (fromDate.HasValue)
-                query = query.Where(t => t.CreatedAt >= fromDate.Value);
+                query = query.Where(t => t.CreatedAt >= fromDate);
 
             if (toDate.HasValue)
-                query = query.Where(t => t.CreatedAt <= toDate.Value);
+                query = query.Where(t => t.CreatedAt <= toDate);
 
             var totalRecords = await query.CountAsync();
 
-            var items = await query.Include(x => x.User).ThenInclude(x => x.Role)
+            var sqlData = await query
+                .Include(t => t.User).ThenInclude(u => u.Role)
+                .Include(t => t.Registration)
+                    .ThenInclude(r => r.StudentProfile).ThenInclude(sp => sp.Account)
+                .Include(t => t.Registration).ThenInclude(r => r.Course)
+                .Include(t => t.Registration).ThenInclude(r => r.Files)
+
                 .OrderByDescending(t => t.CreatedAt)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
-                .Select(t => new TransactionDto
-                {
-                    Id = t.Id,
-                    Amount = t.Amount,
-                    PaymentMethod = t.PaymentMethod,
-                    PaymentStatus = t.PaymentStatus,
-                    CreatedAt = t.CreatedAt,
-                    RegistrationId = t.RegistrationId,
-                    User = t.User == null ? null : new AccountDto
-                    {
-                        Id = t.User.Id,
-                        Email = t.User.Email,
-                        FullName = t.User.FullName,
-                        Avatar = t.User.Avatar,
-                        RoleName =  t.User.Role.Name,
-                        CreatedAt = t.User.CreatedAt
-                    }
-                })
                 .ToListAsync();
+
+            var items = sqlData.Select(t => new TransactionDto
+            {
+                Id = t.Id,
+                Amount = t.Amount,
+                PaymentMethod = t.PaymentMethod,
+                PaymentStatus = t.PaymentStatus,
+                CreatedAt = t.CreatedAt,
+
+                User = t.User == null ? null : new AccountDto
+                {
+                    Id = t.User.Id,
+                    Email = t.User.Email,
+                    FullName = t.User.FullName,
+                    Avatar = t.User.Avatar,
+                    RoleName = t.User.Role.Name,
+                    CreatedAt = t.User.CreatedAt
+                },
+
+                Registration = t.Registration == null ? null : new RegistrationListItemDto
+                {
+                    Id = t.Registration.Id,
+
+                    StudentId = t.Registration.StudentProfileId,
+                    StudentName = t.Registration.StudentProfile.Account.FullName,
+                    StudentEmail = t.Registration.StudentProfile.Account.Email,
+
+                    FullName = t.Registration.FullName,
+                    Email = t.Registration.Email,
+                    PhoneNumber = t.Registration.PhoneNumber,
+
+                    CourseId = t.Registration.CourseId,
+                    CourseName = t.Registration.Course.Name,
+
+                    Status = t.Registration.Status,
+                    Note = t.Registration.Note,
+                    RegisterDate = t.Registration.RegisterDate,
+
+                    FileUrls = t.Registration.Files.Select(f => f.Url).ToList(),
+
+                    StartDateTime = t.Registration.StartDateTime,
+
+                    StudyDays = string.Join(", ",
+                        Enum.GetValues(typeof(StudyDay))
+                            .Cast<StudyDay>()
+                            .Where(d => d != StudyDay.None &&
+                                        t.Registration.StudyDays.HasFlag(d))
+                            .Select(d => d.ToString())
+                    ),
+
+                    Price = t.Registration.Price
+                }
+            }).ToList();
 
             return new PagedResult<TransactionDto>
             {

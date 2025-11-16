@@ -11,7 +11,8 @@ namespace TutorDrive.Services.IService
         Task<LearningProgressDetailDto> GetByIdAsync(long id);
         Task<TeacherProgressStatsDto> GetTeacherOverviewAsync(long accountId);
         Task<List<LearningProgressDetailDto>> GetByTeacherAndStudentAsync(long teacherId, long studentId);
-        Task<List<CourseLearningProgressGroupDto>> GetIncompleteByStudentGroupedAsync(long accountId);
-        Task<List<CourseLearningProgressGroupDto>> GetHistoryByStudentGroupedAsync(long accountId);
+        Task<List<CourseLearningProgressGroupDto>> GetByStudentGroupedAsync(long accountId, bool? isCompleted = null);
+        Task<List<StudentLearningProgressGroupDto>> GetByInstructorGroupedAsync(long instructorAccountId, bool? isCompleted = null);
+        Task<List<CourseProgressGroupDto>> GetAdminLearningProgressAsync(bool? isCompleted = null);
     }
 }

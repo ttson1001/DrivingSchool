@@ -138,12 +138,16 @@
             return BCrypt.Net.BCrypt.HashPassword(password);
         }
 
-        public async Task<PagedResult<AccountDto>> SearchAccountsAsync(string? keyword, int page, int pageSize)
+        public async Task<PagedResult<AccountDto>> SearchAccountsAsync(string? keyword, long? roleId, int page, int pageSize)
         {
             IQueryable<Account> query = _accountRepo.Get().Include(x => x.Role);
 
             if (!string.IsNullOrWhiteSpace(keyword))
-                query = query.Where(x => x.Email.Contains(keyword) || x.FullName.Contains(keyword));
+                query = query.Where(x => x.Email.Contains(keyword)
+                                         || x.FullName.Contains(keyword) || x.PhoneNumber.Contains(keyword));
+
+            if (roleId != null && roleId > 0)
+                query = query.Where(x => x.RoleId == roleId);
 
             var totalItems = await query.CountAsync();
 
@@ -170,6 +174,7 @@
                 PageSize = pageSize
             };
         }
+
         public async Task<AccountDto> GetAccountByIdAsync(long id)
         {
             var account = await _accountRepo.Get()

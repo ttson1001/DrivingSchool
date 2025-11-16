@@ -1,4 +1,5 @@
 ﻿using TutorDrive.Dtos.Account;
+using TutorDrive.Dtos.Registration;
 using TutorDrive.Entities.Enum;
 
 namespace TutorDrive.Dtos.Transaction
@@ -10,7 +11,9 @@ namespace TutorDrive.Dtos.Transaction
         public string? PaymentMethod { get; set; }
         public PaymentStatus PaymentStatus { get; set; }
         public DateTime CreatedAt { get; set; }
-        public long? RegistrationId { get; set; }
+
         public AccountDto? User { get; set; }
+        public RegistrationListItemDto? Registration { get; set; }
     }
+
 }

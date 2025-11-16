@@ -133,6 +133,67 @@ namespace TutorDrive.Controllers
 
         [HttpGet("[action]")]
         [SwaggerOperation(
+    Summary = "Lấy danh sách tiến trình học của học viên theo giảng viên",
+    Description = "Group theo học viên. isCompleted = true/false hoặc null để lấy tất cả."
+)]
+        public async Task<IActionResult> GetInstructorLearningProgress([FromQuery] bool? isCompleted)
+        {
+            var response = new ResponseDto();
+
+            try
+            {
+                var accountIdClaim = User.FindFirst("UserId")?.Value;
+                if (string.IsNullOrEmpty(accountIdClaim))
+                {
+                    response.Message = "Token không hợp lệ";
+                    return Unauthorized(response);
+                }
+
+                long accountId = long.Parse(accountIdClaim);
+
+                var result = await _service.GetByInstructorGroupedAsync(accountId, isCompleted);
+
+                response.Message = "Lấy danh sách tiến trình học theo giảng viên thành công";
+                response.Data = result;
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                response.Message = $"Lỗi khi lấy dữ liệu: {ex.Message}";
+                return BadRequest(response);
+            }
+        }
+
+        [HttpGet("[action]")]
+        [SwaggerOperation(
+      Summary = "Admin xem tiến trình học của tất cả học viên",
+      Description = "Group theo Course → Student → Progress. Có thể lọc theo isCompleted (true/false). Không truyền sẽ lấy tất cả."
+  )]
+        [SwaggerResponse(200, "Lấy danh sách tiến trình học thành công", typeof(ResponseDto))]
+        [SwaggerResponse(401, "Token không hợp lệ")]
+        [SwaggerResponse(400, "Lỗi khi lấy dữ liệu")]
+        public async Task<IActionResult> GetAllLearningProgress([FromQuery] bool? isCompleted)
+        {
+            var response = new ResponseDto();
+
+            try
+            {
+                var result = await _service.GetAdminLearningProgressAsync(isCompleted);
+
+                response.Data = result;
+                response.Message = "Lấy danh sách tiến trình học thành công";
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                response.Message = $"Lỗi khi lấy dữ liệu: {ex.Message}";
+                return BadRequest(response);
+            }
+        }
+
+        [HttpGet("[action]")]
+        [SwaggerOperation(
     Summary = "Thống kê danh sách học viên của giáo viên",
     Description = "Trả về danh sách học viên đang học, đã hoàn thành và tổng số học viên của giáo viên hiện tại")]
         public async Task<IActionResult> GetTeacherStats()
@@ -165,13 +226,13 @@ namespace TutorDrive.Controllers
 
         [HttpGet("[action]")]
         [SwaggerOperation(
-            Summary = "Lấy danh sách tiến trình học chưa hoàn thành của học viên",
-            Description = "Trả về danh sách các khóa học đang học (IsCompleted = false), nhóm theo khóa học và sắp xếp theo StartDate tăng dần."
-        )]
+    Summary = "Lấy danh sách tiến trình học của học viên",
+    Description = "Có thể lọc theo trạng thái hoàn thành (isCompleted). Nếu không truyền thì lấy tất cả."
+)]
         [SwaggerResponse(200, "Lấy danh sách tiến trình học thành công", typeof(ResponseDto))]
         [SwaggerResponse(401, "Token không hợp lệ")]
         [SwaggerResponse(400, "Lỗi khi lấy dữ liệu")]
-        public async Task<IActionResult> GetMyLearningProgress()
+        public async Task<IActionResult> GetMyLearningProgress([FromQuery] bool? isCompleted)
         {
             var response = new ResponseDto();
 
@@ -186,10 +247,11 @@ namespace TutorDrive.Controllers
 
                 long accountId = long.Parse(accountIdClaim);
 
-                var result = await _service.GetIncompleteByStudentGroupedAsync(accountId);
+                var result = await _service.GetByStudentGroupedAsync(accountId, isCompleted);
 
                 response.Message = "Lấy danh sách tiến trình học thành công";
                 response.Data = result;
+
                 return Ok(response);
             }
             catch (Exception ex)
@@ -198,43 +260,6 @@ namespace TutorDrive.Controllers
                 return BadRequest(response);
             }
         }
-
-        [HttpGet("[action]")]
-        [SwaggerOperation(
-    Summary = "Lấy lịch sử học tập của học viên",
-    Description = "Trả về danh sách các khóa học và phần học mà học viên đã hoàn thành (IsCompleted = true), nhóm theo khóa học và sắp xếp theo StartDate tăng dần."
-)]
-        [SwaggerResponse(200, "Lấy lịch sử học tập thành công", typeof(ResponseDto))]
-        [SwaggerResponse(401, "Token không hợp lệ")]
-        [SwaggerResponse(400, "Lỗi khi lấy dữ liệu")]
-        public async Task<IActionResult> GetMyLearningHistory()
-        {
-            var response = new ResponseDto();
-
-            try
-            {
-                var accountIdClaim = User.FindFirst("UserId")?.Value;
-                if (string.IsNullOrEmpty(accountIdClaim))
-                {
-                    response.Message = "Token không hợp lệ";
-                    return Unauthorized(response);
-                }
-
-                long accountId = long.Parse(accountIdClaim);
-
-                var result = await _service.GetHistoryByStudentGroupedAsync(accountId);
-
-                response.Message = "Lấy lịch sử học tập thành công";
-                response.Data = result;
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                response.Message = $"Lỗi khi lấy lịch sử học tập: {ex.Message}";
-                return BadRequest(response);
-            }
-        }
-
 
         [HttpGet("[action]")]
         [SwaggerOperation(

@@ -92,14 +92,20 @@ namespace TutorDrive.Services
             await _repository.SaveChangesAsync();
         }
 
-        public async Task<List<CourseLearningProgressGroupDto>> GetIncompleteByStudentGroupedAsync(long accountId)
+        public async Task<List<CourseLearningProgressGroupDto>> GetByStudentGroupedAsync(
+     long accountId, bool? isCompleted = null)
         {
-            var result = await _repository.Get()
+            var query = _repository.Get()
                 .Include(lp => lp.Course)
                 .Include(lp => lp.Section)
                 .Include(lp => lp.InstructorProfile).ThenInclude(i => i.Account)
                 .Include(lp => lp.StudentProfile).ThenInclude(sp => sp.Account)
-                .Where(lp => lp.StudentProfile.AccountId == accountId && !lp.IsCompleted)
+                .Where(lp => lp.StudentProfile.AccountId == accountId);
+
+            if (isCompleted.HasValue)
+                query = query.Where(lp => lp.IsCompleted == isCompleted.Value);
+
+            var result = await query
                 .OrderBy(lp => lp.StartDate)
                 .GroupBy(lp => new { lp.CourseId, lp.Course.Name })
                 .Select(g => new CourseLearningProgressGroupDto
@@ -128,20 +134,88 @@ namespace TutorDrive.Services
             return result;
         }
 
-        public async Task<List<CourseLearningProgressGroupDto>> GetHistoryByStudentGroupedAsync(long accountId)
+        public async Task<List<CourseProgressGroupDto>> GetAdminLearningProgressAsync(bool? isCompleted = null)
         {
-            var result = await _repository.Get()
+            var query = _repository.Get();
+
+
+            if (isCompleted.HasValue)
+                query = query.Where(lp => lp.IsCompleted == isCompleted.Value);
+
+            var result = await query
                 .Include(lp => lp.Course)
                 .Include(lp => lp.Section)
-                .Include(lp => lp.InstructorProfile).ThenInclude(i => i.Account)
                 .Include(lp => lp.StudentProfile).ThenInclude(sp => sp.Account)
-                .Where(lp => lp.StudentProfile.AccountId == accountId && lp.IsCompleted)
-                .OrderBy(lp => lp.StartDate)
+                .Include(lp => lp.InstructorProfile).ThenInclude(ip => ip.Account)
+                .OrderBy(lp => lp.CourseId)
+                .ThenBy(lp => lp.StudentProfileId)
+                .ThenBy(lp => lp.StartDate)
                 .GroupBy(lp => new { lp.CourseId, lp.Course.Name })
-                .Select(g => new CourseLearningProgressGroupDto
+                .Select(courseGroup => new CourseProgressGroupDto
                 {
-                    CourseId = g.Key.CourseId,
-                    CourseName = g.Key.Name,
+                    CourseId = (long)courseGroup.Key.CourseId,
+                    CourseName = courseGroup.Key.Name,
+
+                    Students = courseGroup
+                        .GroupBy(lp => new { lp.StudentProfileId, lp.StudentProfile.Account.FullName })
+                        .Select(studentGroup => new AdminStudentProgressGroupDto
+                        {
+                            StudentId = studentGroup.Key.StudentProfileId,
+                            StudentName = studentGroup.Key.FullName,
+
+                            InstructorId = studentGroup.First().InstructorProfileId,
+                            InstructorName = studentGroup.First().InstructorProfile.Account.FullName,
+
+                            Progresses = studentGroup
+                                .OrderBy(lp => lp.StartDate)
+                                .Select(lp => new LearningProgressItemDto
+                                {
+                                    Id = lp.Id,
+                                    SectionId = lp.SectionId,
+                                    SectionName = lp.Section.Title,
+                                    StartDate = lp.StartDate,
+                                    EndDate = lp.EndDate,
+                                    IsCompleted = lp.IsCompleted,
+                                    InstructorId = lp.InstructorProfileId,
+                                    InstructorName = lp.InstructorProfile.Account.FullName,
+                                    Comment = lp.Comment
+                                })
+                                .ToList()
+                        })
+                        .ToList()
+                })
+                .ToListAsync();
+
+            return result;
+        }
+
+
+        public async Task<List<StudentLearningProgressGroupDto>> GetByInstructorGroupedAsync(
+    long instructorAccountId, bool? isCompleted = null)
+        {
+            var query = _repository.Get()
+                .Include(lp => lp.StudentProfile).ThenInclude(sp => sp.Account)
+                .Include(lp => lp.Section)
+                .Include(lp => lp.Course)
+                .Include(lp => lp.InstructorProfile).ThenInclude(ip => ip.Account)
+                .Where(lp => lp.InstructorProfile.AccountId == instructorAccountId);
+
+            // Filter theo hoàn thành
+            if (isCompleted.HasValue)
+                query = query.Where(lp => lp.IsCompleted == isCompleted.Value);
+
+            var result = await query
+                .OrderBy(lp => lp.StartDate)
+                .GroupBy(lp => new
+                {
+                    lp.StudentProfileId,
+                    lp.StudentProfile.Account.FullName
+                })
+                .Select(g => new StudentLearningProgressGroupDto
+                {
+                    StudentId = g.Key.StudentProfileId,
+                    StudentName = g.Key.FullName,
+
                     Progresses = g.OrderBy(p => p.StartDate)
                         .Select(p => new LearningProgressItemDto
                         {
@@ -152,9 +226,7 @@ namespace TutorDrive.Services
                             EndDate = p.EndDate,
                             IsCompleted = p.IsCompleted,
                             InstructorId = p.InstructorProfileId,
-                            InstructorName = p.InstructorProfile != null
-                                ? p.InstructorProfile.Account.FullName
-                                : null,
+                            InstructorName = p.InstructorProfile.Account.FullName,
                             Comment = p.Comment
                         })
                         .ToList()

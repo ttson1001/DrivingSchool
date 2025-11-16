@@ -81,14 +81,31 @@ namespace TutorDrive.Controller
         }
 
         [HttpGet("[action]")]
-        [SwaggerOperation(Summary = "Tìm kiếm tài khoản", Description = "Lọc tài khoản theo keyword (email hoặc họ tên) có hỗ trợ phân trang.")]
+        [SwaggerOperation(
+     Summary = "Tìm kiếm tài khoản",
+     Description = "Lọc tài khoản theo keyword (email hoặc họ tên), roleId và có hỗ trợ phân trang.")]
         [SwaggerResponse(200, "Trả về danh sách tài khoản có phân trang", typeof(ResponseDto))]
         [SwaggerResponseExample(200, typeof(SearchAccountsResponseExample))]
-        public async Task<IActionResult> SearchAccounts([FromQuery] string? keyword, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        public async Task<IActionResult> SearchAccounts([FromQuery] string? keyword, [FromQuery] long? roleId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
-            var data = await _accountService.SearchAccountsAsync(keyword, page, pageSize);
-            return Ok(new ResponseDto { Data = data, Message = "Lấy danh sách tài khoản thành công." });
+            try
+            {
+                var data = await _accountService.SearchAccountsAsync(keyword, roleId, page, pageSize);
+                return Ok(new ResponseDto
+                {
+                    Data = data,
+                    Message = "Lấy danh sách tài khoản thành công."
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new ResponseDto
+                {
+                    Message = $"Có lỗi xảy ra: {ex.Message}"
+                });
+            }
         }
+
 
         [HttpGet("{id:long}")]
         [SwaggerOperation(Summary = "Xem chi tiết tài khoản", Description = "Lấy thông tin chi tiết của tài khoản theo ID.")]
@@ -134,7 +151,7 @@ namespace TutorDrive.Controller
             try
             {
                 await _accountService.CreateAccountAsync(dto);
-                return Ok(new { message = "Tạo tài khoản thành công"});
+                return Ok(new { message = "Tạo tài khoản thành công" });
             }
             catch (Exception ex)
             {
