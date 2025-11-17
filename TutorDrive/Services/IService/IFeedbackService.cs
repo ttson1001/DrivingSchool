@@ -6,7 +6,7 @@ namespace TutorDrive.Services.IService
 {
     public interface IFeedbackService
     {
-        Task CreateAsync(FeedbackCreateDto dto);
+        Task CreateAsync(FeedbackCreateDto dto, long accountId);
         Task<FeedbackDto?> GetByIdAsync(long id);
         Task<List<FeedbackDto>> GetAllAsync();
         Task<PagedResult<FeedbackDto>> SearchAsync(string? keyword, int page, int pageSize);

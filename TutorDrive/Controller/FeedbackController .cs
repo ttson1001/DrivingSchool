@@ -1,10 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using Swashbuckle.AspNetCore.Filters;
+using System.Security.Claims;
 using TutorDrive.Dtos.common;
 using TutorDrive.Dtos.ExamDto;
 using TutorDrive.Dtos.Feedbacks;
 using TutorDrive.Extension.SwagerUi;
+using TutorDrive.Services;
 using TutorDrive.Services.IService;
 namespace TutorDrive.Controller
 {
@@ -31,7 +33,14 @@ namespace TutorDrive.Controller
             var response = new ResponseDto();
             try
             {
-                await _feedbackService.CreateAsync(dto);
+                var userIdStr = User.FindFirstValue("UserId");
+                if (string.IsNullOrEmpty(userIdStr))
+                    return Unauthorized(new { success = false, message = "Không tìm thấy thông tin người dùng trong token" });
+
+                if (!long.TryParse(userIdStr, out var userId))
+                    return BadRequest(new { success = false, message = "ID người dùng không hợp lệ" });
+
+                await _feedbackService.CreateAsync(dto, userId);
                 response.Message = "Tạo phản hồi thành công";
                 return Ok(response);
             }

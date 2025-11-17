@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
+using System.Security.Claims;
 using TutorDrive.Dtos.common;
 using TutorDrive.Dtos.LearningProgress;
+using TutorDrive.Services;
 using TutorDrive.Services.IService;
 
 namespace TutorDrive.Controllers
@@ -294,5 +296,65 @@ namespace TutorDrive.Controllers
                 return BadRequest(response);
             }
         }
+
+        [HttpGet("[action]")]
+        [SwaggerOperation(
+    Summary = "Danh sách khóa học đã hoàn thành 100%",
+    Description = "Lấy danh sách khóa học mà học viên đã hoàn tất toàn bộ tiến độ học"
+)]
+        [SwaggerResponse(200, "Lấy danh sách thành công", typeof(ResponseDto))]
+        public async Task<IActionResult> GetCompletedCourses()
+        {
+            var response = new ResponseDto();
+
+            try
+            {
+                var userIdStr = User.FindFirstValue("UserId");
+                if (string.IsNullOrEmpty(userIdStr))
+                    return Unauthorized(new { success = false, message = "Không tìm thấy thông tin người dùng trong token" });
+
+                if (!long.TryParse(userIdStr, out var accountId))
+                    return BadRequest(new { success = false, message = "ID người dùng không hợp lệ" });
+
+                var result = await _service.GetCompletedCoursesByStudentAsync(accountId);
+
+                response.Message = "Lấy danh sách khóa học hoàn thành thành công";
+                response.Data = result;
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                response.Message = $"Lỗi khi lấy khóa học hoàn thành: {ex.Message}";
+                return BadRequest(response);
+            }
+        }
+
+        [HttpPut("[action]/{studentId}")]
+        public async Task<IActionResult> UpdateTraining(long studentId, [FromBody] UpdateStudentTrainingDto dto)
+        {
+            var response = new ResponseDto();
+
+            try
+            {
+                var userIdStr = User.FindFirstValue("UserId");
+                if (string.IsNullOrEmpty(userIdStr))
+                    return Unauthorized(new { success = false, message = "Không tìm thấy thông tin người dùng trong token" });
+
+                if (!long.TryParse(userIdStr, out var accountId))
+                    return BadRequest(new { success = false, message = "ID người dùng không hợp lệ" });
+
+                await _service.UpdateStudentTrainingAsync(studentId, dto, accountId);
+
+                response.Message = "Cập nhật thông tin đào tạo thành công";
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                response.Message = $"Lỗi khi cập nhật: {ex.Message}";
+                return BadRequest(response);
+            }
+        }
+
     }
 }

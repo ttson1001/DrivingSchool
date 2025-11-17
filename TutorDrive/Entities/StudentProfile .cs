@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TutorDrive.Entities
 {
@@ -12,6 +13,10 @@ namespace TutorDrive.Entities
         public long? AddressId { get; set; }
         public Address Address { get; set; }
         public string Status { get; set; }
+
+        [Column(TypeName = "decimal(6,2)")]
+        public decimal? DistanceKm { get; set; }
+        public int? DurationMinutes { get; set; }
         public IList<Registration> Registrations { get; set; }
         public IList<ExamResult> ExamResults { get; set; }
         public IList<Feedback> Feedbacks { get; set; }

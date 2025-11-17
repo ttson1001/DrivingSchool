@@ -438,6 +438,46 @@ namespace TutorDrive.Services
             return dto;
         }
 
+        public async Task<List<CompletedCourseDto>> GetCompletedCoursesByStudentAsync(long accountId)
+        {
+            var progresses = await _repository.Get()
+                .Include(lp => lp.Course)
+                .Include(lp => lp.InstructorProfile).ThenInclude(s => s.Account)
+                .Include(lp => lp.StudentProfile)
+                .Where(lp => lp.StudentProfile.AccountId == accountId)
+                .ToListAsync();
+
+            if (!progresses.Any())
+                return new List<CompletedCourseDto>();
+
+            var result = progresses
+                .GroupBy(lp => new { lp.CourseId, lp.Course.Name })
+                .Where(g => g.All(x => x.IsCompleted))
+                .Select(g =>
+                {
+                    var lastLesson = g
+                        .OrderByDescending(x => x.EndDate ?? x.LastUpdated)
+                        .FirstOrDefault();
+
+                    return new CompletedCourseDto
+                    {
+                        CourseId = g.Key.CourseId,
+                        CourseName = g.Key.Name,
+                        TotalSections = g.Count(),
+                        CompletedDate = lastLesson?.EndDate ?? lastLesson?.LastUpdated ?? DateTime.UtcNow,
+
+                        TeacherId = lastLesson?.InstructorProfileId ?? 0,
+                        TeacherName = lastLesson?.InstructorProfile?.Account?.FullName,
+                        TeacherEmail = lastLesson?.InstructorProfile?.Account?.Email
+                    };
+                })
+                .OrderByDescending(x => x.CompletedDate)
+                .ToList();
+
+            return result;
+        }
+
+
         public async Task<List<LearningProgressDetailDto>> GetByTeacherAndStudentAsync(long teacherId, long studentId)
         {
             var list = await _repository.Get()
@@ -477,6 +517,29 @@ namespace TutorDrive.Services
                 EndDate = lp.EndDate,
                 LastUpdated = lp.LastUpdated
             }).ToList();
+        }
+
+    public async Task UpdateStudentTrainingAsync(long studentId, UpdateStudentTrainingDto dto, long teacherAccountId)
+        {
+            var teacher = await _staffRepository.Get()
+                .FirstOrDefaultAsync(s => s.AccountId == teacherAccountId);
+
+            if (teacher == null)
+                throw new Exception("Tài khoản không thuộc giáo viên hợp lệ");
+
+            var student = await _studentProfileRepository.Get()
+                .FirstOrDefaultAsync(s => s.Id == studentId);
+
+            if (student == null)
+                throw new Exception("Không tìm thấy học viên");
+
+            if (dto.DistanceKm.HasValue)
+                student.DistanceKm = dto.DistanceKm.Value;
+
+            if (dto.DurationMinutes.HasValue)
+                student.DurationMinutes = dto.DurationMinutes.Value;
+
+            await _studentProfileRepository.SaveChangesAsync();
         }
     }
 }

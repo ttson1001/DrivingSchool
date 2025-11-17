@@ -13,19 +13,30 @@ namespace TutorDrive.Services.Service
     {
         private readonly IRepository<Feedback> _repository;
         private readonly IRepository<InstructorProfile> _staffRepository;
+        private readonly IRepository<StudentProfile> _studentProfileRepository;
 
-        public FeedbackService(IRepository<Feedback> repository, IRepository<InstructorProfile> staffRepository)
+        public FeedbackService(IRepository<Feedback> repository, IRepository<InstructorProfile> staffRepository, IRepository<StudentProfile> studentProfileRepository)
         {
             _repository = repository;
             _staffRepository = staffRepository;
+            _studentProfileRepository = studentProfileRepository;
         }
 
-        public async Task CreateAsync(FeedbackCreateDto dto)
+        public async Task CreateAsync(FeedbackCreateDto dto, long accountId)
         {
+            var studentProfileId = await _studentProfileRepository.Get()
+                .Where(x => x.AccountId == accountId)
+                .Select(x => x.Id)
+                .FirstOrDefaultAsync();
+
+            if (studentProfileId == 0)
+                throw new Exception("Không tìm thấy hồ sơ sinh viên.");
+
             var entity = new Feedback
             {
-                StudentProfileId = dto.StudentProfileId,
-                InstructorProfileId = dto.StaffId,
+                StudentProfileId = studentProfileId,
+                InstructorProfileId = dto.InstructorProfileId,
+                CourseId = dto.CourseId,
                 Rating = dto.Rating,
                 Comment = dto.Comment,
                 CreatedAt = DateTime.UtcNow
@@ -35,16 +46,19 @@ namespace TutorDrive.Services.Service
             await _repository.SaveChangesAsync();
         }
 
+
         public async Task<List<FeedbackDto>> GetAllAsync()
         {
             return await _repository.Get()
                 .Include(f => f.StudentProfile)
                 .Include(f => f.InstructorProfile)
+                .Include(f => f.Course)
                 .Select(f => new FeedbackDto
                 {
                     Id = f.Id,
                     StudentProfileId = f.StudentProfileId,
-                    StaffId = f.InstructorProfileId,
+                    InstructorProfileId = f.InstructorProfileId,
+                    CourseId = f.CourseId,
                     Rating = f.Rating,
                     Comment = f.Comment,
                     CreatedAt = f.CreatedAt
@@ -54,14 +68,21 @@ namespace TutorDrive.Services.Service
 
         public async Task<FeedbackDto?> GetByIdAsync(long id)
         {
-            var f = await _repository.Get().FirstOrDefaultAsync(x => x.Id == id);
-            if (f == null) throw new Exception("Không tìm thấy phản hồi.");
+            var f = await _repository.Get()
+                .Include(f => f.StudentProfile)
+                .Include(f => f.InstructorProfile)
+                .Include(f => f.Course)
+                .FirstOrDefaultAsync(x => x.Id == id);
+
+            if (f == null)
+                throw new Exception("Không tìm thấy phản hồi.");
 
             return new FeedbackDto
             {
                 Id = f.Id,
                 StudentProfileId = f.StudentProfileId,
-                StaffId = f.InstructorProfileId,
+                InstructorProfileId = f.InstructorProfileId,
+                CourseId = f.CourseId,
                 Rating = f.Rating,
                 Comment = f.Comment,
                 CreatedAt = f.CreatedAt
@@ -83,33 +104,39 @@ namespace TutorDrive.Services.Service
                 .OrderByDescending(f => f.CreatedAt)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
+                .Include(f => f.StudentProfile)
+                .Include(f => f.InstructorProfile)
+                .Include(f => f.Course)
                 .Select(f => new FeedbackDto
                 {
                     Id = f.Id,
                     StudentProfileId = f.StudentProfileId,
-                    StaffId = f.InstructorProfileId,    
+                    InstructorProfileId = f.InstructorProfileId,
+                    CourseId = f.CourseId,
                     Rating = f.Rating,
                     Comment = f.Comment,
                     CreatedAt = f.CreatedAt
                 })
                 .ToListAsync();
 
-            var result = new PagedResult<FeedbackDto>
+            return new PagedResult<FeedbackDto>
             {
                 Items = items,
                 TotalItems = totalItems,
                 Page = page,
                 PageSize = pageSize
             };
-
-            return result;
         }
 
         public async Task UpdateAsync(long id, FeedbackUpdateDto dto)
         {
             var entity = await _repository.Get().FirstOrDefaultAsync(x => x.Id == id);
+
             if (entity == null)
                 throw new Exception("Không tìm thấy phản hồi.");
+
+            if (dto.Rating < 1 || dto.Rating > 5)
+                throw new Exception("Điểm đánh giá phải từ 1 đến 5.");
 
             entity.Rating = dto.Rating;
             entity.Comment = dto.Comment;
@@ -124,7 +151,7 @@ namespace TutorDrive.Services.Service
                 .GroupBy(f => f.InstructorProfileId)
                 .Select(g => new
                 {
-                    StaffId = g.Key.Value,
+                    InstructorId = g.Key.Value,
                     AverageRating = g.Average(f => f.Rating),
                     TotalFeedbacks = g.Count()
                 })
@@ -134,15 +161,15 @@ namespace TutorDrive.Services.Service
 
             var topFeedbacks = await query.ToListAsync();
 
-            var staffIds = topFeedbacks.Select(x => x.StaffId).ToList();
+            var instructorIds = topFeedbacks.Select(x => x.InstructorId).ToList();
 
-            var staffs = await _staffRepository.Get()
+            var instructors = await _staffRepository.Get()
                 .Include(s => s.Account)
-                .Where(s => staffIds.Contains(s.Id))
+                .Where(s => instructorIds.Contains(s.Id))
                 .ToListAsync();
 
             var result = (from f in topFeedbacks
-                          join s in staffs on f.StaffId equals s.Id
+                          join s in instructors on f.InstructorId equals s.Id
                           select new TopTeacherDto
                           {
                               StaffId = s.Id,

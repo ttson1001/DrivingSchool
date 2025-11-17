@@ -2,8 +2,8 @@
 {
     public class FeedbackCreateDto
     {
-        public long StudentProfileId { get; set; }
-        public long? StaffId { get; set; }
+        public long CourseId { get; set; }
+        public long? InstructorProfileId { get; set; }
         public int Rating { get; set; }
         public string Comment { get; set; }
     }
@@ -18,7 +18,8 @@
     {
         public long Id { get; set; }
         public long StudentProfileId { get; set; }
-        public long? StaffId { get; set; }
+        public long? InstructorProfileId { get; set; }
+        public long? CourseId { get; set; }
         public int Rating { get; set; }
         public string Comment { get; set; }
         public DateTime CreatedAt { get; set; }
