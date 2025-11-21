@@ -9,6 +9,6 @@ namespace TutorDrive.Services.IService
         Task<List<VehicleUsageHistoryDto>> GetAllByVehicleIdAsync(long vehicleId);
         Task<List<VehicleUsageHistoryDto>> GetAllByAccountIdAsync(long accountId);
         Task CreateAsync(long accountId, VehicleUsageHistoryCreateDto dto);
-        Task UpdateAsync(VehicleUsageHistoryUpdateDto dto);
+        Task UpdateAsync(long accountId, VehicleUsageHistoryUpdateDto dto);
     }
 }
