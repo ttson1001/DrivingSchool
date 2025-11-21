@@ -1,10 +1,11 @@
-﻿using TutorDrive.Dtos.Vehicle;
-using TutorDrive.Dtos.common;
-using TutorDrive.Extension.SwagerUi;
-using TutorDrive.Services.IService;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using Swashbuckle.AspNetCore.Filters;
+using System.Security.Claims;
+using TutorDrive.Dtos.common;
+using TutorDrive.Dtos.Vehicle;
+using TutorDrive.Extension.SwagerUi;
+using TutorDrive.Services.IService;
 
 namespace TutorDrive.Controller
 {
@@ -82,18 +83,26 @@ namespace TutorDrive.Controller
             }
         }
 
-        [HttpGet("[action]/account/{accountId}")]
-        [SwaggerOperation(Summary = "Lấy lịch sử theo AccountId")]
+        [HttpGet("[action]")]
+        [SwaggerOperation(Summary = "Lấy lịch sử theo AccountId từ JWT")]
         [SwaggerResponse(200, "Lấy danh sách thành công", typeof(ResponseDto))]
-        [SwaggerResponseExample(200, typeof(GetVehicleUsageHistoryByAccountResponseExample))]
-        public async Task<IActionResult> GetAllByAccountId(long accountId)
+        public async Task<IActionResult> GetAllByAccountId()
         {
             var response = new ResponseDto();
             try
             {
+                var userIdStr = User.FindFirstValue("UserId");
+                if (string.IsNullOrEmpty(userIdStr))
+                    return Unauthorized(new { success = false, message = "Không tìm thấy thông tin người dùng trong token" });
+
+                if (!long.TryParse(userIdStr, out var accountId))
+                    return BadRequest(new { success = false, message = "ID người dùng không hợp lệ" });
+
                 var list = await _service.GetAllByAccountIdAsync(accountId);
+
                 response.Message = "Lấy danh sách thành công";
                 response.Data = list;
+
                 return Ok(response);
             }
             catch (Exception ex)
@@ -112,9 +121,16 @@ namespace TutorDrive.Controller
             var response = new ResponseDto();
             try
             {
-                await _service.CreateAsync(dto);
-                response.Message = "Tạo lịch sử thành công";
-                response.Data = null;
+                var userIdStr = User.FindFirstValue("UserId");
+                if (string.IsNullOrEmpty(userIdStr))
+                    return Unauthorized(new { success = false, message = "Không tìm thấy thông tin người dùng trong token" });
+
+                if (!long.TryParse(userIdStr, out var accountId))
+                    return BadRequest(new { success = false, message = "ID người dùng không hợp lệ" });
+
+                await _service.CreateAsync(accountId, dto);
+
+                response.Message = "Tạo lịch sử sử dụng xe thành công";
                 return Ok(response);
             }
             catch (Exception ex)
@@ -133,9 +149,16 @@ namespace TutorDrive.Controller
             var response = new ResponseDto();
             try
             {
-                await _service.UpdateAsync(dto);
-                response.Message = "Cập nhật thành công";
-                response.Data = null;
+                var userIdStr = User.FindFirstValue("UserId");
+                if (string.IsNullOrEmpty(userIdStr))
+                    return Unauthorized(new { success = false, message = "Không tìm thấy thông tin người dùng trong token" });
+
+                if (!long.TryParse(userIdStr, out var accountId))
+                    return BadRequest(new { success = false, message = "ID người dùng không hợp lệ" });
+
+                await _service.UpdateAsync(accountId, dto);
+
+                response.Message = "Cập nhật lịch sử sử dụng xe thành công";
                 return Ok(response);
             }
             catch (Exception ex)

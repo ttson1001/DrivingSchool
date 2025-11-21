@@ -175,5 +175,33 @@ namespace TutorDrive.Controller
                 return BadRequest(response);
             }
         }
+
+        [HttpGet("history")]
+        public async Task<IActionResult> GetHistory()
+        {
+            try
+            {
+                var userIdStr = User.FindFirstValue("UserId");
+                if (string.IsNullOrEmpty(userIdStr))
+                    return Unauthorized(new { success = false, message = "Không tìm thấy thông tin người dùng trong token" });
+
+                if (!long.TryParse(userIdStr, out var userId))
+                    return BadRequest(new { success = false, message = "ID người dùng không hợp lệ" });
+
+                var history = await _feedbackService.GetHistoryAsync(userId);
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Lấy lịch sử phản hồi thành công",
+                    data = history
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+        }
+
     }
 }

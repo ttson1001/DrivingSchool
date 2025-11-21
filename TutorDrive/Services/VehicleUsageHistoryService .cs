@@ -74,31 +74,44 @@ namespace TutorDrive.Services
             }).ToListAsync();
         }
 
-        public async Task CreateAsync(VehicleUsageHistoryCreateDto dto)
+        public async Task CreateAsync(long accountId, VehicleUsageHistoryCreateDto dto)
         {
-            var vehicle = await _vehicleRepo.Get().FirstOrDefaultAsync(x => x.Id == dto.VehicleId);
+            var vehicle = await _vehicleRepo.Get()
+                .FirstOrDefaultAsync(x => x.Id == dto.VehicleId);
+
             if (vehicle == null)
                 throw new Exception($"Xe với Id {dto.VehicleId} không tồn tại");
 
-            var account = await _accountRepo.Get().FirstOrDefaultAsync(x => x.Id == dto.AccountId);
+            var account = await _accountRepo.Get()
+                .FirstOrDefaultAsync(x => x.Id == accountId);
+
             if (account == null)
-                throw new Exception($"Người dùng với Id {dto.AccountId} không tồn tại");
+                throw new Exception($"Người dùng với Id {accountId} không tồn tại");
 
             var entity = new VehicleUsageHistory
             {
                 VehicleId = dto.VehicleId,
-                AccountId = dto.AccountId,
+                AccountId = accountId,
                 StartTime = dto.StartTime,
                 EndTime = dto.EndTime
             };
 
             await _historyRepo.AddAsync(entity);
+            await _historyRepo.SaveChangesAsync();
         }
 
-        public async Task UpdateAsync(VehicleUsageHistoryUpdateDto dto)
+
+        public async Task UpdateAsync(long accountId, VehicleUsageHistoryUpdateDto dto)
         {
-            var entity = await _historyRepo.Get().FirstOrDefaultAsync(x => x.Id == dto.Id);
-            if (entity == null) throw new Exception("Không tìm thấy xe đã sử dụng");
+            var entity = await _historyRepo.Get()
+                .FirstOrDefaultAsync(x => x.Id == dto.Id);
+
+            if (entity == null)
+                throw new Exception("Không tìm thấy lịch sử sử dụng xe");
+
+            // Không cho user sửa lịch sử của người khác
+            if (entity.AccountId != accountId)
+                throw new Exception("Bạn không có quyền chỉnh sửa lịch sử sử dụng xe của người khác");
 
             entity.StartTime = dto.StartTime;
             entity.EndTime = dto.EndTime;

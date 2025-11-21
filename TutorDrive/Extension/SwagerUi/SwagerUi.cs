@@ -112,8 +112,8 @@ namespace TutorDrive.Extension.SwagerUi
             Message = "Lấy danh sách phản hồi thành công",
             Data = new List<FeedbackDto>
                 {
-                    new FeedbackDto { Id = 1, StudentProfileId = 2, InstructorProfileId = 5, Rating = 5, Comment = "Rất hài lòng", CreatedAt = DateTime.UtcNow },
-                    new FeedbackDto { Id = 2, StudentProfileId = 3, InstructorProfileId = 4, Rating = 4, Comment = "Ổn nhưng cần cải thiện", CreatedAt = DateTime.UtcNow }
+                    new FeedbackDto { Id = 1,   Rating = 5, Comment = "Rất hài lòng", CreatedAt = DateTime.UtcNow },
+                    new FeedbackDto { Id = 2, Rating = 4, Comment = "Ổn nhưng cần cải thiện", CreatedAt = DateTime.UtcNow }
                 }
         };
     }
@@ -126,8 +126,6 @@ namespace TutorDrive.Extension.SwagerUi
             Data = new FeedbackDto
             {
                 Id = 1,
-                StudentProfileId = 2,
-                InstructorProfileId = 5,
                 Rating = 5,
                 Comment = "Tutor rất nhiệt tình",
                 CreatedAt = DateTime.UtcNow

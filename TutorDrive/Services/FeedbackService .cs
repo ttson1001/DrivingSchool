@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System;
+using TutorDrive.Dtos.account;
+using TutorDrive.Dtos.Address.TutorDrive.Dtos.Address;
 using TutorDrive.Dtos.Common;
 using TutorDrive.Dtos.ExamDto;
 using TutorDrive.Dtos.Feedbacks;
@@ -46,22 +48,59 @@ namespace TutorDrive.Services.Service
             await _repository.SaveChangesAsync();
         }
 
-
         public async Task<List<FeedbackDto>> GetAllAsync()
         {
             return await _repository.Get()
                 .Include(f => f.StudentProfile)
-                .Include(f => f.InstructorProfile)
-                .Include(f => f.Course)
+                    .ThenInclude(sp => sp.Account)
+                .Include(f => f.StudentProfile)
+                    .ThenInclude(sp => sp.Address)
+                        .ThenInclude(a => a.Ward)
+                .Include(f => f.StudentProfile)
+                    .ThenInclude(sp => sp.Address)
+                        .ThenInclude(a => a.Province)
+                .Include(f => f.InstructorProfile).ThenInclude(ip => ip.Account)
                 .Select(f => new FeedbackDto
                 {
                     Id = f.Id,
-                    StudentProfileId = f.StudentProfileId,
-                    InstructorProfileId = f.InstructorProfileId,
                     CourseId = f.CourseId,
                     Rating = f.Rating,
                     Comment = f.Comment,
-                    CreatedAt = f.CreatedAt
+                    CreatedAt = f.CreatedAt,
+
+                    Student = new MeDto
+                    {
+                        AccountId = f.StudentProfile.Account.Id,
+                        Email = f.StudentProfile.Account.Email,
+                        FullName = f.StudentProfile.Account.FullName,
+                        PhoneNumber = f.StudentProfile.Account.PhoneNumber,
+                        Avatar = f.StudentProfile.Account.Avatar,
+                        Status = f.StudentProfile.Status,
+
+                        CMND = f.StudentProfile.CMND,
+                        DOB = f.StudentProfile.DOB,
+                        Address = f.StudentProfile.Address == null ? null : new AddressDto
+                        {
+                            FullAddress = f.StudentProfile.Address.FullAddress,
+                            Street = f.StudentProfile.Address.Street,
+                            WardId = f.StudentProfile.Address.WardId,
+                            WardName = f.StudentProfile.Address.Ward.Name,
+                            ProvinceId = f.StudentProfile.Address.ProvinceId,
+                            ProvinceName = f.StudentProfile.Address.Ward.Name,
+                        }
+                    },
+
+                    Instructor = f.InstructorProfile == null ? null : new MeDto
+                    {
+                        AccountId = f.InstructorProfile.Account.Id,
+                        Email = f.InstructorProfile.Account.Email,
+                        FullName = f.InstructorProfile.Account.FullName,
+                        PhoneNumber = f.InstructorProfile.Account.PhoneNumber,
+                        Avatar = f.InstructorProfile.Account.Avatar,
+
+                        LicenseNumber = f.InstructorProfile.LicenseNumber,
+                        ExperienceYears = f.InstructorProfile.ExperienceYears
+                    }
                 })
                 .ToListAsync();
         }
@@ -69,8 +108,10 @@ namespace TutorDrive.Services.Service
         public async Task<FeedbackDto?> GetByIdAsync(long id)
         {
             var f = await _repository.Get()
-                .Include(f => f.StudentProfile)
-                .Include(f => f.InstructorProfile)
+                .Include(f => f.StudentProfile).ThenInclude(sp => sp.Account)
+                .Include(f => f.StudentProfile).ThenInclude(sp => sp.Address).ThenInclude(a => a.Ward)
+                .Include(f => f.StudentProfile).ThenInclude(sp => sp.Address).ThenInclude(a => a.Province)
+                .Include(f => f.InstructorProfile).ThenInclude(ip => ip.Account)
                 .Include(f => f.Course)
                 .FirstOrDefaultAsync(x => x.Id == id);
 
@@ -80,12 +121,48 @@ namespace TutorDrive.Services.Service
             return new FeedbackDto
             {
                 Id = f.Id,
-                StudentProfileId = f.StudentProfileId,
-                InstructorProfileId = f.InstructorProfileId,
                 CourseId = f.CourseId,
                 Rating = f.Rating,
                 Comment = f.Comment,
-                CreatedAt = f.CreatedAt
+                CreatedAt = f.CreatedAt,
+
+                Student = new MeDto
+                {
+                    AccountId = f.StudentProfile.Account.Id,
+                    Email = f.StudentProfile.Account.Email,
+                    FullName = f.StudentProfile.Account.FullName,
+                    PhoneNumber = f.StudentProfile.Account.PhoneNumber,
+                    Avatar = f.StudentProfile.Account.Avatar,
+                    Status = f.StudentProfile.Status,
+
+                    CMND = f.StudentProfile.CMND,
+                    DOB = f.StudentProfile.DOB,
+
+                    Address = f.StudentProfile.Address == null ? null : new AddressDto
+                    {
+                        FullAddress = f.StudentProfile.Address.FullAddress,
+                        Street = f.StudentProfile.Address.Street,
+                        WardId = f.StudentProfile.Address.WardId,
+                        WardName = f.StudentProfile.Address.Ward.Name,
+
+                        ProvinceId = f.StudentProfile.Address.ProvinceId,
+                        ProvinceName = f.StudentProfile.Address.Province.Name,
+
+                        AccountId = f.StudentProfile.AccountId
+                    }
+                },
+
+                Instructor = f.InstructorProfile == null ? null : new MeDto
+                {
+                    AccountId = f.InstructorProfile.Account.Id,
+                    Email = f.InstructorProfile.Account.Email,
+                    FullName = f.InstructorProfile.Account.FullName,
+                    PhoneNumber = f.InstructorProfile.Account.PhoneNumber,
+                    Avatar = f.InstructorProfile.Account.Avatar,
+
+                    LicenseNumber = f.InstructorProfile.LicenseNumber,
+                    ExperienceYears = f.InstructorProfile.ExperienceYears
+                }
             };
         }
 
@@ -98,24 +175,64 @@ namespace TutorDrive.Services.Service
                 query = query.Where(f => f.Comment.Contains(keyword));
             }
 
+            query = query.Include(f => f.StudentProfile).ThenInclude(sp => sp.Account)
+                .Include(f => f.StudentProfile).ThenInclude(sp => sp.Address).ThenInclude(a => a.Ward)
+                .Include(f => f.StudentProfile).ThenInclude(sp => sp.Address).ThenInclude(a => a.Province)
+                .Include(f => f.InstructorProfile).ThenInclude(ip => ip.Account)
+                .Include(f => f.Course);
+
             var totalItems = await query.CountAsync();
 
             var items = await query
                 .OrderByDescending(f => f.CreatedAt)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
-                .Include(f => f.StudentProfile)
-                .Include(f => f.InstructorProfile)
-                .Include(f => f.Course)
                 .Select(f => new FeedbackDto
                 {
                     Id = f.Id,
-                    StudentProfileId = f.StudentProfileId,
-                    InstructorProfileId = f.InstructorProfileId,
                     CourseId = f.CourseId,
                     Rating = f.Rating,
                     Comment = f.Comment,
-                    CreatedAt = f.CreatedAt
+                    CreatedAt = f.CreatedAt,
+
+                    Student = new MeDto
+                    {
+                        AccountId = f.StudentProfile.Account.Id,
+                        Email = f.StudentProfile.Account.Email,
+                        FullName = f.StudentProfile.Account.FullName,
+                        PhoneNumber = f.StudentProfile.Account.PhoneNumber,
+                        Avatar = f.StudentProfile.Account.Avatar,
+                        Status = f.StudentProfile.Status,
+
+                        CMND = f.StudentProfile.CMND,
+                        DOB = f.StudentProfile.DOB,
+
+                        Address = f.StudentProfile.Address == null ? null : new AddressDto
+                        {
+                            FullAddress = f.StudentProfile.Address.FullAddress,
+                            Street = f.StudentProfile.Address.Street,
+
+                            WardId = f.StudentProfile.Address.WardId,
+                            WardName = f.StudentProfile.Address.Ward.Name,
+
+                            ProvinceId = f.StudentProfile.Address.ProvinceId,
+                            ProvinceName = f.StudentProfile.Address.Province.Name,
+
+                            AccountId = f.StudentProfile.AccountId
+                        }
+                    },
+
+                    Instructor = f.InstructorProfile == null ? null : new MeDto
+                    {
+                        AccountId = f.InstructorProfile.Account.Id,
+                        Email = f.InstructorProfile.Account.Email,
+                        FullName = f.InstructorProfile.Account.FullName,
+                        PhoneNumber = f.InstructorProfile.Account.PhoneNumber,
+                        Avatar = f.InstructorProfile.Account.Avatar,
+
+                        LicenseNumber = f.InstructorProfile.LicenseNumber,
+                        ExperienceYears = f.InstructorProfile.ExperienceYears
+                    }
                 })
                 .ToListAsync();
 
@@ -142,6 +259,84 @@ namespace TutorDrive.Services.Service
             entity.Comment = dto.Comment;
 
             await _repository.SaveChangesAsync();
+        }
+
+        public async Task<List<FeedbackDto>> GetHistoryAsync(long accountId)
+        {
+            var student = await _studentProfileRepository.Get()
+                            .Include(x => x.Account)
+                            .FirstOrDefaultAsync(x => x.AccountId == accountId);
+
+            var instructor = await _staffRepository.Get()
+                                .Include(x => x.Account)
+                                .FirstOrDefaultAsync(x => x.AccountId == accountId);
+
+            var query = _repository.Get();
+
+            if (student != null)
+            {
+                query = query.Where(f => f.StudentProfileId == student.Id);
+            }
+            else if (instructor != null)
+            {
+                query = query.Where(f => f.InstructorProfileId == instructor.Id);
+            }
+            else
+            {
+                throw new Exception("Không tìm thấy hồ sơ người dùng để lấy lịch sử phản hồi.");
+            }
+
+            return await query
+                .Include(f => f.StudentProfile).ThenInclude(sp => sp.Account)
+                .Include(f => f.StudentProfile).ThenInclude(sp => sp.Address).ThenInclude(a => a.Ward)
+                .Include(f => f.StudentProfile).ThenInclude(sp => sp.Address).ThenInclude(a => a.Province)
+                .Include(f => f.InstructorProfile).ThenInclude(ip => ip.Account)
+                .Include(f => f.Course)
+                .OrderByDescending(f => f.CreatedAt)
+                .Select(f => new FeedbackDto
+                {
+                    Id = f.Id,
+                    CourseId = f.CourseId,
+                    Rating = f.Rating,
+                    Comment = f.Comment,
+                    CreatedAt = f.CreatedAt,
+
+                    Student = new MeDto
+                    {
+                        AccountId = f.StudentProfile.Account.Id,
+                        Email = f.StudentProfile.Account.Email,
+                        FullName = f.StudentProfile.Account.FullName,
+                        PhoneNumber = f.StudentProfile.Account.PhoneNumber,
+                        Avatar = f.StudentProfile.Account.Avatar,
+                        Status = f.StudentProfile.Status,
+
+                        CMND = f.StudentProfile.CMND,
+                        DOB = f.StudentProfile.DOB,
+
+                        Address = f.StudentProfile.Address == null ? null : new AddressDto
+                        {
+                            FullAddress = f.StudentProfile.Address.FullAddress,
+                            Street = f.StudentProfile.Address.Street,
+                            WardId = f.StudentProfile.Address.WardId,
+                            WardName = f.StudentProfile.Address.Ward.Name,
+                            ProvinceId = f.StudentProfile.Address.ProvinceId,
+                            ProvinceName = f.StudentProfile.Address.Province.Name,
+                            AccountId = f.StudentProfile.AccountId
+                        }
+                    },
+
+                    Instructor = f.InstructorProfile == null ? null : new MeDto
+                    {
+                        AccountId = f.InstructorProfile.Account.Id,
+                        Email = f.InstructorProfile.Account.Email,
+                        FullName = f.InstructorProfile.Account.FullName,
+                        PhoneNumber = f.InstructorProfile.Account.PhoneNumber,
+                        Avatar = f.InstructorProfile.Account.Avatar,
+                        LicenseNumber = f.InstructorProfile.LicenseNumber,
+                        ExperienceYears = f.InstructorProfile.ExperienceYears
+                    }
+                })
+                .ToListAsync();
         }
 
         public async Task<List<TopTeacherDto>> GetTopTeachersAsync(int top = 5)

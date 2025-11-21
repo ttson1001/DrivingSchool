@@ -12,7 +12,6 @@
     public class VehicleUsageHistoryCreateDto
     {
         public long VehicleId { get; set; }
-        public long AccountId { get; set; }
         public DateTime StartTime { get; set; }
         public DateTime? EndTime { get; set; }
     }

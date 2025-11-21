@@ -1,4 +1,6 @@
-﻿namespace TutorDrive.Dtos.Feedbacks
+﻿using TutorDrive.Dtos.account;
+
+namespace TutorDrive.Dtos.Feedbacks
 {
     public class FeedbackCreateDto
     {
@@ -17,11 +19,14 @@
     public class FeedbackDto
     {
         public long Id { get; set; }
-        public long StudentProfileId { get; set; }
-        public long? InstructorProfileId { get; set; }
+
+        public MeDto Student { get; set; }
+        public MeDto? Instructor { get; set; }
+
         public long? CourseId { get; set; }
         public int Rating { get; set; }
         public string Comment { get; set; }
         public DateTime CreatedAt { get; set; }
     }
+
 }
