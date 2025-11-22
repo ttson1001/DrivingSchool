@@ -24,6 +24,7 @@ namespace TutorDrive.Database
         public DbSet<Transaction> Transactions { get; set; }
         public DbSet<SystemConfig> SystemConfigs { get; set; }
         public DbSet<InstructorProfile> InstructorProfiles { get; set; }
+        public DbSet<RegistrationExam> RegistrationExams { get; set; }
         public BeContext(DbContextOptions<BeContext> options) : base(options) { }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

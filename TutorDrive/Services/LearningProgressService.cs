@@ -1,4 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using TutorDrive.Dtos.account;
+using TutorDrive.Dtos.Address.TutorDrive.Dtos.Address;
+using TutorDrive.Dtos.Feedbacks;
 using TutorDrive.Dtos.LearningProgress;
 using TutorDrive.Dtos.LearningProgress.TutorDrive.Dtos.LearningProgress;
 using TutorDrive.Dtos.Student;
@@ -16,19 +19,22 @@ namespace TutorDrive.Services
         private readonly IRepository<InstructorProfile> _staffRepository;
         private readonly IRepository<Section> _sectionRepository;
         private readonly IRepository<Registration> _registrationRepository;
+        private readonly IRepository<Feedback> _feedbackRepository;
 
         public LearningProgressService(
             IRepository<LearningProgress> repository,
             IRepository<StudentProfile> studentProfileRepository,
             IRepository<InstructorProfile> staffRepository,
             IRepository<Section> sectionRepository,
-            IRepository<Registration> registrationRepository)
+            IRepository<Registration> registrationRepository,
+            IRepository<Feedback> feedbackRepository)
         {
             _repository = repository;
             _studentProfileRepository = studentProfileRepository;
             _staffRepository = staffRepository;
             _sectionRepository = sectionRepository;
             _registrationRepository = registrationRepository;
+            _feedbackRepository = feedbackRepository;
         }
 
         public async Task GenerateProgressForCourseAsync(GenerateProgressDto dto)
@@ -93,43 +99,109 @@ namespace TutorDrive.Services
         }
 
         public async Task<List<CourseLearningProgressGroupDto>> GetByStudentGroupedAsync(
-     long accountId, bool? isCompleted = null)
+    long accountId, bool? isCompleted = null)
         {
+            var student = await _studentProfileRepository.Get()
+                            .FirstOrDefaultAsync(x => x.AccountId == accountId);
+
+            if (student == null)
+                throw new Exception("Không tìm thấy hồ sơ học sinh");
+
             var query = _repository.Get()
                 .Include(lp => lp.Course)
                 .Include(lp => lp.Section)
                 .Include(lp => lp.InstructorProfile).ThenInclude(i => i.Account)
                 .Include(lp => lp.StudentProfile).ThenInclude(sp => sp.Account)
-                .Where(lp => lp.StudentProfile.AccountId == accountId);
+                .Where(lp => lp.StudentProfileId == student.Id);
 
             if (isCompleted.HasValue)
                 query = query.Where(lp => lp.IsCompleted == isCompleted.Value);
 
-            var result = await query
+            var grouped = await query
                 .OrderBy(lp => lp.StartDate)
                 .GroupBy(lp => new { lp.CourseId, lp.Course.Name })
-                .Select(g => new CourseLearningProgressGroupDto
-                {
-                    CourseId = g.Key.CourseId,
-                    CourseName = g.Key.Name,
-                    Progresses = g.OrderBy(p => p.StartDate)
-                        .Select(p => new LearningProgressItemDto
-                        {
-                            Id = p.Id,
-                            SectionId = p.SectionId,
-                            SectionName = p.Section.Title,
-                            StartDate = p.StartDate,
-                            EndDate = p.EndDate,
-                            IsCompleted = p.IsCompleted,
-                            InstructorId = p.InstructorProfileId,
-                            InstructorName = p.InstructorProfile != null
-                                ? p.InstructorProfile.Account.FullName
-                                : null,
-                            Comment = p.Comment
-                        })
-                        .ToList()
-                })
                 .ToListAsync();
+
+            var courseIds = grouped.Select(g => g.Key.CourseId).ToList();
+
+            var feedbacks = await _feedbackRepository.Get()
+                .Include(f => f.StudentProfile).ThenInclude(sp => sp.Account)
+                .Include(f => f.StudentProfile).ThenInclude(sp => sp.Address).ThenInclude(a => a.Ward)
+                .Include(f => f.StudentProfile).ThenInclude(sp => sp.Address).ThenInclude(a => a.Province)
+                .Include(f => f.InstructorProfile).ThenInclude(ip => ip.Account)
+                .Where(f => f.StudentProfileId == student.Id && courseIds.Contains(f.CourseId))
+                .ToListAsync();
+
+            var fbMap = feedbacks.ToDictionary(
+                f => f.CourseId,
+                f => new FeedbackDto
+                {
+                    Id = f.Id,
+                    CourseId = f.CourseId,
+                    Rating = f.Rating,
+                    Comment = f.Comment,
+                    CreatedAt = f.CreatedAt,
+
+                    Student = new MeDto
+                    {
+                        AccountId = f.StudentProfile.Account.Id,
+                        FullName = f.StudentProfile.Account.FullName,
+                        Email = f.StudentProfile.Account.Email,
+                        PhoneNumber = f.StudentProfile.Account.PhoneNumber,
+                        Avatar = f.StudentProfile.Account.Avatar,
+                        Status = f.StudentProfile.Status,
+                        CMND = f.StudentProfile.CMND,
+                        DOB = f.StudentProfile.DOB,
+
+                        Address = f.StudentProfile.Address == null ? null : new AddressDto
+                        {
+                            FullAddress = f.StudentProfile.Address.FullAddress,
+                            Street = f.StudentProfile.Address.Street,
+                            WardId = f.StudentProfile.Address.WardId,
+                            WardName = f.StudentProfile.Address.Ward.Name,
+                            ProvinceId = f.StudentProfile.Address.ProvinceId,
+                            ProvinceName = f.StudentProfile.Address.Province.Name
+                        }
+                    },
+
+                    Instructor = f.InstructorProfile == null ? null : new MeDto
+                    {
+                        AccountId = f.InstructorProfile.Account.Id,
+                        FullName = f.InstructorProfile.Account.FullName,
+                        Email = f.InstructorProfile.Account.Email,
+                        PhoneNumber = f.InstructorProfile.Account.PhoneNumber,
+                        Avatar = f.InstructorProfile.Account.Avatar,
+                        LicenseNumber = f.InstructorProfile.LicenseNumber,
+                        ExperienceYears = f.InstructorProfile.ExperienceYears
+                    }
+                }
+            );
+
+            var result = grouped.Select(g => new CourseLearningProgressGroupDto
+            {
+                CourseId = g.Key.CourseId,
+                CourseName = g.Key.Name,
+
+                Progresses = g.OrderBy(p => p.StartDate)
+                    .Select(p => new LearningProgressItemDto
+                    {
+                        Id = p.Id,
+                        SectionId = p.SectionId,
+                        SectionName = p.Section.Title,
+                        StartDate = p.StartDate,
+                        EndDate = p.EndDate,
+                        IsCompleted = p.IsCompleted,
+                        InstructorId = p.InstructorProfileId,
+                        InstructorName = p.InstructorProfile != null
+                            ? p.InstructorProfile.Account.FullName
+                            : null,
+                        Comment = p.Comment
+                    })
+                    .ToList(),
+
+                Feedback = fbMap.ContainsKey(g.Key.CourseId) ? fbMap[g.Key.CourseId] : null
+            })
+            .ToList();
 
             return result;
         }
@@ -280,8 +352,6 @@ namespace TutorDrive.Services
 
             return dates;
         }
-
-
 
         public async Task UpdateProgressAsync(LearningProgressUpdateDto dto, long accountId)
         {

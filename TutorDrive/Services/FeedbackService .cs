@@ -339,6 +339,70 @@ namespace TutorDrive.Services.Service
                 .ToListAsync();
         }
 
+        public async Task<FeedbackDto?> GetByStudentAndCourseAsync(long accountId, long courseId)
+        {
+            var student = await _studentProfileRepository.Get()
+                .FirstOrDefaultAsync(x => x.AccountId == accountId);
+
+            if (student == null)
+                throw new Exception("Không tìm thấy hồ sơ học sinh");
+
+            var f = await _repository.Get()
+                .Include(f => f.StudentProfile).ThenInclude(sp => sp.Account)
+                .Include(f => f.InstructorProfile).ThenInclude(ip => ip.Account)
+                .Include(f => f.Course)
+                .Include(f => f.StudentProfile).ThenInclude(sp => sp.Address).ThenInclude(a => a.Ward)
+                .Include(f => f.StudentProfile).ThenInclude(sp => sp.Address).ThenInclude(a => a.Province)
+                .FirstOrDefaultAsync(x =>
+                    x.StudentProfileId == student.Id &&
+                    x.CourseId == courseId
+                );
+
+            if (f == null) return null;
+
+            return new FeedbackDto
+            {
+                Id = f.Id,
+                CourseId = f.CourseId,
+                Rating = f.Rating,
+                Comment = f.Comment,
+                CreatedAt = f.CreatedAt,
+
+                Student = new MeDto
+                {
+                    AccountId = f.StudentProfile.Account.Id,
+                    Email = f.StudentProfile.Account.Email,
+                    FullName = f.StudentProfile.Account.FullName,
+                    PhoneNumber = f.StudentProfile.Account.PhoneNumber,
+                    Avatar = f.StudentProfile.Account.Avatar,
+                    Status = f.StudentProfile.Status,
+                    CMND = f.StudentProfile.CMND,
+                    DOB = f.StudentProfile.DOB,
+                    Address = f.StudentProfile.Address == null ? null :
+                        new AddressDto
+                        {
+                            FullAddress = f.StudentProfile.Address.FullAddress,
+                            Street = f.StudentProfile.Address.Street,
+                            WardId = f.StudentProfile.Address.WardId,
+                            WardName = f.StudentProfile.Address.Ward.Name,
+                            ProvinceId = f.StudentProfile.Address.ProvinceId,
+                            ProvinceName = f.StudentProfile.Address.Province.Name
+                        }
+                },
+
+                Instructor = f.InstructorProfile == null ? null : new MeDto
+                {
+                    AccountId = f.InstructorProfile.Account.Id,
+                    Email = f.InstructorProfile.Account.Email,
+                    FullName = f.InstructorProfile.Account.FullName,
+                    PhoneNumber = f.InstructorProfile.Account.PhoneNumber,
+                    Avatar = f.InstructorProfile.Account.Avatar,
+                    LicenseNumber = f.InstructorProfile.LicenseNumber,
+                    ExperienceYears = f.InstructorProfile.ExperienceYears
+                }
+            };
+        }
+
         public async Task<List<TopTeacherDto>> GetTopTeachersAsync(int top = 5)
         {
             var query = _repository.Get()
