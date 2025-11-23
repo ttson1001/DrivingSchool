@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TutorDrive.Dtos.Common;
+using TutorDrive.Dtos.Course;
 using TutorDrive.Dtos.RegistrationExam;
 using TutorDrive.Entities;
 using TutorDrive.Entities.Enum;
@@ -12,13 +13,16 @@ namespace TutorDrive.Services.Service
     {
         private readonly IRepository<RegistrationExam> _registrationRepo;
         private readonly IRepository<StudentProfile> _studentProfileRepo;
+        private readonly IRepository<Course> _courseRepo;
 
         public RegistrationExamService(
             IRepository<RegistrationExam> registrationRepo,
-            IRepository<StudentProfile> studentProfileRepo)
+            IRepository<StudentProfile> studentProfileRepo,
+            IRepository<Course> courseRepo)
         {
             _registrationRepo = registrationRepo;
             _studentProfileRepo = studentProfileRepo;
+            _courseRepo = courseRepo;
         }
 
         public async Task<RegistrationExamDto> SubmitAsync(RegistrationExamCreateDto dto, long accountId)
@@ -39,20 +43,20 @@ namespace TutorDrive.Services.Service
                 throw new Exception("Thiếu file bắt buộc trong hồ sơ.");
             }
 
-            var cccdFrontUrl = dto.CccdFront;
-            var cccdBackUrl = dto.CccdBack;
-            var avatarUrl = dto.Avatar3x4;
-            var healthUrl = dto.HealthCertificate;
-            var formUrl = dto.ApplicationForm;
+            var course = await _courseRepo.Get().FirstOrDefaultAsync(c => c.Id == dto.CourseId);
+            if (course == null)
+                throw new Exception($"CourseId {dto.CourseId} không tồn tại.");
 
             var entity = new RegistrationExam
             {
                 StudentProfileId = student.Id,
-                CccdFront = cccdFrontUrl,
-                CccdBack = cccdBackUrl,
-                Avatar3x4 = avatarUrl,
-                HealthCertificate = healthUrl,
-                ApplicationForm = formUrl
+                CourseId = dto.CourseId,
+
+                CccdFront = dto.CccdFront,
+                CccdBack = dto.CccdBack,
+                Avatar3x4 = dto.Avatar3x4,
+                HealthCertificate = dto.HealthCertificate,
+                ApplicationForm = dto.ApplicationForm
             };
 
             await _registrationRepo.AddAsync(entity);
@@ -68,7 +72,7 @@ namespace TutorDrive.Services.Service
             if (request.Status.HasValue)
                 query = query.Where(r => r.Status == request.Status.Value);
 
-            query = query.Include(r => r.StudentProfile).ThenInclude(sp => sp.Account);
+            query = query.Include(r => r.StudentProfile).ThenInclude(sp => sp.Account).Include(r => r.Course);
             if (!string.IsNullOrWhiteSpace(request.Keyword))
             {
                 var keyword = request.Keyword.Trim();
@@ -102,6 +106,7 @@ namespace TutorDrive.Services.Service
             var entity = await _registrationRepo.Get()
                 .Include(r => r.StudentProfile)
                     .ThenInclude(sp => sp.Account)
+                    .Include(r => r.Course)
                 .FirstOrDefaultAsync(r => r.Id == id);
 
             if (entity == null) return null;
@@ -118,7 +123,7 @@ namespace TutorDrive.Services.Service
             if (student == null)
                 throw new Exception("Không tìm thấy hồ sơ học viên.");
 
-            var items = await _registrationRepo.Get()
+            var items = await _registrationRepo.Get().Include(r => r.Course)
                 .Where(r => r.StudentProfileId == student.Id)
                 .OrderByDescending(r => r.CreatedAt)
                 .ToListAsync();
@@ -202,8 +207,19 @@ namespace TutorDrive.Services.Service
                 Status = entity.Status,
                 Comment = entity.Comment,
                 CreatedAt = entity.CreatedAt,
-                UpdatedAt = entity.UpdatedAt
+                UpdatedAt = entity.UpdatedAt,
+
+                Course = entity.Course == null ? null : new CourseDto
+                {
+                    Id = entity.Course.Id,
+                    Name = entity.Course.Name,
+                    Description = entity.Course.Description,
+                    ImageUrl = entity.Course.ImageUrl,
+                    DurationDays = entity.Course.DurationDays,
+                    Price = entity.Course.Price
+                }
             };
         }
+
     }
 }

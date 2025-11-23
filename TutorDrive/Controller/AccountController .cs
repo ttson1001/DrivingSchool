@@ -223,5 +223,36 @@ namespace TutorDrive.Controller
             }
         }
 
+        [HttpPut("[action]")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest dto)
+        {
+            try
+            {
+                var userIdStr = User.FindFirstValue("UserId");
+                if (string.IsNullOrEmpty(userIdStr))
+                    return Unauthorized(new { success = false, message = "Không tìm thấy thông tin người dùng trong token" });
+
+                if (!long.TryParse(userIdStr, out var userId))
+                    return BadRequest(new { success = false, message = "ID người dùng không hợp lệ" });
+
+                await _accountService.ChangePasswordAsync(userId, dto);
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Đổi mật khẩu thành công"
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
+        }
+
+
     }
 }

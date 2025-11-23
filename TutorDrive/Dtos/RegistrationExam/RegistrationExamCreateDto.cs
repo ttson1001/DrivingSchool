@@ -2,6 +2,8 @@
 {
     public class RegistrationExamCreateDto
     {
+
+        public long CourseId { get; set; }
         public string CccdFront { get; set; }
 
         public string CccdBack { get; set; }

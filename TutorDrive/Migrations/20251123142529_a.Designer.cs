@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TutorDrive.Database;
 
@@ -11,9 +12,11 @@ using TutorDrive.Database;
 namespace TutorDrive.Migrations
 {
     [DbContext(typeof(BeContext))]
-    partial class BeContextModelSnapshot : ModelSnapshot
+    [Migration("20251123142529_a")]
+    partial class a
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -64,7 +67,7 @@ namespace TutorDrive.Migrations
 
                     b.HasIndex("RoleId");
 
-                    b.ToTable("Accounts", (string)null);
+                    b.ToTable("Accounts");
                 });
 
             modelBuilder.Entity("TutorDrive.Entities.Address", b =>
@@ -95,7 +98,7 @@ namespace TutorDrive.Migrations
 
                     b.HasIndex("WardId");
 
-                    b.ToTable("Addresses", (string)null);
+                    b.ToTable("Addresses");
                 });
 
             modelBuilder.Entity("TutorDrive.Entities.Course", b =>
@@ -126,7 +129,7 @@ namespace TutorDrive.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Courses", (string)null);
+                    b.ToTable("Courses");
                 });
 
             modelBuilder.Entity("TutorDrive.Entities.DriverLicense", b =>
@@ -146,7 +149,7 @@ namespace TutorDrive.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("DriverLicenses", (string)null);
+                    b.ToTable("DriverLicenses");
                 });
 
             modelBuilder.Entity("TutorDrive.Entities.Exam", b =>
@@ -175,7 +178,7 @@ namespace TutorDrive.Migrations
 
                     b.HasIndex("CourseId");
 
-                    b.ToTable("Exams", (string)null);
+                    b.ToTable("Exams");
                 });
 
             modelBuilder.Entity("TutorDrive.Entities.ExamResult", b =>
@@ -205,7 +208,7 @@ namespace TutorDrive.Migrations
 
                     b.HasIndex("StudentProfileId");
 
-                    b.ToTable("ExamResults", (string)null);
+                    b.ToTable("ExamResults");
                 });
 
             modelBuilder.Entity("TutorDrive.Entities.Feedback", b =>
@@ -243,7 +246,7 @@ namespace TutorDrive.Migrations
 
                     b.HasIndex("StudentProfileId");
 
-                    b.ToTable("Feedbacks", (string)null);
+                    b.ToTable("Feedbacks");
                 });
 
             modelBuilder.Entity("TutorDrive.Entities.InstructorProfile", b =>
@@ -269,7 +272,7 @@ namespace TutorDrive.Migrations
                     b.HasIndex("AccountId")
                         .IsUnique();
 
-                    b.ToTable("InstructorProfiles", (string)null);
+                    b.ToTable("InstructorProfiles");
                 });
 
             modelBuilder.Entity("TutorDrive.Entities.LearningProgress", b =>
@@ -318,7 +321,7 @@ namespace TutorDrive.Migrations
                     b.HasIndex("StudentProfileId")
                         .IsUnique();
 
-                    b.ToTable("LearningProgresses", (string)null);
+                    b.ToTable("LearningProgresses");
                 });
 
             modelBuilder.Entity("TutorDrive.Entities.Province", b =>
@@ -343,7 +346,7 @@ namespace TutorDrive.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Provinces", (string)null);
+                    b.ToTable("Provinces");
                 });
 
             modelBuilder.Entity("TutorDrive.Entities.Registration", b =>
@@ -393,7 +396,7 @@ namespace TutorDrive.Migrations
 
                     b.HasIndex("StudentProfileId");
 
-                    b.ToTable("Registrations", (string)null);
+                    b.ToTable("Registrations");
                 });
 
             modelBuilder.Entity("TutorDrive.Entities.RegistrationExam", b =>
@@ -448,7 +451,7 @@ namespace TutorDrive.Migrations
 
                     b.HasIndex("StudentProfileId");
 
-                    b.ToTable("RegistrationExams", (string)null);
+                    b.ToTable("RegistrationExams");
                 });
 
             modelBuilder.Entity("TutorDrive.Entities.RegistrationFile", b =>
@@ -476,7 +479,7 @@ namespace TutorDrive.Migrations
 
                     b.HasIndex("RegistrationId");
 
-                    b.ToTable("RegistrationFile", (string)null);
+                    b.ToTable("RegistrationFile");
                 });
 
             modelBuilder.Entity("TutorDrive.Entities.Role", b =>
@@ -493,7 +496,7 @@ namespace TutorDrive.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Role", (string)null);
+                    b.ToTable("Role");
                 });
 
             modelBuilder.Entity("TutorDrive.Entities.Section", b =>
@@ -519,7 +522,7 @@ namespace TutorDrive.Migrations
 
                     b.HasIndex("CourseId");
 
-                    b.ToTable("Sections", (string)null);
+                    b.ToTable("Sections");
                 });
 
             modelBuilder.Entity("TutorDrive.Entities.StudentProfile", b =>
@@ -559,7 +562,7 @@ namespace TutorDrive.Migrations
 
                     b.HasIndex("AddressId");
 
-                    b.ToTable("StudentProfiles", (string)null);
+                    b.ToTable("StudentProfiles");
                 });
 
             modelBuilder.Entity("TutorDrive.Entities.SystemConfig", b =>
@@ -583,7 +586,7 @@ namespace TutorDrive.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("SystemConfigs", (string)null);
+                    b.ToTable("SystemConfigs");
                 });
 
             modelBuilder.Entity("TutorDrive.Entities.Transaction", b =>
@@ -618,7 +621,7 @@ namespace TutorDrive.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Transactions", (string)null);
+                    b.ToTable("Transactions");
                 });
 
             modelBuilder.Entity("TutorDrive.Entities.Vehicle", b =>
@@ -647,7 +650,7 @@ namespace TutorDrive.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Vehicles", (string)null);
+                    b.ToTable("Vehicles");
                 });
 
             modelBuilder.Entity("TutorDrive.Entities.VehicleUsageHistory", b =>
@@ -676,7 +679,7 @@ namespace TutorDrive.Migrations
 
                     b.HasIndex("VehicleId");
 
-                    b.ToTable("VehicleUsageHistories", (string)null);
+                    b.ToTable("VehicleUsageHistories");
                 });
 
             modelBuilder.Entity("TutorDrive.Entities.Ward", b =>
@@ -705,7 +708,7 @@ namespace TutorDrive.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Wards", (string)null);
+                    b.ToTable("Wards");
                 });
 
             modelBuilder.Entity("TutorDrive.Entities.Account", b =>

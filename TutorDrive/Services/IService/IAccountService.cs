@@ -18,5 +18,6 @@ namespace TutorDrive.Services.IService
         Task CreateAccountAsync(AccountCreateDto dto);
         Task<MeDto> GetMeAsync(long accountId);
         Task<StudentProfile> UpdateAsync(long id, UpdateStudentProfileDto dto);
+        Task ChangePasswordAsync(long accountId, ChangePasswordRequest dto);
     }
 }

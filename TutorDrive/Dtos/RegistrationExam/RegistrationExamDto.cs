@@ -1,4 +1,5 @@
-﻿using TutorDrive.Entities.Enum;
+﻿using TutorDrive.Dtos.Course;
+using TutorDrive.Entities.Enum;
 
 namespace TutorDrive.Dtos.RegistrationExam
 {
@@ -24,5 +25,8 @@ namespace TutorDrive.Dtos.RegistrationExam
 
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
+
+        public CourseDto Course { get; set; }
     }
+
 }

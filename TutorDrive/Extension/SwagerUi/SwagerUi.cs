@@ -598,16 +598,12 @@ namespace TutorDrive.Extension.SwagerUi
                     new VehicleUsageHistoryDto
                     {
                         Id = 1,
-                        VehicleId = 101,
-                        AccountId = 201,
                         StartTime = DateTime.Now.AddHours(-2),
                         EndTime = DateTime.Now
                     },
                     new VehicleUsageHistoryDto
                     {
                         Id = 2,
-                        VehicleId = 102,
-                        AccountId = 202,
                         StartTime = DateTime.Now.AddHours(-5),
                         EndTime = DateTime.Now.AddHours(-1)
                     }
@@ -626,8 +622,6 @@ namespace TutorDrive.Extension.SwagerUi
                 Data = new VehicleUsageHistoryDto
                 {
                     Id = 1,
-                    VehicleId = 101,
-                    AccountId = 201,
                     StartTime = DateTime.Now.AddHours(-2),
                     EndTime = DateTime.Now
                 }
@@ -647,16 +641,12 @@ namespace TutorDrive.Extension.SwagerUi
                     new VehicleUsageHistoryDto
                     {
                         Id = 1,
-                        VehicleId = 101,
-                        AccountId = 201,
                         StartTime = DateTime.Now.AddHours(-2),
                         EndTime = DateTime.Now
                     },
                     new VehicleUsageHistoryDto
                     {
                         Id = 3,
-                        VehicleId = 101,
-                        AccountId = 203,
                         StartTime = DateTime.Now.AddHours(-6),
                         EndTime = DateTime.Now.AddHours(-3)
                     }
@@ -676,16 +666,12 @@ namespace TutorDrive.Extension.SwagerUi
                     new VehicleUsageHistoryDto
                     {
                         Id = 2,
-                        VehicleId = 102,
-                        AccountId = 201,
                         StartTime = DateTime.Now.AddHours(-5),
                         EndTime = DateTime.Now.AddHours(-1)
                     },
                     new VehicleUsageHistoryDto
                     {
                         Id = 4,
-                        VehicleId = 103,
-                        AccountId = 201,
                         StartTime = DateTime.Now.AddHours(-10),
                         EndTime = DateTime.Now.AddHours(-7)
                     }

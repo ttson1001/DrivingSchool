@@ -1,12 +1,14 @@
-﻿namespace TutorDrive.Dtos.Vehicle
+﻿using TutorDrive.Dtos.account;
+
+namespace TutorDrive.Dtos.Vehicle
 {
     public class VehicleUsageHistoryDto
     {
         public long Id { get; set; }
-        public long VehicleId { get; set; }
-        public long AccountId { get; set; }
         public DateTime StartTime { get; set; }
         public DateTime? EndTime { get; set; }
+        public MeDto Account { get; set; }
+        public VehicleDto Vehicle { get; set; }
     }
 
     public class VehicleUsageHistoryCreateDto

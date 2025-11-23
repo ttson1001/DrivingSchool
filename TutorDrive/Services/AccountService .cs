@@ -319,6 +319,22 @@
             return me;
         }
 
+        public async Task ChangePasswordAsync(long accountId, ChangePasswordRequest dto)
+        {
+            var account = await _accountRepo.Get()
+                .FirstOrDefaultAsync(x => x.Id == accountId)
+                ?? throw new Exception("Không tìm thấy tài khoản.");
+
+            if (!BCrypt.Net.BCrypt.Verify(dto.OldPassword, account.PasswordHash))
+                throw new Exception("Mật khẩu cũ không chính xác.");
+
+            account.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+
+            _accountRepo.Update(account);
+            await _accountRepo.SaveChangesAsync();
+        }
+
+
         public async Task<StudentProfile> UpdateAsync(long accountId, UpdateStudentProfileDto dto)
         {
             var profile = await _studentRepo.Get()

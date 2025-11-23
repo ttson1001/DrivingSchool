@@ -1,8 +1,11 @@
-﻿using TutorDrive.Dtos.Vehicle;
+﻿using Microsoft.EntityFrameworkCore;
+using TutorDrive.Dtos.account;
+using TutorDrive.Dtos.Address;
+using TutorDrive.Dtos.Address.TutorDrive.Dtos.Address;
+using TutorDrive.Dtos.Vehicle;
 using TutorDrive.Entities;
 using TutorDrive.Repositories;
 using TutorDrive.Services.IService;
-using Microsoft.EntityFrameworkCore;
 
 namespace TutorDrive.Services
 {
@@ -24,67 +27,170 @@ namespace TutorDrive.Services
 
         public async Task<List<VehicleUsageHistoryDto>> GetAllAsync()
         {
-            var list = await _historyRepo.Get().ToListAsync();
-            return list.Select(x => new VehicleUsageHistoryDto
-            {
-                Id = x.Id,
-                VehicleId = x.VehicleId,
-                AccountId = x.AccountId,
-                StartTime = x.StartTime,
-                EndTime = x.EndTime
-            }).ToList();
+            return await _historyRepo.Get()
+                .Include(x => x.Account).ThenInclude(a => a.StudentProfile).ThenInclude(sp => sp.Address).ThenInclude(a => a.Ward)
+                .Include(x => x.Account).ThenInclude(a => a.StudentProfile).ThenInclude(sp => sp.Address).ThenInclude(a => a.Province)
+                .Include(x => x.Account).ThenInclude(a => a.InstructorProfile)
+                .Include(x => x.Vehicle)
+                .OrderByDescending(x => x.StartTime)
+                .Select(x => new VehicleUsageHistoryDto
+                {
+                    Id = x.Id,
+                    StartTime = x.StartTime,
+                    EndTime = x.EndTime,
+
+                    Account = new MeDto
+                    {
+                        AccountId = x.Account.Id,
+                        Email = x.Account.Email,
+                        FullName = x.Account.FullName,
+                        PhoneNumber = x.Account.PhoneNumber,
+                        Avatar = x.Account.Avatar,
+                        LicenseNumber = x.Account.InstructorProfile == null ? null : x.Account.InstructorProfile.LicenseNumber,
+                        ExperienceYears = x.Account.InstructorProfile == null ? null : x.Account.InstructorProfile.ExperienceYears,
+
+                    },
+
+                    Vehicle = new VehicleDto
+                    {
+                        Id = x.Vehicle.Id,
+                        PlateNumber = x.Vehicle.PlateNumber,
+                        Brand = x.Vehicle.Brand,
+                        Model = x.Vehicle.Model,
+                        Status = x.Vehicle.Status
+                    }
+                })
+                .ToListAsync();
         }
 
         public async Task<VehicleUsageHistoryDto> GetByIdAsync(long id)
         {
-            var entity = await _historyRepo.Get().FirstOrDefaultAsync(x => x.Id == id);
-            if (entity == null) throw new Exception("Không tìm thấy");
+            var x = await _historyRepo.Get()
+                .Include(v => v.Account).ThenInclude(a => a.StudentProfile).ThenInclude(sp => sp.Address).ThenInclude(a => a.Ward)
+                .Include(v => v.Account).ThenInclude(a => a.StudentProfile).ThenInclude(sp => sp.Address).ThenInclude(a => a.Province)
+                .Include(v => v.Account).ThenInclude(a => a.InstructorProfile)
+                .Include(v => v.Vehicle)
+                .FirstOrDefaultAsync(v => v.Id == id);
+
+            if (x == null)
+                throw new Exception("Không tìm thấy");
 
             return new VehicleUsageHistoryDto
             {
-                Id = entity.Id,
-                VehicleId = entity.VehicleId,
-                AccountId = entity.AccountId,
-                StartTime = entity.StartTime,
-                EndTime = entity.EndTime
+                Id = x.Id,
+                StartTime = x.StartTime,
+                EndTime = x.EndTime,
+
+                Account = new MeDto
+                {
+                    AccountId = x.Account.Id,
+                    Email = x.Account.Email,
+                    FullName = x.Account.FullName,
+                    PhoneNumber = x.Account.PhoneNumber,
+                    Avatar = x.Account.Avatar,
+                    LicenseNumber = x.Account.InstructorProfile?.LicenseNumber,
+                    ExperienceYears = x.Account.InstructorProfile?.ExperienceYears,
+                },
+
+                Vehicle = new VehicleDto
+                {
+                    Id = x.Vehicle.Id,
+                    PlateNumber = x.Vehicle.PlateNumber,
+                    Brand = x.Vehicle.Brand,
+                    Model = x.Vehicle.Model,
+                    Status = x.Vehicle.Status
+                }
             };
         }
-
         public async Task<List<VehicleUsageHistoryDto>> GetAllByVehicleIdAsync(long vehicleId)
         {
-            return await _historyRepo.Get().Where(x => x.VehicleId == vehicleId).Select(x => new VehicleUsageHistoryDto
+            var list = await _historyRepo.Get()
+                .Where(x => x.VehicleId == vehicleId)
+                .Include(x => x.Account).ThenInclude(a => a.StudentProfile)
+                .Include(x => x.Account).ThenInclude(a => a.InstructorProfile)
+                .Include(x => x.Vehicle)
+                .ToListAsync();
+
+            return list.Select(x => new VehicleUsageHistoryDto
             {
                 Id = x.Id,
-                VehicleId = x.VehicleId,
-                AccountId = x.AccountId,
                 StartTime = x.StartTime,
-                EndTime = x.EndTime
-            }).ToListAsync();
+                EndTime = x.EndTime,
+
+                Account = new MeDto
+                {
+                    AccountId = x.Account.Id,
+                    Email = x.Account.Email,
+                    FullName = x.Account.FullName,
+                    PhoneNumber = x.Account.PhoneNumber,
+                    Avatar = x.Account.Avatar,
+                    LicenseNumber = x.Account.InstructorProfile?.LicenseNumber,
+                    ExperienceYears = x.Account.InstructorProfile?.ExperienceYears,
+                    CMND = x.Account.StudentProfile?.CMND,
+                    DOB = x.Account.StudentProfile?.DOB,
+                    Status = x.Account.StudentProfile?.Status
+                },
+
+                Vehicle = new VehicleDto
+                {
+                    Id = x.Vehicle.Id,
+                    PlateNumber = x.Vehicle.PlateNumber,
+                    Brand = x.Vehicle.Brand,
+                    Model = x.Vehicle.Model,
+                    Status = x.Vehicle.Status
+                }
+            }).ToList();
         }
 
         public async Task<List<VehicleUsageHistoryDto>> GetAllByAccountIdAsync(long accountId)
         {
-            return await _historyRepo.Get().Where(x => x.AccountId == accountId).Select(x => new VehicleUsageHistoryDto
+            var list = await _historyRepo.Get()
+                .Where(x => x.AccountId == accountId)
+                .Include(x => x.Account).ThenInclude(a => a.StudentProfile)
+                .Include(x => x.Account).ThenInclude(a => a.InstructorProfile)
+                .Include(x => x.Vehicle)
+                .ToListAsync();
+
+            return list.Select(x => new VehicleUsageHistoryDto
             {
                 Id = x.Id,
-                VehicleId = x.VehicleId,
-                AccountId = x.AccountId,
                 StartTime = x.StartTime,
-                EndTime = x.EndTime
-            }).ToListAsync();
+                EndTime = x.EndTime,
+
+                Account = new MeDto
+                {
+                    AccountId = x.Account.Id,
+                    Email = x.Account.Email,
+                    FullName = x.Account.FullName,
+                    PhoneNumber = x.Account.PhoneNumber,
+                    Avatar = x.Account.Avatar,
+                    LicenseNumber = x.Account.InstructorProfile?.LicenseNumber,
+                    ExperienceYears = x.Account.InstructorProfile?.ExperienceYears,
+                    CMND = x.Account.StudentProfile?.CMND,
+                    DOB = x.Account.StudentProfile?.DOB,
+                    Status = x.Account.StudentProfile?.Status
+                },
+
+                Vehicle = new VehicleDto
+                {
+                    Id = x.Vehicle.Id,
+                    PlateNumber = x.Vehicle.PlateNumber,
+                    Brand = x.Vehicle.Brand,
+                    Model = x.Vehicle.Model,
+                    Status = x.Vehicle.Status
+                }
+            }).ToList();
         }
 
         public async Task CreateAsync(long accountId, VehicleUsageHistoryCreateDto dto)
         {
             var vehicle = await _vehicleRepo.Get()
                 .FirstOrDefaultAsync(x => x.Id == dto.VehicleId);
-
             if (vehicle == null)
                 throw new Exception($"Xe với Id {dto.VehicleId} không tồn tại");
 
             var account = await _accountRepo.Get()
                 .FirstOrDefaultAsync(x => x.Id == accountId);
-
             if (account == null)
                 throw new Exception($"Người dùng với Id {accountId} không tồn tại");
 
@@ -100,7 +206,6 @@ namespace TutorDrive.Services
             await _historyRepo.SaveChangesAsync();
         }
 
-
         public async Task UpdateAsync(long accountId, VehicleUsageHistoryUpdateDto dto)
         {
             var entity = await _historyRepo.Get()
@@ -109,7 +214,6 @@ namespace TutorDrive.Services
             if (entity == null)
                 throw new Exception("Không tìm thấy lịch sử sử dụng xe");
 
-            // Không cho user sửa lịch sử của người khác
             if (entity.AccountId != accountId)
                 throw new Exception("Bạn không có quyền chỉnh sửa lịch sử sử dụng xe của người khác");
 
