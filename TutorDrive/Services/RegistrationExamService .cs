@@ -14,15 +14,18 @@ namespace TutorDrive.Services.Service
         private readonly IRepository<RegistrationExam> _registrationRepo;
         private readonly IRepository<StudentProfile> _studentProfileRepo;
         private readonly IRepository<Course> _courseRepo;
+        private readonly IRepository<Exam> _examRepo;
 
         public RegistrationExamService(
             IRepository<RegistrationExam> registrationRepo,
             IRepository<StudentProfile> studentProfileRepo,
-            IRepository<Course> courseRepo)
+            IRepository<Course> courseRepo,
+            IRepository<Exam> examRepo)
         {
             _registrationRepo = registrationRepo;
             _studentProfileRepo = studentProfileRepo;
             _courseRepo = courseRepo;
+            _examRepo = examRepo;
         }
 
         public async Task<RegistrationExamDto> SubmitAsync(RegistrationExamCreateDto dto, long accountId)
@@ -174,7 +177,9 @@ namespace TutorDrive.Services.Service
         public async Task UpdateStatusAsync(RegistrationExamStatusUpdateDto dto, long adminAccountId)
         {
             var entity = await _registrationRepo.Get()
-                .Include(r => r.StudentProfile).ThenInclude(sp => sp.Account)
+                .Include(r => r.StudentProfile)
+                .Include(r => r.Course)
+                .Include(r => r.Exams)
                 .FirstOrDefaultAsync(r => r.Id == dto.Id);
 
             if (entity == null)
@@ -184,8 +189,33 @@ namespace TutorDrive.Services.Service
             entity.Comment = dto.Comment;
             entity.UpdatedAt = DateTime.UtcNow;
 
+            if (dto.Status == RegistrationStatus.Approved)
+            {
+                if (entity.CourseId == null)
+                    throw new Exception("Hồ sơ chưa chọn khóa học, không thể gán kỳ thi.");
+
+                var exams = await _examRepo.Get()
+                    .Where(e => e.CourseId == entity.CourseId)
+                    .ToListAsync();
+
+                if (!exams.Any())
+                    throw new Exception("Khóa học này chưa có kỳ thi nào.");
+
+                entity.Exams.Clear();
+
+                foreach (var exam in exams)
+                {
+                    entity.Exams.Add(new RegistrationExamExam
+                    {
+                        RegistrationExamId = entity.Id,
+                        ExamId = exam.Id
+                    });
+                }
+            }
+
             await _registrationRepo.SaveChangesAsync();
         }
+
 
         private RegistrationExamDto MapToDto(RegistrationExam entity, StudentProfile student)
         {

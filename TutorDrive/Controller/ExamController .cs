@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using Swashbuckle.AspNetCore.Filters;
 using TutorDrive.Dtos.common;
@@ -19,7 +20,7 @@ namespace TutorDrive.Controllers
             _examService = examService;
         }
 
-        [HttpGet("get-all")]
+        [HttpGet("[action]")]
         [SwaggerOperation(Summary = "Lấy danh sách tất cả kỳ thi")]
         [SwaggerResponse(StatusCodes.Status200OK, "Danh sách kỳ thi", typeof(ResponseDto))]
         [SwaggerResponseExample(200, typeof(ExamResponseExample))]
@@ -40,7 +41,7 @@ namespace TutorDrive.Controllers
             }
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("[action]/{id}")]
         [SwaggerOperation(Summary = "Lấy thông tin kỳ thi theo ID")]
         [SwaggerResponse(StatusCodes.Status200OK, "Thông tin kỳ thi", typeof(ResponseDto))]
         public async Task<IActionResult> GetById(long id)
@@ -66,7 +67,7 @@ namespace TutorDrive.Controllers
             }
         }
 
-        [HttpPost("create")]
+        [HttpPost("[action]")]
         [SwaggerOperation(Summary = "Tạo mới kỳ thi")]
         [SwaggerResponse(StatusCodes.Status200OK, "Tạo kỳ thi thành công", typeof(ResponseDto))]
         public async Task<IActionResult> Create(CreateExamDto dto)
@@ -85,7 +86,7 @@ namespace TutorDrive.Controllers
             }
         }
 
-        [HttpPut("update")]
+        [HttpPut("[action]")]
         [SwaggerOperation(Summary = "Cập nhật kỳ thi")]
         [SwaggerResponse(StatusCodes.Status200OK, "Cập nhật kỳ thi thành công", typeof(ResponseDto))]
         public async Task<IActionResult> Update(UpdateExamDto dto)
@@ -100,6 +101,39 @@ namespace TutorDrive.Controllers
             catch (Exception ex)
             {
                 response.Message = $"Lỗi khi cập nhật kỳ thi: {ex.Message}";
+                return BadRequest(response);
+            }
+        }
+
+        [HttpGet("[action]")]
+        [SwaggerOperation(
+    Summary = "Lấy danh sách các kỳ thi sắp tới của học sinh",
+    Description = "Trả về danh sách kỳ thi (lý thuyết, mô phỏng, sa hình, thực hành) mà học sinh đã được gán và có ngày thi trong tương lai."
+)]
+        [SwaggerResponse(StatusCodes.Status200OK, "Danh sách kỳ thi sắp tới", typeof(ResponseDto))]
+        public async Task<IActionResult> GetUpcomingExams()
+        {
+            var response = new ResponseDto();
+            try
+            {
+                var accountIdStr = User.FindFirst("UserId")?.Value;
+
+                if (string.IsNullOrEmpty(accountIdStr))
+                    return Unauthorized(new { message = "Không tìm thấy thông tin người dùng trong token" });
+
+                if (!long.TryParse(accountIdStr, out var accountId))
+                    return BadRequest(new { message = "ID người dùng không hợp lệ" });
+
+                var data = await _examService.GetUpcomingExamsForStudentAsync(accountId);
+
+                response.Message = "Lấy danh sách kỳ thi sắp tới thành công";
+                response.Data = data;
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                response.Message = ex.Message;
                 return BadRequest(response);
             }
         }

@@ -9,5 +9,6 @@ namespace TutorDrive.Services.IService
         Task CreateAsync(CreateExamDto dto);
         Task UpdateAsync(UpdateExamDto dto);
         Task DeleteAsync(long id);
+        Task<List<UpcomingExamDto>> GetUpcomingExamsForStudentAsync(long accountId);
     }
 }

@@ -438,7 +438,6 @@ namespace TutorDrive.Extension.SwagerUi
                 CourseId = 101,
                 CourseName = "Lập trình Java nâng cao",
                 Date = new DateTime(2025, 12, 10),
-                Type = "Final Exam",
                 Location = "Phòng 204 - Cơ sở 2"
             };
         }
