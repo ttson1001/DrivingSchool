@@ -91,6 +91,8 @@ builder.Services.Configure<CloudinarySettings>(
     builder.Configuration.GetSection("CloudinarySettings")
 );
 builder.Services.Configure<VnPaySettings>(builder.Configuration.GetSection("VNPAY"));
+builder.Services.Configure<PayOsSettings>(
+    builder.Configuration.GetSection("PayOsSettings"));
 builder.Services.Register();
 builder.Services.AddAuthorization();
 builder.Services.AddHttpClient();

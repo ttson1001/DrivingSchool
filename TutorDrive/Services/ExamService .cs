@@ -10,11 +10,14 @@ public class ExamService : IExamService
     private readonly IRepository<StudentProfile> _studentRepo;
     private readonly IRepository<RegistrationExam> _registrationExamRepository;
 
-    public ExamService(IRepository<Exam> repository, IRepository<StudentProfile> studentRepo, IRepository<RegistrationExam> registrationExamrepository)
+    public ExamService(
+        IRepository<Exam> repository,
+        IRepository<StudentProfile> studentRepo,
+        IRepository<RegistrationExam> registrationExamRepository)
     {
         _repository = repository;
         _studentRepo = studentRepo;
-        _registrationExamRepository = registrationExamrepository;
+        _registrationExamRepository = registrationExamRepository;
     }
 
     public async Task<List<ExamDto>> GetAllAsync()
@@ -25,6 +28,7 @@ public class ExamService : IExamService
             .Select(e => new ExamDto
             {
                 Id = e.Id,
+                ExamCode = e.ExamCode,
                 CourseId = e.CourseId,
                 CourseName = e.Course.Name,
                 Date = e.ExamDate,
@@ -45,6 +49,7 @@ public class ExamService : IExamService
         return new ExamDto
         {
             Id = exam.Id,
+            ExamCode = exam.ExamCode,
             CourseId = exam.CourseId,
             CourseName = exam.Course?.Name,
             Date = exam.ExamDate,
@@ -57,6 +62,7 @@ public class ExamService : IExamService
     {
         var exam = new Exam
         {
+            ExamCode = dto.ExamCode,
             CourseId = dto.CourseId,
             ExamDate = dto.Date,
             Type = dto.Type,
@@ -75,6 +81,7 @@ public class ExamService : IExamService
         if (exam == null)
             throw new Exception("Không tìm thấy kỳ thi.");
 
+        exam.ExamCode = dto.ExamCode;
         exam.ExamDate = dto.Date;
         exam.Type = dto.Type;
         exam.Location = dto.Location;
@@ -106,7 +113,7 @@ public class ExamService : IExamService
         var registrations = await _registrationExamRepository.Get()
             .Where(r => r.StudentProfileId == student.Id)
             .Include(r => r.Exams)
-                .ThenInclude(re => re.Exam)
+                .ThenInclude(r => r.Exam)
                 .ThenInclude(e => e.Course)
             .ToListAsync();
 
@@ -120,6 +127,7 @@ public class ExamService : IExamService
         return exams.Select(ex => new UpcomingExamDto
         {
             Id = ex.Id,
+            ExamCode = ex.ExamCode,
             CourseId = ex.CourseId,
             CourseName = ex.Course.Name,
             Type = ex.Type,

@@ -4,6 +4,7 @@ using TutorDrive.Services;
 using TutorDrive.Services.IService;
 using TutorDrive.Services.IService.TutorDrive.Services.IService;
 using TutorDrive.Services.IServices;
+using TutorDrive.Services.Payment;
 using TutorDrive.Services.Service;
 
 namespace TutorDrive.Extension
@@ -32,6 +33,7 @@ namespace TutorDrive.Extension
             services.AddScoped<ITransactionService, TransactionService>();
             services.AddScoped<IAdminService, AdminService>();
             services.AddScoped<IRegistrationExamService, RegistrationExamService>();
+            services.AddScoped<PayOSService>();
         }
     }
 }

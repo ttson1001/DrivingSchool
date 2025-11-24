@@ -6,7 +6,7 @@ namespace TutorDrive.Entities
     public class Exam : IEntity
     {
         public long Id { get; set; }
-
+        public string ExamCode { get; set; }
         public long CourseId { get; set; }
         public Course Course { get; set; }
 

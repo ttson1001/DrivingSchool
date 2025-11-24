@@ -7,6 +7,7 @@ namespace TutorDrive.Dtos.ExamDto
         public long Id { get; set; }
         public long CourseId { get; set; }
         public string CourseName { get; set; }
+        public string ExamCode { get; set; }
 
         public ExamType Type { get; set; }
         public string TypeName { get; set; }
