@@ -59,7 +59,7 @@ namespace TutorDrive.Services.Payment
             {
                 OrderCode = registrationId,
                 Amount = (long)registration.Price,
-                Description = $"Thanh toán khóa học {registration.Course.Name}",
+                Description = $"Thanh toán khóa học",
                 ReturnUrl = _settings.ReturnUrl + $"?registrationId={registrationId}",
                 CancelUrl = _settings.CancelUrl
             };
