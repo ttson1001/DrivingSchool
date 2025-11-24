@@ -28,7 +28,6 @@ public class ExamResultController : ControllerBase
                 return BadRequest(new ResponseDto { Message = "File không hợp lệ" });
 
             await _service.ImportFromExcelAsync(request.File);
-
             response.Message = "Import kết quả thi thành công.";
             return Ok(response);
         }
