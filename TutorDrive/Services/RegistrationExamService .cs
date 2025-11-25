@@ -179,7 +179,7 @@ namespace TutorDrive.Services.Service
             var entity = await _registrationRepo.Get()
                 .Include(r => r.StudentProfile)
                 .Include(r => r.Course)
-                .Include(r => r.Exams)
+                .Include(r => r.Exam)
                 .FirstOrDefaultAsync(r => r.Id == dto.Id);
 
             if (entity == null)
@@ -192,30 +192,21 @@ namespace TutorDrive.Services.Service
             if (dto.Status == RegistrationStatus.Approved)
             {
                 if (entity.CourseId == null)
-                    throw new Exception("Hồ sơ chưa chọn khóa học, không thể gán kỳ thi.");
+                    throw new Exception("Học viên chưa chọn khóa học, không thể gán ngày thi.");
 
-                var exams = await _examRepo.Get()
+                var exam = await _examRepo.Get()
                     .Where(e => e.CourseId == entity.CourseId)
-                    .ToListAsync();
+                    .OrderBy(e => e.ExamDate)
+                    .FirstOrDefaultAsync();
 
-                if (!exams.Any())
+                if (exam == null)
                     throw new Exception("Khóa học này chưa có kỳ thi nào.");
 
-                entity.Exams.Clear();
-
-                foreach (var exam in exams)
-                {
-                    entity.Exams.Add(new RegistrationExamExam
-                    {
-                        RegistrationExamId = entity.Id,
-                        ExamId = exam.Id
-                    });
-                }
+                entity.ExamId = exam.Id;
             }
 
             await _registrationRepo.SaveChangesAsync();
         }
-
 
         private RegistrationExamDto MapToDto(RegistrationExam entity, StudentProfile student)
         {

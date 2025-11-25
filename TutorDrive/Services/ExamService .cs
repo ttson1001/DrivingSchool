@@ -32,8 +32,12 @@ public class ExamService : IExamService
                 CourseId = e.CourseId,
                 CourseName = e.Course.Name,
                 Date = e.ExamDate,
-                Type = e.Type,
-                Location = e.Location
+                Location = e.Location,
+
+                Theory = e.Theory,
+                Simulation = e.Simulation,
+                Track = e.Track,
+                RoadTest = e.RoadTest
             })
             .ToListAsync();
     }
@@ -53,8 +57,12 @@ public class ExamService : IExamService
             CourseId = exam.CourseId,
             CourseName = exam.Course?.Name,
             Date = exam.ExamDate,
-            Type = exam.Type,
-            Location = exam.Location
+            Location = exam.Location,
+
+            Theory = exam.Theory,
+            Simulation = exam.Simulation,
+            Track = exam.Track,
+            RoadTest = exam.RoadTest
         };
     }
 
@@ -65,8 +73,12 @@ public class ExamService : IExamService
             ExamCode = dto.ExamCode,
             CourseId = dto.CourseId,
             ExamDate = dto.Date,
-            Type = dto.Type,
-            Location = dto.Location
+            Location = dto.Location,
+
+            Theory = dto.Theory,
+            Simulation = dto.Simulation,
+            Track = dto.Track,
+            RoadTest = dto.RoadTest
         };
 
         await _repository.AddAsync(exam);
@@ -83,8 +95,12 @@ public class ExamService : IExamService
 
         exam.ExamCode = dto.ExamCode;
         exam.ExamDate = dto.Date;
-        exam.Type = dto.Type;
         exam.Location = dto.Location;
+
+        exam.Theory = dto.Theory;
+        exam.Simulation = dto.Simulation;
+        exam.Track= dto.Track;
+        exam.RoadTest = dto.RoadTest;
 
         _repository.Update(exam);
         await _repository.SaveChangesAsync();
@@ -92,8 +108,7 @@ public class ExamService : IExamService
 
     public async Task DeleteAsync(long id)
     {
-        var exam = await _repository.Get()
-            .FirstOrDefaultAsync(x => x.Id == id);
+        var exam = await _repository.Get().FirstOrDefaultAsync(x => x.Id == id);
 
         if (exam == null)
             throw new Exception("Không tìm thấy kỳ thi.");
@@ -102,7 +117,7 @@ public class ExamService : IExamService
         await _repository.SaveChangesAsync();
     }
 
-    public async Task<List<UpcomingExamDto>> GetUpcomingExamsForStudentAsync(long accountId)
+    public async Task<UpcomingExamDto?> GetUpcomingExamsForStudentAsync(long accountId)
     {
         var student = await _studentRepo.Get()
             .FirstOrDefaultAsync(s => s.AccountId == accountId);
@@ -112,28 +127,27 @@ public class ExamService : IExamService
 
         var registrations = await _registrationExamRepository.Get()
             .Where(r => r.StudentProfileId == student.Id)
-            .Include(r => r.Exams)
-                .ThenInclude(r => r.Exam)
+            .Include(r => r.Exam)
                 .ThenInclude(e => e.Course)
             .ToListAsync();
 
-        var exams = registrations
-            .SelectMany(r => r.Exams)
-            .Select(x => x.Exam)
+        var nearestExam = registrations
+            .Select(r => r.Exam)
             .Where(ex => ex.ExamDate > DateTime.UtcNow)
             .OrderBy(ex => ex.ExamDate)
-            .ToList();
+            .FirstOrDefault();
 
-        return exams.Select(ex => new UpcomingExamDto
+        if (nearestExam == null)
+            return null;
+
+        return new UpcomingExamDto
         {
-            Id = ex.Id,
-            ExamCode = ex.ExamCode,
-            CourseId = ex.CourseId,
-            CourseName = ex.Course.Name,
-            Type = ex.Type,
-            TypeName = ex.Type.ToString(),
-            ExamDate = ex.ExamDate,
-            Location = ex.Location
-        }).ToList();
+            Id = nearestExam.Id,
+            ExamCode = nearestExam.ExamCode,
+            CourseId = nearestExam.CourseId,
+            CourseName = nearestExam.Course.Name,
+            ExamDate = nearestExam.ExamDate,
+            Location = nearestExam.Location
+        };
     }
 }
