@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using OfficeOpenXml;
+using TutorDrive.Dtos.ExamResult;
 using TutorDrive.Entities;
 using TutorDrive.Entities.Enum;
 using TutorDrive.Repositories;
@@ -117,5 +118,48 @@ public class ExamResultService : IExamResultService
             imported,
             errors
         };
+    }
+
+    public async Task<List<ExamResult>> SearchAsync(ExamResultSearchDto dto)
+    {
+        var query = _examResultRepo.Get()
+            .Include(x => x.StudentProfile)
+            .Include(x => x.Exam)
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(dto.Keyword))
+        {
+            query = query.Where(x =>
+                x.ExamCode.Contains(dto.Keyword) ||
+                x.StudentProfile.Account.Email.Contains(dto.Keyword)
+            );
+        }
+
+        if (!string.IsNullOrWhiteSpace(dto.ExamCode))
+        {
+            query = query.Where(x => x.ExamCode == dto.ExamCode);
+        }
+
+        if (dto.FromDate != null)
+        {
+            query = query.Where(x => x.Exam.ExamDate >= dto.FromDate);
+        }
+
+        if (dto.ToDate != null)
+        {
+            query = query.Where(x => x.Exam.ExamDate <= dto.ToDate);
+        }
+
+        return await query.ToListAsync();
+    }
+
+    public async Task<List<ExamResult>> GetHistoryByAccountId(long accountId)
+    {
+        return await _examResultRepo.Get()
+            .Include(x => x.Exam)
+            .Include(x => x.StudentProfile)
+            .Where(x => x.StudentProfile.AccountId == accountId)
+            .OrderByDescending(x => x.Id)
+            .ToListAsync();
     }
 }

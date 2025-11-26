@@ -125,17 +125,15 @@ public class ExamService : IExamService
         if (student == null)
             throw new Exception("Không tìm thấy hồ sơ học sinh.");
 
-        var registrations = await _registrationExamRepository.Get()
+        var nearestExam = await _registrationExamRepository.Get()
             .Where(r => r.StudentProfileId == student.Id)
+            .Where(r => r.Exam != null)
             .Include(r => r.Exam)
-                .ThenInclude(e => e.Course)
-            .ToListAsync();
-
-        var nearestExam = registrations
+                .ThenInclude(ex => ex.Course)
             .Select(r => r.Exam)
             .Where(ex => ex.ExamDate > DateTime.UtcNow)
             .OrderBy(ex => ex.ExamDate)
-            .FirstOrDefault();
+            .FirstOrDefaultAsync();
 
         if (nearestExam == null)
             return null;
@@ -145,8 +143,15 @@ public class ExamService : IExamService
             Id = nearestExam.Id,
             ExamCode = nearestExam.ExamCode,
             CourseId = nearestExam.CourseId,
-            CourseName = nearestExam.Course.Name,
+            CourseName = nearestExam.Course?.Name,
+
             ExamDate = nearestExam.ExamDate,
+
+            Theory = nearestExam.Theory,
+            Simulation = nearestExam.Simulation,
+            Track = nearestExam.Track,
+            RoadTest = nearestExam.RoadTest,
+
             Location = nearestExam.Location
         };
     }
