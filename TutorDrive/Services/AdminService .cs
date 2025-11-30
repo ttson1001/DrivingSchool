@@ -77,17 +77,22 @@ namespace TutorDrive.Services
                 );
 
 
-            // Registration count per month (12 months)
-            var registrationByMonth = await _registrationRepo.Get()
+            var registrationByMonth = _registrationRepo.Get()
                 .GroupBy(x => new { x.RegisterDate.Year, x.RegisterDate.Month })
-                .Select(g => new RegistrationChartPoint
+                .Select(g => new
                 {
-                    Month = $"{g.Key.Month}/{g.Key.Year}",
+                    g.Key.Year,
+                    g.Key.Month,
                     Count = g.Count()
                 })
+                 .AsEnumerable()
+                .Select(x => new RegistrationChartPoint
+                {
+                    Month = $"{x.Month}/{x.Year}",
+                    Count = x.Count
+                })
                 .OrderBy(x => x.Month)
-                .ToListAsync();
-
+                .ToList();
 
             return new AdminDashboardDto
             {
