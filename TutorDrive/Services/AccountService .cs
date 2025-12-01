@@ -226,6 +226,15 @@
                 await _staffRepo.SaveChangesAsync();
             }
         }
+
+        private string GenerateRandomPassword(int length = 10)
+        {
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
+            var rnd = new Random();
+            return new string(Enumerable.Repeat(chars, length)
+                .Select(s => s[rnd.Next(s.Length)]).ToArray());
+        }
+
         public async Task<AccountDto> UpdateAccountAsync(long id, AccountUpdateDto dto)
         {
             var account = await _accountRepo.Get()
@@ -236,14 +245,27 @@
             if (!string.IsNullOrWhiteSpace(dto.FullName))
                 account.FullName = dto.FullName;
 
-            if (!string.IsNullOrWhiteSpace(dto.Password))
-                account.PasswordHash = HashPassword(dto.Password);
-
             if (dto.RoleId.HasValue)
                 account.RoleId = dto.RoleId.Value;
 
+            var newPassword = GenerateRandomPassword();
+
+            account.PasswordHash = HashPassword(newPassword);
+
             _accountRepo.Update(account);
             await _accountRepo.SaveChangesAsync();
+
+            await _emailService.SendEmailAsync(
+                account.Email,
+                "Your Updated Account Password",
+                $@"
+            <h3>Xin chào {account.FullName},</h3>
+            <p>Mật khẩu tài khoản của bạn đã được cập nhật.</p>
+            <p><b>Email:</b> {account.Email}</p>
+            <p><b>Mật khẩu mới:</b> {newPassword}</p>
+            <p>Vui lòng đăng nhập và đổi mật khẩu ngay.</p>
+        "
+            );
 
             return new AccountDto
             {
@@ -427,5 +449,59 @@
             return profile;
         }
 
+        public async Task<InstructorProfile> UpdateInstructorProfileAsync(long accountId, UpdateInstructorProfileDto dto)
+        {
+            var profile = await _staffRepo.Get()
+                .Include(x => x.Account)
+                .FirstOrDefaultAsync(x => x.AccountId == accountId);
+
+            bool isNewProfile = false;
+
+            if (profile == null)
+            {
+                var account = await _accountRepo.Get()
+                    .FirstOrDefaultAsync(x => x.Id == accountId);
+
+                if (account == null)
+                    throw new Exception("Không tìm thấy tài khoản tương ứng");
+
+                profile = new InstructorProfile
+                {
+                    Account = account
+                };
+
+                isNewProfile = true;
+            }
+
+            if (!string.IsNullOrWhiteSpace(dto.LicenseNumber))
+                profile.LicenseNumber = dto.LicenseNumber;
+
+            if (dto.ExperienceYears.HasValue)
+                profile.ExperienceYears = dto.ExperienceYears.Value;
+
+            if (!string.IsNullOrWhiteSpace(dto.Description))
+                profile.Description = dto.Description;
+
+            if (profile.Account != null)
+            {
+                if (!string.IsNullOrWhiteSpace(dto.FullName))
+                    profile.Account.FullName = dto.FullName;
+
+                if (!string.IsNullOrWhiteSpace(dto.PhoneNumber))
+                    profile.Account.PhoneNumber = dto.PhoneNumber;
+
+                if (!string.IsNullOrWhiteSpace(dto.Avatar))
+                    profile.Account.Avatar = dto.Avatar;
+            }
+
+            if (!isNewProfile)
+                _staffRepo.Update(profile);
+            else
+                await _staffRepo.AddAsync(profile);
+
+            await _staffRepo.SaveChangesAsync();
+
+            return profile;
+        }
     }
 }

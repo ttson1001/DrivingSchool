@@ -120,6 +120,7 @@ namespace TutorDrive.Services
         {
             return await _courseRepo.Get()
                 .Where(c => c.Status == CourseStatus.Active)
+                .OrderByDescending(c => c.Id)
                 .Include(c => c.Sections)
                 .Select(c => new CourseDto
                 {
