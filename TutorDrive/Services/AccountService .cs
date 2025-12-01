@@ -267,24 +267,8 @@
             if (dto.RoleId.HasValue)
                 account.RoleId = dto.RoleId.Value;
 
-            var newPassword = GenerateRandomPassword();
-
-            account.PasswordHash = HashPassword(newPassword);
-
             _accountRepo.Update(account);
             await _accountRepo.SaveChangesAsync();
-
-            await _emailService.SendEmailAsync(
-                account.Email,
-                "Your Updated Account Password",
-                $@"
-            <h3>Xin chào {account.FullName},</h3>
-            <p>Mật khẩu tài khoản của bạn đã được cập nhật.</p>
-            <p><b>Email:</b> {account.Email}</p>
-            <p><b>Mật khẩu mới:</b> {newPassword}</p>
-            <p>Vui lòng đăng nhập và đổi mật khẩu ngay.</p>
-        "
-            );
 
             return new AccountDto
             {
