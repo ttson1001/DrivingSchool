@@ -193,39 +193,58 @@
             };
         }
 
-
         public async Task CreateAccountAsync(AccountCreateDto dto)
         {
-            var role = await _roleRepo.Get().Where(r => r.Id == dto.RoleId).FirstAsync();
-            if (role == null)
-                throw new Exception("Role không tồn tại.");
+            var role = await _roleRepo.Get()
+                .FirstOrDefaultAsync(r => r.Id == dto.RoleId)
+                ?? throw new Exception("Role không tồn tại.");
 
-            if (await _accountRepo.Get().FirstOrDefaultAsync(a => a.Email == dto.Email) != null)
+            if (await _accountRepo.Get().AnyAsync(a => a.Email == dto.Email))
                 throw new Exception("Email đã tồn tại.");
+
+            var rawPassword = GenerateRandomPassword();
+            var hashedPassword = HashPassword(rawPassword);
 
             var account = new Account
             {
                 Email = dto.Email,
                 FullName = dto.FullName,
                 PhoneNumber = dto.PhoneNumber,
-                PasswordHash = HashPassword(dto.Password),
-                RoleId = dto.RoleId
+                PasswordHash = hashedPassword,
+                RoleId = dto.RoleId,
+                CreatedAt = DateTime.UtcNow
             };
 
             await _accountRepo.AddAsync(account);
+            await _accountRepo.SaveChangesAsync();
 
             if (role.Name.Equals("Instructor", StringComparison.OrdinalIgnoreCase))
             {
                 var staff = new InstructorProfile
                 {
-                    Account = account,
+                    AccountId = account.Id,
                     LicenseNumber = dto.LicenseNumber ?? "N/A",
-                    ExperienceYears = dto.ExperienceYears ?? 0
+                    ExperienceYears = dto.ExperienceYears ?? 0,
+                    Description = ""
                 };
+
                 await _staffRepo.AddAsync(staff);
                 await _staffRepo.SaveChangesAsync();
             }
+
+            await _emailService.SendEmailAsync(
+                account.Email,
+                "Chào mừng bạn đến vs TutorDrive",
+                $@"
+            <h3>Xin chào {account.FullName},</h3>
+            <p>Tài khoản của bạn đã được tạo thành công.</p>
+            <p><b>Email:</b> {account.Email}</p>
+            <p><b>Mật khẩu:</b> {rawPassword}</p>
+            <p>Vui lòng đăng nhập và đổi mật khẩu ngay.</p>
+        "
+            );
         }
+
 
         private string GenerateRandomPassword(int length = 10)
         {
