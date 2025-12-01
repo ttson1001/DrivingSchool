@@ -1,4 +1,6 @@
-﻿namespace TutorDrive.Dtos.Course
+﻿using TutorDrive.Entities.Enum.TutorDrive.Entities.Enum;
+
+namespace TutorDrive.Dtos.Course
 {
     public class SectionCreateDto
     {
@@ -32,6 +34,8 @@
         public string ImageUrl { get; set; }
         public int? DurationDays { get; set; }
         public decimal? Price { get; set; }
+
+        public CourseStatus Status { get; set; }
 
         public List<SectionDto> Sections { get; set; } = new();
     }

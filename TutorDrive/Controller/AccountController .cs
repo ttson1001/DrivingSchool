@@ -191,6 +191,30 @@ namespace TutorDrive.Controller
             }
         }
 
+        [HttpGet("[action]/{userId:long}")]
+        public async Task<IActionResult> GetAccountInfo(long userId)
+        {
+            try
+            {
+                var me = await _accountService.GetMeAsync(userId);
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Lấy thông tin tài khoản thành công",
+                    data = me
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
+        }
+
         [HttpPut("[action]")]
         [Authorize]
         public async Task<IActionResult> UpdateProfile([FromBody] UpdateStudentProfileDto dto)

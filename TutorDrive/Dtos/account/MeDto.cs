@@ -14,6 +14,7 @@ namespace TutorDrive.Dtos.account
         // Staff
         public string? LicenseNumber { get; set; }
         public int? ExperienceYears { get; set; }
+        public string? Description { get; set; }
 
         // Student
         public string? CMND { get; set; }

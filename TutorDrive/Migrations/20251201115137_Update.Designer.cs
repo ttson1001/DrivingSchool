@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TutorDrive.Database;
 
@@ -11,9 +12,11 @@ using TutorDrive.Database;
 namespace TutorDrive.Migrations
 {
     [DbContext(typeof(BeContext))]
-    partial class BeContextModelSnapshot : ModelSnapshot
+    [Migration("20251201115137_Update")]
+    partial class Update
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -123,9 +126,6 @@ namespace TutorDrive.Migrations
 
                     b.Property<decimal?>("Price")
                         .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -666,10 +666,6 @@ namespace TutorDrive.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<string>("Brand")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ImageUrl")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 

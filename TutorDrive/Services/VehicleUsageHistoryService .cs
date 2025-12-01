@@ -1,7 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TutorDrive.Dtos.account;
-using TutorDrive.Dtos.Address;
-using TutorDrive.Dtos.Address.TutorDrive.Dtos.Address;
 using TutorDrive.Dtos.Vehicle;
 using TutorDrive.Entities;
 using TutorDrive.Repositories;
@@ -56,6 +54,7 @@ namespace TutorDrive.Services
                         Id = x.Vehicle.Id,
                         PlateNumber = x.Vehicle.PlateNumber,
                         Brand = x.Vehicle.Brand,
+                        ImageUrl = x.Vehicle.ImageUrl,
                         Model = x.Vehicle.Model,
                         Status = x.Vehicle.Status
                     }
@@ -97,6 +96,7 @@ namespace TutorDrive.Services
                     Id = x.Vehicle.Id,
                     PlateNumber = x.Vehicle.PlateNumber,
                     Brand = x.Vehicle.Brand,
+                    ImageUrl = x.Vehicle.ImageUrl,
                     Model = x.Vehicle.Model,
                     Status = x.Vehicle.Status
                 }
@@ -135,6 +135,7 @@ namespace TutorDrive.Services
                 {
                     Id = x.Vehicle.Id,
                     PlateNumber = x.Vehicle.PlateNumber,
+                    ImageUrl = x.Vehicle.ImageUrl,
                     Brand = x.Vehicle.Brand,
                     Model = x.Vehicle.Model,
                     Status = x.Vehicle.Status
@@ -175,6 +176,7 @@ namespace TutorDrive.Services
                 {
                     Id = x.Vehicle.Id,
                     PlateNumber = x.Vehicle.PlateNumber,
+                    ImageUrl = x.Vehicle.ImageUrl,
                     Brand = x.Vehicle.Brand,
                     Model = x.Vehicle.Model,
                     Status = x.Vehicle.Status

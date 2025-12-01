@@ -6,6 +6,7 @@ namespace TutorDrive.Entities
     {
         public long Id { get; set; }
         public string PlateNumber { get; set; }
+        public string ImageUrl { get; set; }
         public string Brand { get; set; }
         public string Model { get; set; }
         public string Status { get; set; }

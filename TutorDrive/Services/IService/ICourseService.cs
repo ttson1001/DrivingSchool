@@ -1,5 +1,6 @@
 ﻿using TutorDrive.Dtos.Common;
 using TutorDrive.Dtos.Course;
+using TutorDrive.Entities.Enum.TutorDrive.Entities.Enum;
 
 namespace TutorDrive.Services.IService
 {
@@ -8,6 +9,6 @@ namespace TutorDrive.Services.IService
         Task CreateCourseWithSectionsAsync(CourseCreateDto dto);
         Task UpdateCourseWithSectionsAsync(CourseDto dto);
         Task<List<CourseDto>> GetAllCoursesAsync();
-        Task<PagedResult<CourseDto>> SearchCoursesAsync(string? keyword, int page, int pageSize);
+        Task<PagedResult<CourseDto>> SearchCoursesAsync(string? keyword, int page, int pageSize, CourseStatus? status);
     }
 }

@@ -36,13 +36,30 @@ namespace TutorDrive.Services
             );
         }
 
-        public async Task<PagedResult<TransactionDto>> GetAllPagedAsync(
-            TransactionSearchAdminRequest request)
+        public async Task<PagedResult<TransactionDto>> GetAllPagedAsync(TransactionSearchAdminRequest request)
         {
-            var query = _transactionRepository.Get();
+            var query = _transactionRepository.Get()
+                .AsQueryable();
 
-            if (request.UserId.HasValue)
-                query = query.Where(t => t.UserId == request.UserId);
+            if (!string.IsNullOrWhiteSpace(request.Keyword))
+            {
+                string kw = request.Keyword.ToLower();
+
+                query = query.Where(t =>
+                    t.User != null &&
+                    (
+                        t.User.FullName.ToLower().Contains(kw) ||
+                        t.User.Email.ToLower().Contains(kw) ||
+                        t.User.PhoneNumber.ToLower().Contains(kw)
+                    )
+                );
+            }
+
+            query = query
+                .Include(t => t.User).ThenInclude(u => u.Role)
+                .Include(t => t.Registration).ThenInclude(r => r.StudentProfile).ThenInclude(sp => sp.Account)
+                .Include(t => t.Registration).ThenInclude(r => r.Course)
+                .Include(t => t.Registration).ThenInclude(r => r.Files);
 
             return await ApplyFilterAndPagingAsync(
                 query,

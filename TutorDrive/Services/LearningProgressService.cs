@@ -20,6 +20,7 @@ namespace TutorDrive.Services
         private readonly IRepository<Section> _sectionRepository;
         private readonly IRepository<Registration> _registrationRepository;
         private readonly IRepository<Feedback> _feedbackRepository;
+        private readonly IRepository<RegistrationExam> _registrationExamRepository;
 
         public LearningProgressService(
             IRepository<LearningProgress> repository,
@@ -27,7 +28,8 @@ namespace TutorDrive.Services
             IRepository<InstructorProfile> staffRepository,
             IRepository<Section> sectionRepository,
             IRepository<Registration> registrationRepository,
-            IRepository<Feedback> feedbackRepository)
+            IRepository<Feedback> feedbackRepository,
+            IRepository<RegistrationExam> registrationExamRepository)
         {
             _repository = repository;
             _studentProfileRepository = studentProfileRepository;
@@ -35,6 +37,7 @@ namespace TutorDrive.Services
             _sectionRepository = sectionRepository;
             _registrationRepository = registrationRepository;
             _feedbackRepository = feedbackRepository;
+            _registrationExamRepository = registrationExamRepository;
         }
 
         public async Task GenerateProgressForCourseAsync(GenerateProgressDto dto)
@@ -102,7 +105,7 @@ namespace TutorDrive.Services
     long accountId, bool? isCompleted = null)
         {
             var student = await _studentProfileRepository.Get()
-                            .FirstOrDefaultAsync(x => x.AccountId == accountId);
+                .FirstOrDefaultAsync(x => x.AccountId == accountId);
 
             if (student == null)
                 throw new Exception("Không tìm thấy hồ sơ học sinh");
@@ -152,7 +155,6 @@ namespace TutorDrive.Services
                         Status = f.StudentProfile.Status,
                         CMND = f.StudentProfile.CMND,
                         DOB = f.StudentProfile.DOB,
-
                         Address = f.StudentProfile.Address == null ? null : new AddressDto
                         {
                             FullAddress = f.StudentProfile.Address.FullAddress,
@@ -177,6 +179,14 @@ namespace TutorDrive.Services
                 }
             );
 
+            var regExamMap = await _registrationExamRepository.Get()
+                .Where(r => r.StudentProfileId == student.Id &&
+                            r.CourseId.HasValue &&
+                            courseIds.Contains(r.CourseId.Value))
+                .Select(r => r.CourseId.Value)
+                .Distinct()
+                .ToDictionaryAsync(cid => cid, cid => true);
+
             var result = grouped.Select(g => new CourseLearningProgressGroupDto
             {
                 CourseId = g.Key.CourseId,
@@ -199,12 +209,17 @@ namespace TutorDrive.Services
                     })
                     .ToList(),
 
-                Feedback = fbMap.ContainsKey(g.Key.CourseId) ? fbMap[g.Key.CourseId] : null
+                Feedback = fbMap.ContainsKey(g.Key.CourseId)
+                    ? fbMap[g.Key.CourseId]
+                    : null,
+
+                IsRegistrationExam = regExamMap.ContainsKey(g.Key.CourseId.Value)
             })
             .ToList();
 
             return result;
         }
+
 
         public async Task<List<CourseProgressGroupDto>> GetAdminLearningProgressAsync(bool? isCompleted = null)
         {
@@ -286,11 +301,13 @@ namespace TutorDrive.Services
                     CourseName = courseGroup.Key.Name,
 
                     Students = courseGroup
-                        .GroupBy(lp => new { lp.StudentProfileId, lp.StudentProfile.Account.FullName })
+                        .GroupBy(lp => new { lp.StudentProfileId, lp.StudentProfile.Account.FullName, lp.StudentProfile.Account.Avatar, lp.StudentProfile.Account.Email })
                         .Select(studentGroup => new AdminStudentProgressGroupDto
                         {
                             StudentId = studentGroup.Key.StudentProfileId,
                             StudentName = studentGroup.Key.FullName,
+                            StudentAvatar = studentGroup.Key.Avatar ?? "",
+                            StudentEmail = studentGroup.Key.Email,
 
                             Progresses = studentGroup
                                 .OrderBy(lp => lp.StartDate)

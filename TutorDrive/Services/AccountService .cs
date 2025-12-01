@@ -274,7 +274,7 @@
                 FullName = account.FullName,
                 Role = account.Role.Name,
                 PhoneNumber = account.PhoneNumber,
-                Avatar = account.Avatar
+                Avatar = account.Avatar,
             };
 
             if (roleName == "Instructor")
@@ -284,6 +284,7 @@
                 {
                     me.LicenseNumber = staff.LicenseNumber;
                     me.ExperienceYears = staff.ExperienceYears;
+                    me.Description = staff.Description;
                 }
             }
             else if (roleName == "Student")

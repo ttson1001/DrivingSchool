@@ -8,5 +8,6 @@ namespace TutorDrive.Dtos.LearningProgress
         public string? CourseName { get; set; }
         public List<LearningProgressItemDto> Progresses { get; set; }
         public FeedbackDto Feedback { get; set; }
+        public bool? IsRegistrationExam { get; set; }
     }
 }

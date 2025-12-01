@@ -8,5 +8,6 @@
 
         public string LicenseNumber { get; set; }
         public int? ExperienceYears { get; set; }
+        public string Description { get; set; }
     }
 }

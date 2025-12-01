@@ -1,9 +1,11 @@
-﻿using TutorDrive.Dtos.Common;
+﻿using Microsoft.EntityFrameworkCore;
+using TutorDrive.Dtos.Common;
 using TutorDrive.Dtos.Course;
 using TutorDrive.Entities;
+using TutorDrive.Entities.Enum;
+using TutorDrive.Entities.Enum.TutorDrive.Entities.Enum;
 using TutorDrive.Repositories;
 using TutorDrive.Services.IService;
-using Microsoft.EntityFrameworkCore;
 
 namespace TutorDrive.Services
 {
@@ -37,14 +39,23 @@ namespace TutorDrive.Services
             await _courseRepo.AddAsync(course);
             await _courseRepo.SaveChangesAsync();
         }
+
         public async Task UpdateCourseWithSectionsAsync(CourseDto dto)
         {
             var course = await _courseRepo.Get()
                 .Include(c => c.Sections)
+                .Include(c => c.Registrations)
                 .FirstOrDefaultAsync(c => c.Id == dto.Id);
 
             if (course == null)
                 throw new Exception("Không tìm thấy khóa học.");
+
+            if (course.Registrations.Any(r =>
+                r.Status == RegistrationStatus.Approved ||
+                r.Status == RegistrationStatus.Paid))
+            {
+                throw new Exception("Khóa học đã có học viên được duyệt hoặc đã thanh toán. Không thể cập nhật.");
+            }
 
             course.Name = dto.Name;
             course.Description = dto.Description;
@@ -84,9 +95,31 @@ namespace TutorDrive.Services
             await _courseRepo.SaveChangesAsync();
         }
 
+        public async Task SoftDeleteCourseAsync(long id)
+        {
+            var course = await _courseRepo.Get().FirstOrDefaultAsync(c => c.Id == id);
+
+            if (course == null)
+                throw new Exception("Không tìm thấy khóa học.");
+
+            if (course.Registrations.Any(r =>
+                r.Status == RegistrationStatus.Approved ||
+                r.Status == RegistrationStatus.Paid))
+            {
+                throw new Exception("Khóa học đã có học viên đang học/đã đóng tiền. Không thể xóa.");
+            }
+
+            course.Status = CourseStatus.Inactive;
+            _courseRepo.Update(course);
+
+            await _courseRepo.SaveChangesAsync();
+        }
+
+
         public async Task<List<CourseDto>> GetAllCoursesAsync()
         {
             return await _courseRepo.Get()
+                .Where(c => c.Status == CourseStatus.Active)
                 .Include(c => c.Sections)
                 .Select(c => new CourseDto
                 {
@@ -95,6 +128,7 @@ namespace TutorDrive.Services
                     Description = c.Description,
                     ImageUrl = c.ImageUrl,
                     DurationDays = c.DurationDays,
+                    Status = c.Status,
                     Price = c.Price,
                     Sections = c.Sections.Select(s => new SectionDto
                     {
@@ -105,12 +139,17 @@ namespace TutorDrive.Services
                 })
                 .ToListAsync();
         }
-
-        public async Task<PagedResult<CourseDto>> SearchCoursesAsync(string? keyword, int page, int pageSize)
+        public async Task<PagedResult<CourseDto>> SearchCoursesAsync(string? keyword, int page, int pageSize, CourseStatus? status)
         {
-            IQueryable<Course> query = _courseRepo.Get().Include(z => z.Sections);
+            IQueryable<Course> query = _courseRepo.Get()
+                .Include(c => c.Sections);
 
-            if (!string.IsNullOrEmpty(keyword))
+            if (status.HasValue)
+            {
+                query = query.Where(c => c.Status == status.Value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(keyword))
             {
                 query = query.Where(c =>
                     c.Name.Contains(keyword) ||
@@ -131,6 +170,7 @@ namespace TutorDrive.Services
                     ImageUrl = c.ImageUrl,
                     DurationDays = c.DurationDays,
                     Price = c.Price,
+                    Status = c.Status,
                     Sections = c.Sections.Select(s => new SectionDto
                     {
                         Id = s.Id,
@@ -148,5 +188,6 @@ namespace TutorDrive.Services
                 Items = items
             };
         }
+
     }
 }

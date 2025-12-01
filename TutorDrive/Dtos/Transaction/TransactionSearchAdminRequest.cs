@@ -4,7 +4,7 @@ namespace TutorDrive.Dtos.Transaction
 {
     public class TransactionSearchAdminRequest
     {
-        public long? UserId { get; set; }
+        public string? Keyword { get; set; }
         public PaymentStatus? PaymentStatus { get; set; }
         public DateTime? FromDate { get; set; }
         public DateTime? ToDate { get; set; }

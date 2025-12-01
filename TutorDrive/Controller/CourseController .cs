@@ -1,10 +1,11 @@
-﻿using TutorDrive.Dtos.common;
-using TutorDrive.Dtos.Course;
-using TutorDrive.Extension.SwagerUi;
-using TutorDrive.Services.IService;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using Swashbuckle.AspNetCore.Filters;
+using TutorDrive.Dtos.common;
+using TutorDrive.Dtos.Course;
+using TutorDrive.Entities.Enum.TutorDrive.Entities.Enum;
+using TutorDrive.Extension.SwagerUi;
+using TutorDrive.Services.IService;
 using static TutorDrive.Extension.SwagerUi.SearchCoursesResponseExample;
 
 namespace BEAPI.Controller
@@ -93,21 +94,20 @@ namespace BEAPI.Controller
 
         [HttpGet("[action]")]
         [SwaggerOperation(
-           Summary = "Tìm kiếm khóa học",
-           Description = "Tìm kiếm khóa học theo từ khóa và phân trang"
-       )]
+     Summary = "Tìm kiếm khóa học",
+     Description = "Tìm kiếm khóa học theo từ khóa, trạng thái và phân trang")]
         [SwaggerResponse(200, "Lấy danh sách khóa học thành công", typeof(ResponseDto))]
-        [SwaggerResponseExample(200, typeof(SearchCoursesResponseExample))]
         public async Task<IActionResult> SearchCourses(
-           [FromQuery] string? keyword,
-           [FromQuery] int page = 1,
-           [FromQuery] int pageSize = 10)
+     [FromQuery] string? keyword,
+     [FromQuery] int page = 1,
+     [FromQuery] int pageSize = 10,
+     [FromQuery] CourseStatus? status = null)
         {
             var response = new ResponseDto();
 
             try
             {
-                var result = await _courseService.SearchCoursesAsync(keyword, page, pageSize);
+                var result = await _courseService.SearchCoursesAsync(keyword, page, pageSize, status);
 
                 response.Message = "Lấy danh sách khóa học thành công";
                 response.Data = result;
