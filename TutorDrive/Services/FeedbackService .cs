@@ -419,28 +419,36 @@ namespace TutorDrive.Services.Service
                 .Take(top);
 
             var topFeedbacks = await query.ToListAsync();
-
             var instructorIds = topFeedbacks.Select(x => x.InstructorId).ToList();
 
             var instructors = await _staffRepository.Get()
-                .Include(s => s.Account)
-                .Where(s => instructorIds.Contains(s.Id))
+                .Include(i => i.Account)
+                .Where(i => instructorIds.Contains(i.Id))
                 .ToListAsync();
 
-            var result = (from f in topFeedbacks
-                          join s in instructors on f.InstructorId equals s.Id
-                          select new TopTeacherDto
-                          {
-                              StaffId = s.Id,
-                              TeacherName = s.Account.FullName,
-                              Email = s.Account.Email,
-                              AverageRating = Math.Round(f.AverageRating, 2),
-                              TotalFeedbacks = f.TotalFeedbacks
-                          })
-                          .OrderByDescending(x => x.AverageRating)
-                          .ToList();
+            var result = topFeedbacks
+                .Join(instructors, f => f.InstructorId, s => s.Id, (f, s) => new TopTeacherDto
+                {
+                    InstructorId = s.Id,
+                    AverageRating = Math.Round(f.AverageRating, 2),
+                    TotalFeedbacks = f.TotalFeedbacks,
+
+                    Instructor = new MeDto
+                    {
+                        AccountId = s.Account.Id,
+                        Email = s.Account.Email,
+                        FullName = s.Account.FullName,
+                        PhoneNumber = s.Account.PhoneNumber,
+                        Avatar = s.Account.Avatar,
+                        LicenseNumber = s.LicenseNumber,
+                        ExperienceYears = s.ExperienceYears
+                    }
+                })
+                .OrderByDescending(x => x.AverageRating)
+                .ToList();
 
             return result;
         }
+
     }
 }
