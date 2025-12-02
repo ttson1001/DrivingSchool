@@ -176,6 +176,30 @@ namespace TutorDrive.Controller
             }
         }
 
+        [HttpGet("[action]")]
+        public async Task<IActionResult> GetHomepageAsync()
+        {
+            try
+            {
+                var result = await _feedbackService.GetHomepageAsync();
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Lấy dữ liệu homepage thành công",
+                    data = result
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
+        }
+
         [HttpGet("history")]
         public async Task<IActionResult> GetHistory()
         {

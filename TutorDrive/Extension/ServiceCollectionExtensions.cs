@@ -36,6 +36,7 @@ namespace TutorDrive.Extension
             services.AddScoped<IExamService, ExamService>();
             services.AddScoped<IExamResultService, ExamResultService>();
             services.AddScoped<PayOSService>();
+            services.AddScoped<IInstructorDashboardService, InstructorDashboardService>();
         }
     }
 }

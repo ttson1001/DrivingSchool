@@ -3,6 +3,7 @@ using System;
 using TutorDrive.Dtos.account;
 using TutorDrive.Dtos.Address.TutorDrive.Dtos.Address;
 using TutorDrive.Dtos.Common;
+using TutorDrive.Dtos.Dashboard;
 using TutorDrive.Dtos.ExamDto;
 using TutorDrive.Dtos.Feedbacks;
 using TutorDrive.Entities;
@@ -259,6 +260,23 @@ namespace TutorDrive.Services.Service
             entity.Comment = dto.Comment;
 
             await _repository.SaveChangesAsync();
+        }
+
+        public async Task<HomepageDto> GetHomepageAsync()
+        {
+            var feedbackQuery = _repository.Get();
+
+            var totalFeedback = await feedbackQuery.CountAsync();
+
+            var averageRating = totalFeedback == 0
+                ? 0
+                : await feedbackQuery.AverageAsync(f => f.Rating);
+
+            return new HomepageDto
+            {
+                AverageRating = averageRating,
+                TotalFeedback = totalFeedback
+            };
         }
 
         public async Task<List<FeedbackDto>> GetHistoryAsync(long accountId)

@@ -1,4 +1,5 @@
 ﻿using TutorDrive.Dtos.Common;
+using TutorDrive.Dtos.Dashboard;
 using TutorDrive.Dtos.ExamDto;
 using TutorDrive.Dtos.Feedbacks;
 
@@ -13,5 +14,6 @@ namespace TutorDrive.Services.IService
         Task UpdateAsync(long id, FeedbackUpdateDto dto);
         Task<List<TopTeacherDto>> GetTopTeachersAsync(int top = 5);
         Task<List<FeedbackDto>> GetHistoryAsync(long accountId);
+        Task<HomepageDto> GetHomepageAsync();
     }
 }
