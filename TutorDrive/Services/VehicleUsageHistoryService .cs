@@ -2,6 +2,7 @@
 using TutorDrive.Dtos.account;
 using TutorDrive.Dtos.Vehicle;
 using TutorDrive.Entities;
+using TutorDrive.Entities.Enum;
 using TutorDrive.Repositories;
 using TutorDrive.Services.IService;
 
@@ -217,13 +218,45 @@ namespace TutorDrive.Services
                 throw new Exception("Không tìm thấy lịch sử sử dụng xe");
 
             if (entity.AccountId != accountId)
-                throw new Exception("Bạn không có quyền chỉnh sửa lịch sử sử dụng xe của người khác");
+                throw new Exception("Bạn không có quyền chỉnh sửa");
 
             entity.StartTime = dto.StartTime;
             entity.EndTime = dto.EndTime;
+            entity.Status = dto.Status;
 
             _historyRepo.Update(entity);
             await _historyRepo.SaveChangesAsync();
         }
+
+        public async Task UpdateStatusAsync(VehicleUsageHistoryStatusUpdateDto dto)
+        {
+            var entity = await _historyRepo.Get()
+                .Include(x => x.Vehicle)
+                .FirstOrDefaultAsync(x => x.Id == dto.Id);
+
+            if (entity == null)
+                throw new Exception("Không tìm thấy lịch sử sử dụng xe");
+
+            if (entity.Status == VehicleUsageStatus.Approved)
+                throw new Exception("Lịch sử đã được phê duyệt, không thể thay đổi trạng thái.");
+
+            if (entity.Status == VehicleUsageStatus.Cancelled)
+                throw new Exception("Lịch sử đã bị từ chối, không thể thay đổi trạng thái.");
+
+            if (entity.Status == VehicleUsageStatus.Pending)
+            {
+                if (dto.Status == VehicleUsageStatus.Approved)
+                {
+                    entity.Vehicle.Status = "Inactive";
+                    _vehicleRepo.Update(entity.Vehicle);
+                }
+
+                entity.Status = dto.Status;
+                _historyRepo.Update(entity);
+                await _historyRepo.SaveChangesAsync();
+                return;
+            }
+        }
+
     }
 }

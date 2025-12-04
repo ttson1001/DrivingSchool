@@ -120,5 +120,25 @@ namespace BEAPI.Controller
                 return BadRequest(response);
             }
         }
+
+        [HttpPut("[action]/{id}")]
+        [SwaggerOperation(Summary = "Xóa khóa học")]
+        public async Task<IActionResult> DeleteCourse(long id)
+        {
+            var response = new ResponseDto();
+
+            try
+            {
+                await _courseService.SoftDeleteCourseAsync(id);
+
+                response.Message = "Xóa khóa học thành công";
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                response.Message = $"Lỗi: {ex.Message}";
+                return BadRequest(response);
+            }
+        }
     }
 }

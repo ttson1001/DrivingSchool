@@ -1,4 +1,6 @@
-﻿namespace TutorDrive.Entities
+﻿using TutorDrive.Entities.Enum;
+
+namespace TutorDrive.Entities
 {
     public class VehicleUsageHistory : IEntity
     {
@@ -11,5 +13,7 @@
 
         public DateTime StartTime { get; set; }
         public DateTime? EndTime { get; set; }
+
+        public VehicleUsageStatus Status { get; set; } = VehicleUsageStatus.Pending;
     }
 }

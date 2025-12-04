@@ -167,5 +167,27 @@ namespace TutorDrive.Controller
                 return BadRequest(response);
             }
         }
+
+        [HttpPut("[action]")]
+        [SwaggerOperation(Summary = "Cập nhật trạng thái lịch sử sử dụng xe (Pending / Approved / Cancelled)")]
+        [SwaggerResponse(200, "Cập nhật thành công", typeof(ResponseDto))]
+        public async Task<IActionResult> UpdateStatus([FromBody] VehicleUsageHistoryStatusUpdateDto dto)
+        {
+            var response = new ResponseDto();
+
+            try
+            {
+                await _service.UpdateStatusAsync(dto);
+
+                response.Message = "Cập nhật trạng thái lịch sử sử dụng xe thành công";
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                response.Message = $"Lỗi: {ex.Message}";
+                return BadRequest(response);
+            }
+        }
+
     }
 }

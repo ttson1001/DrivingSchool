@@ -41,7 +41,6 @@ namespace TutorDrive.Controllers
             }
         }
 
-
         [HttpPost("[action]")]
         public async Task<IActionResult> PayOsWebhook([FromBody] Webhook webhook)
         {
@@ -64,6 +63,7 @@ namespace TutorDrive.Controllers
         {
             try
             {
+                await _payOsService.PayOsReturnAsync(registrationId);
                 string? redirectBaseUrl =
                     await _systemConfigService.GetValueAsync("PaymentReturnUrl")
                     ?? "https://localhost:4200/payment-result";

@@ -1,4 +1,5 @@
 ﻿using TutorDrive.Dtos.account;
+using TutorDrive.Entities.Enum;
 
 namespace TutorDrive.Dtos.Vehicle
 {
@@ -7,9 +8,11 @@ namespace TutorDrive.Dtos.Vehicle
         public long Id { get; set; }
         public DateTime StartTime { get; set; }
         public DateTime? EndTime { get; set; }
+        public VehicleUsageStatus Status { get; set; }
         public MeDto Account { get; set; }
         public VehicleDto Vehicle { get; set; }
     }
+
 
     public class VehicleUsageHistoryCreateDto
     {
@@ -23,5 +26,6 @@ namespace TutorDrive.Dtos.Vehicle
         public long Id { get; set; }
         public DateTime StartTime { get; set; }
         public DateTime? EndTime { get; set; }
+        public VehicleUsageStatus Status { get; set; }
     }
 }

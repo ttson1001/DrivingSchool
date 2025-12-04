@@ -57,7 +57,7 @@ namespace TutorDrive.Services.Payment
 
             var request = new CreatePaymentLinkRequest
             {
-                OrderCode = registrationId,
+                OrderCode = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
                 Amount = (long)registration.Price,
                 Description = $"Thanh toán khóa học",
                 ReturnUrl = _settings.ReturnUrl + $"?registrationId={registrationId}",
@@ -139,5 +139,57 @@ namespace TutorDrive.Services.Payment
                 }
             };
         }
+
+        public async Task<ResponseDto> PayOsReturnAsync(long registrationId)
+        {
+            var registration = await _registrationRepo.Get()
+                .Include(r => r.Course)
+                .Include(r => r.StudentProfile).ThenInclude(sp => sp.Account)
+                .FirstOrDefaultAsync(r => r.Id == registrationId);
+
+            if (registration == null)
+                return new ResponseDto
+                {
+                    Message = "Không tìm thấy đơn đăng ký.",
+                    Data = null
+                };
+
+            bool isSuccess = true;
+
+            var transaction = new Transaction
+            {
+                Amount = registration.Course.Price,
+                UserId = registration.StudentProfile.Account.Id,
+                PaymentMethod = "PayOS",
+                RegistrationId = registration.Id,
+                PaymentStatus = PaymentStatus.Paid
+            };
+
+            await _transactionRepo.AddAsync(transaction);
+
+            if (isSuccess)
+            {
+                registration.Status = RegistrationStatus.Paid;
+                registration.Note = $"Đã thanh toán PayOS - {DateTime.Now:dd/MM/yyyy HH:mm}";
+                _registrationRepo.Update(registration);
+            }
+
+            await _transactionRepo.SaveChangesAsync();
+            await _registrationRepo.SaveChangesAsync();
+
+            return new ResponseDto
+            {
+                Message = "Thanh toán thành công.",
+                Data = new
+                {
+                    RegistrationId = registration.Id,
+                    TransactionId = transaction.Id,
+                    Amount = transaction.Amount,
+                    PaymentStatus = transaction.PaymentStatus.ToString(),
+                    RegistrationStatus = registration.Status.ToString()
+                }
+            };
+        }
+
     }
 }

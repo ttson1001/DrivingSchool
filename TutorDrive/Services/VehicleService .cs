@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Text.RegularExpressions;
 using TutorDrive.Dtos.Common;
 using TutorDrive.Dtos.Vehicle;
 using TutorDrive.Entities;
@@ -32,6 +33,17 @@ public class VehicleService : IVehicleService
 
     public async Task CreateVehicleAsync(VehicleCreateDto dto)
     {
+        if (string.IsNullOrWhiteSpace(dto.PlateNumber))
+            throw new Exception("Biển số xe không được để trống");
+
+        var plateRegex = new Regex(@"^[A-Za-z0-9\-\. ]{5,15}$");
+        if (!plateRegex.IsMatch(dto.PlateNumber))
+            throw new Exception("Biển số xe không hợp lệ. Ví dụ đúng: 59A1-12345, 51H-567.89");
+
+        bool exists = await _vehicleRepo.Get().AnyAsync(x => x.PlateNumber == dto.PlateNumber);
+        if (exists)
+            throw new Exception("Biển số xe đã tồn tại trong hệ thống");
+
         var vehicle = new Vehicle
         {
             PlateNumber = dto.PlateNumber,
