@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using PayOS.Exceptions;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Security.Claims;
 using TutorDrive.Dtos.common;
@@ -255,6 +256,10 @@ namespace TutorDrive.Controllers
                 response.Data = result;
 
                 return Ok(response);
+            }
+            catch(NotFoundException ex)
+            {
+                return NoContent();
             }
             catch (Exception ex)
             {

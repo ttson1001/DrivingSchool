@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using PayOS.Exceptions;
 using TutorDrive.Dtos.Common;
 using TutorDrive.Dtos.Registration;
 using TutorDrive.Entities;
@@ -178,7 +179,7 @@ namespace TutorDrive.Services
                 .FirstOrDefaultAsync(p => p.AccountId == accountId);
 
             if (studentProfile == null)
-                throw new Exception("Không tìm thấy hồ sơ học viên cho tài khoản này.");
+                throw new NotFoundException("Không tìm thấy hồ sơ học sinh.");
 
             var query = _repositoryRegistration.Get()
                 .Include(r => r.StudentProfile).ThenInclude(s => s.Account)

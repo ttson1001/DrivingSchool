@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using PayOS.Exceptions;
 using TutorDrive.Dtos.Exam;
 using TutorDrive.Entities;
 using TutorDrive.Repositories;
@@ -123,7 +124,7 @@ public class ExamService : IExamService
             .FirstOrDefaultAsync(s => s.AccountId == accountId);
 
         if (student == null)
-            throw new Exception("Không tìm thấy hồ sơ học sinh.");
+            throw new NotFoundException("Không tìm thấy hồ sơ học sinh.");
 
         var nearestExam = await _registrationExamRepository.Get()
             .Where(r => r.StudentProfileId == student.Id)

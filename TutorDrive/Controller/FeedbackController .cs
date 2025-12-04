@@ -200,7 +200,7 @@ namespace TutorDrive.Controller
             }
         }
 
-        [HttpGet("history")]
+        [HttpGet("[action]")]
         public async Task<IActionResult> GetHistory()
         {
             try

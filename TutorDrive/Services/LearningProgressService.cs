@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using PayOS.Exceptions;
 using TutorDrive.Dtos.account;
 using TutorDrive.Dtos.Address.TutorDrive.Dtos.Address;
 using TutorDrive.Dtos.Feedbacks;
@@ -101,14 +102,13 @@ namespace TutorDrive.Services
             await _repository.SaveChangesAsync();
         }
 
-        public async Task<List<CourseLearningProgressGroupDto>> GetByStudentGroupedAsync(
-    long accountId, bool? isCompleted = null)
+        public async Task<List<CourseLearningProgressGroupDto>> GetByStudentGroupedAsync(long accountId, bool? isCompleted = null)
         {
             var student = await _studentProfileRepository.Get()
                 .FirstOrDefaultAsync(x => x.AccountId == accountId);
 
             if (student == null)
-                throw new Exception("Không tìm thấy hồ sơ học sinh");
+                throw new NotFoundException("Không tìm thấy hồ sơ học sinh");
 
             var query = _repository.Get()
                 .Include(lp => lp.Course)

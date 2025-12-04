@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using PayOS.Exceptions;
 using Swashbuckle.AspNetCore.Annotations;
 using Swashbuckle.AspNetCore.Filters;
 using TutorDrive.Dtos.common;
@@ -99,6 +100,10 @@ namespace TutorDrive.Controller
                 response.Data = result;
 
                 return Ok(response);
+            }
+            catch (NotFoundException ex)
+            {
+                return NoContent();
             }
             catch (Exception ex)
             {
