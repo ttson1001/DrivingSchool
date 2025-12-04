@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using Swashbuckle.AspNetCore.Filters;
 using TutorDrive.Dtos.common;
-using TutorDrive.Dtos.ExamDto;
+using TutorDrive.Dtos.Exam;
 using TutorDrive.Extension.SwagerUi;
 using TutorDrive.Services.IService;
 

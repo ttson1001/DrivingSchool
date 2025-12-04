@@ -1,6 +1,6 @@
 ﻿using TutorDrive.Dtos.account;
 
-namespace TutorDrive.Dtos.ExamDto
+namespace TutorDrive.Dtos.Exam
 {
     public class TopTeacherDto
     {

@@ -11,7 +11,6 @@ namespace TutorDrive.Controller
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
     public class RegistrationController : ControllerBase
     {
         private readonly IRegistrationFullService _service;

@@ -4,7 +4,7 @@ using TutorDrive.Dtos.account;
 using TutorDrive.Dtos.Address.TutorDrive.Dtos.Address;
 using TutorDrive.Dtos.Common;
 using TutorDrive.Dtos.Dashboard;
-using TutorDrive.Dtos.ExamDto;
+using TutorDrive.Dtos.Exam;
 using TutorDrive.Dtos.Feedbacks;
 using TutorDrive.Entities;
 using TutorDrive.Repositories;

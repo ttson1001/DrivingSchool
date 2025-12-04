@@ -12,7 +12,7 @@ namespace TutorDrive.Services.IService
         Task ForgotPasswordAsync(ForgotPasswordRequest dto);
         Task ResetPasswordAsync(ResetPasswordRequest dto);
         Task<LoginReponseDto> LoginAsync(LoginDto dto);
-        Task<PagedResult<AccountDto>> SearchAccountsAsync(string? keyword, long? roleId, int page, int pageSize);
+        Task<PagedResult<MeDto>> SearchAccountsAsync(string? keyword, long? roleId, int page, int pageSize);
         Task<AccountDto> GetAccountByIdAsync(long id);
         Task<AccountDto> UpdateAccountAsync(long id, AccountUpdateDto dto);
         Task CreateAccountAsync(AccountCreateDto dto);

@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using TutorDrive.Dtos.ExamDto;
+using TutorDrive.Dtos.Exam;
 using TutorDrive.Entities;
 using TutorDrive.Repositories;
 using TutorDrive.Services.IService;

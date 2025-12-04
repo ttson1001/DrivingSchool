@@ -89,6 +89,21 @@ namespace TutorDrive.Services
                 .Include(r => r.Files)
                 .AsQueryable();
 
+
+            if (!string.IsNullOrWhiteSpace(filter.Keyword))
+            {
+                var keyword = filter.Keyword.Trim().ToLower();
+
+                query = query.Where(r =>
+                       (r.StudentProfile.Account.FullName ?? "").ToLower().Contains(keyword)
+                    || (r.StudentProfile.Account.Email ?? "").ToLower().Contains(keyword)
+                    || (r.FullName ?? "").ToLower().Contains(keyword)
+                    || (r.Email ?? "").ToLower().Contains(keyword)
+                    || (r.PhoneNumber ?? "").ToLower().Contains(keyword)
+                    || (r.StudentProfile.CMND ?? "").ToLower().Contains(keyword)
+                );
+            }
+
             if (filter.Status.HasValue)
                 query = query.Where(r => r.Status == filter.Status.Value);
 

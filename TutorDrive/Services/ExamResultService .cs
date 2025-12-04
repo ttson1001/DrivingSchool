@@ -1,5 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using OfficeOpenXml;
+using TutorDrive.Dtos.account;
+using TutorDrive.Dtos.Address.TutorDrive.Dtos.Address;
+using TutorDrive.Dtos.Exam;
 using TutorDrive.Dtos.ExamResult;
 using TutorDrive.Entities;
 using TutorDrive.Entities.Enum;
@@ -27,8 +30,6 @@ public class ExamResultService : IExamResultService
 
     public async Task<object> ImportFromExcelAsync(IFormFile file)
     {
-        ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
-
         var errors = new List<string>();
         var imported = 0;
 
@@ -120,18 +121,22 @@ public class ExamResultService : IExamResultService
         };
     }
 
-    public async Task<List<ExamResult>> SearchAsync(ExamResultSearchDto dto)
+    public async Task<List<ExamResultDto>> SearchAsync(ExamResultSearchDto dto)
     {
         var query = _examResultRepo.Get()
-            .Include(x => x.StudentProfile)
-            .Include(x => x.Exam)
+            .Include(x => x.StudentProfile).ThenInclude(s => s.Account)
+            .Include(x => x.Exam).ThenInclude(e => e.Course)
+            .Include(x => x.StudentProfile.Address).ThenInclude(a => a.Ward)
+            .Include(x => x.StudentProfile.Address).ThenInclude(a => a.Province)
             .AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(dto.Keyword))
         {
+            var keyword = dto.Keyword.Trim().ToLower();
+
             query = query.Where(x =>
-                x.ExamCode.Contains(dto.Keyword) ||
-                x.StudentProfile.Account.Email.Contains(dto.Keyword)
+                x.ExamCode.ToLower().Contains(keyword) ||
+                x.StudentProfile.Account.Email.ToLower().Contains(keyword)
             );
         }
 
@@ -150,16 +155,120 @@ public class ExamResultService : IExamResultService
             query = query.Where(x => x.Exam.ExamDate <= dto.ToDate);
         }
 
-        return await query.ToListAsync();
+        var data = await query.ToListAsync();
+
+        return data.Select(x => new ExamResultDto
+        {
+            Id = x.Id,
+            ExamCode = x.ExamCode,
+
+            Exam = new ExamDto
+            {
+                Id = x.Exam.Id,
+                ExamCode = x.Exam.ExamCode,
+                CourseId = x.Exam.CourseId,
+                CourseName = x.Exam.Course.Name,
+                Date = x.Exam.ExamDate,
+                Location = x.Exam.Location,
+                Theory = x.Exam.Theory,
+                Simulation = x.Exam.Simulation,
+                Track = x.Exam.Track,
+                RoadTest = x.Exam.RoadTest
+            },
+
+            Student = new MeDto
+            {
+                AccountId = x.StudentProfile.Account.Id,
+                Email = x.StudentProfile.Account.Email,
+                FullName = x.StudentProfile.Account.FullName,
+                PhoneNumber = x.StudentProfile.Account.PhoneNumber,
+                Avatar = x.StudentProfile.Account.Avatar,
+
+                CMND = x.StudentProfile.CMND,
+                DOB = x.StudentProfile.DOB,
+                Status = x.StudentProfile.Status,
+
+                Address = x.StudentProfile.Address == null ? null : new AddressDto
+                {
+                    FullAddress = x.StudentProfile.Address.FullAddress,
+                    Street = x.StudentProfile.Address.Street,
+                    WardName = x.StudentProfile.Address.Ward?.Name,
+                    ProvinceName = x.StudentProfile.Address.Province?.Name,
+                    WardId = x.StudentProfile.Address.WardId,
+                    ProvinceId = x.StudentProfile.Address.ProvinceId
+                },
+            },
+
+            TheoryScore = x.TheoryScore,
+            SimulationScore = x.SimulationScore,
+            TrackScore = x.TrackScore,
+            RoadTestScore = x.RoadTestScore,
+            Status = x.Status
+
+        }).ToList();
     }
 
-    public async Task<List<ExamResult>> GetHistoryByAccountId(long accountId)
+    public async Task<List<ExamResultDto>> GetHistoryByAccountId(long accountId)
     {
-        return await _examResultRepo.Get()
-            .Include(x => x.Exam)
-            .Include(x => x.StudentProfile)
+        var data = await _examResultRepo.Get()
+            .Include(x => x.StudentProfile).ThenInclude(s => s.Account)
+            .Include(x => x.Exam).ThenInclude(e => e.Course)
+            .Include(x => x.StudentProfile.Address).ThenInclude(a => a.Ward)
+            .Include(x => x.StudentProfile.Address).ThenInclude(a => a.Province)
             .Where(x => x.StudentProfile.AccountId == accountId)
             .OrderByDescending(x => x.Id)
             .ToListAsync();
+
+        return data.Select(x => new ExamResultDto
+        {
+            Id = x.Id,
+            ExamCode = x.ExamCode,
+
+            Exam = new ExamDto
+            {
+                Id = x.Exam.Id,
+                ExamCode = x.Exam.ExamCode,
+                CourseId = x.Exam.CourseId,
+                CourseName = x.Exam.Course.Name,
+                Date = x.Exam.ExamDate,
+                Location = x.Exam.Location,
+                Theory = x.Exam.Theory,
+                Simulation = x.Exam.Simulation,
+                Track = x.Exam.Track,
+                RoadTest = x.Exam.RoadTest
+            },
+
+            Student = new MeDto
+            {
+                AccountId = x.StudentProfile.Account.Id,
+                Email = x.StudentProfile.Account.Email,
+                FullName = x.StudentProfile.Account.FullName,
+                PhoneNumber = x.StudentProfile.Account.PhoneNumber,
+                Avatar = x.StudentProfile.Account.Avatar,
+
+                CMND = x.StudentProfile.CMND,
+                DOB = x.StudentProfile.DOB,
+                Status = x.StudentProfile.Status,
+
+                Address = x.StudentProfile.Address == null ? null : new AddressDto
+                {
+                    FullAddress = x.StudentProfile.Address.FullAddress,
+                    Street = x.StudentProfile.Address.Street,
+                    WardName = x.StudentProfile.Address.Ward?.Name,
+                    ProvinceName = x.StudentProfile.Address.Province?.Name,
+                    WardId = x.StudentProfile.Address.WardId,
+                    ProvinceId = x.StudentProfile.Address.ProvinceId
+                },
+
+                Role = "Student"
+            },
+
+            TheoryScore = x.TheoryScore,
+            SimulationScore = x.SimulationScore,
+            TrackScore = x.TrackScore,
+            RoadTestScore = x.RoadTestScore,
+            Status = x.Status
+
+        }).ToList();
     }
 }

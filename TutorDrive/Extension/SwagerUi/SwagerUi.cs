@@ -5,7 +5,7 @@ using TutorDrive.Dtos.Address;
 using TutorDrive.Dtos.common;
 using TutorDrive.Dtos.Common;
 using TutorDrive.Dtos.Course;
-using TutorDrive.Dtos.ExamDto;
+using TutorDrive.Dtos.Exam;
 using TutorDrive.Dtos.Feedbacks;
 using TutorDrive.Dtos.location;
 using TutorDrive.Dtos.Location;

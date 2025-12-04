@@ -1,6 +1,6 @@
 ﻿using TutorDrive.Dtos.Common;
 using TutorDrive.Dtos.Dashboard;
-using TutorDrive.Dtos.ExamDto;
+using TutorDrive.Dtos.Exam;
 using TutorDrive.Dtos.Feedbacks;
 
 namespace TutorDrive.Services.IService

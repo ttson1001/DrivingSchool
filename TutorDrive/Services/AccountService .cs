@@ -138,37 +138,91 @@
             return BCrypt.Net.BCrypt.HashPassword(password);
         }
 
-        public async Task<PagedResult<AccountDto>> SearchAccountsAsync(string? keyword, long? roleId, int page, int pageSize)
+        public async Task<PagedResult<MeDto>> SearchAccountsAsync(string? keyword, long? roleId, int page, int pageSize)
         {
             IQueryable<Account> query = _accountRepo.Get().Include(x => x.Role);
 
             if (!string.IsNullOrWhiteSpace(keyword))
-                query = query.Where(x => x.Email.Contains(keyword)
-                                         || x.FullName.Contains(keyword) || x.PhoneNumber.Contains(keyword));
+            {
+                keyword = keyword.Trim().ToLower();
+                query = query.Where(x =>
+                    (x.Email ?? "").ToLower().Contains(keyword) ||
+                    (x.FullName ?? "").ToLower().Contains(keyword) ||
+                    (x.PhoneNumber ?? "").ToLower().Contains(keyword)
+                );
+            }
 
-            if (roleId != null && roleId > 0)
+            if (roleId.HasValue && roleId > 0)
                 query = query.Where(x => x.RoleId == roleId);
 
             var totalItems = await query.CountAsync();
 
-            var items = await query
+            var accounts = await query
                 .OrderByDescending(x => x.CreatedAt)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
-                .Select(x => new AccountDto
-                {
-                    Id = x.Id,
-                    Email = x.Email,
-                    FullName = x.FullName,
-                    RoleName = x.Role.Name,
-                    Avatar = x.Avatar,
-                    CreatedAt = x.CreatedAt
-                })
                 .ToListAsync();
 
-            return new PagedResult<AccountDto>
+
+            var result = new List<MeDto>();
+
+            foreach (var account in accounts)
             {
-                Items = items,
+                var me = new MeDto
+                {
+                    AccountId = account.Id,
+                    Email = account.Email,
+                    FullName = account.FullName,
+                    Role = account.Role.Name,
+                    PhoneNumber = account.PhoneNumber,
+                    Avatar = account.Avatar
+                };
+
+                if (account.Role.Name == "Instructor")
+                {
+                    var staff = await _staffRepo.Get().FirstOrDefaultAsync(s => s.AccountId == account.Id);
+
+                    if (staff != null)
+                    {
+                        me.LicenseNumber = staff.LicenseNumber;
+                        me.ExperienceYears = staff.ExperienceYears;
+                        me.Description = staff.Description;
+                    }
+                }
+                else if (account.Role.Name == "Student")
+                {
+                    var student = await _studentRepo.Get()
+                        .Include(s => s.Address).ThenInclude(a => a.Ward)
+                        .Include(s => s.Address).ThenInclude(a => a.Province)
+                        .FirstOrDefaultAsync(s => s.AccountId == account.Id);
+
+                    if (student != null)
+                    {
+                        me.CMND = student.CMND;
+                        me.DOB = student.DOB;
+                        me.Status = student.Status;
+
+                        if (student.Address != null)
+                        {
+                            me.Address = new AddressDto
+                            {
+                                FullAddress = student.Address.FullAddress,
+                                Street = student.Address.Street,
+                                WardName = student.Address.Ward?.Name,
+                                ProvinceName = student.Address.Province?.Name,
+                                WardId = student.Address.WardId,
+                                ProvinceId = student.Address.ProvinceId
+                            };
+                        }
+                    }
+                }
+
+                result.Add(me);
+            }
+
+            return new PagedResult<MeDto>
+            {
+                Items = result,
                 TotalItems = totalItems,
                 Page = page,
                 PageSize = pageSize

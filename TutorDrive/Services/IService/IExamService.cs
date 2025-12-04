@@ -1,4 +1,4 @@
-﻿using TutorDrive.Dtos.ExamDto;
+﻿using TutorDrive.Dtos.Exam;
 
 namespace TutorDrive.Services.IService
 {

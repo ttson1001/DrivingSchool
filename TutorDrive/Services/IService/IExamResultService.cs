@@ -6,7 +6,7 @@ namespace TutorDrive.Services.IService
     public interface IExamResultService
     {
         Task<object> ImportFromExcelAsync(IFormFile file);
-        Task<List<ExamResult>> SearchAsync(ExamResultSearchDto dto);
-        Task<List<ExamResult>> GetHistoryByAccountId(long accountId);
+        Task<List<ExamResultDto>> SearchAsync(ExamResultSearchDto dto);
+        Task<List<ExamResultDto>> GetHistoryByAccountId(long accountId);
     }
 }

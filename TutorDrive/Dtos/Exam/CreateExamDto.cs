@@ -1,13 +1,11 @@
 ﻿using TutorDrive.Entities.Enum;
 
-namespace TutorDrive.Dtos.ExamDto
+namespace TutorDrive.Dtos.Exam
 {
-    public class ExamDto
+    public class CreateExamDto
     {
-        public long Id { get; set; }
         public string ExamCode { get; set; }
         public long CourseId { get; set; }
-        public string CourseName { get; set; }
         public DateTime Date { get; set; }
         public string Location { get; set; }
         public bool Theory { get; set; }
