@@ -134,14 +134,18 @@ namespace TutorDrive.Services
 
         public async Task SoftDeleteCourseAsync(long id)
         {
-            var course = await _courseRepo.Get().FirstOrDefaultAsync(c => c.Id == id);
+            var course = await _courseRepo.Get()
+                .Include(c => c.Registrations)
+                .FirstOrDefaultAsync(c => c.Id == id);
 
             if (course == null)
                 throw new Exception("Không tìm thấy khóa học.");
 
-            if (course.Registrations.Any(r =>
+            bool hasActive = course.Registrations?.Any(r =>
                 r.Status == RegistrationStatus.Approved ||
-                r.Status == RegistrationStatus.Paid))
+                r.Status == RegistrationStatus.Paid) ?? false;
+
+            if (hasActive)
             {
                 throw new Exception("Khóa học đã có học viên đang học/đã đóng tiền. Không thể xóa.");
             }
