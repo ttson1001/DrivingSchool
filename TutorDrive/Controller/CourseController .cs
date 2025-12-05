@@ -6,7 +6,6 @@ using TutorDrive.Dtos.Course;
 using TutorDrive.Entities.Enum.TutorDrive.Entities.Enum;
 using TutorDrive.Extension.SwagerUi;
 using TutorDrive.Services.IService;
-using static TutorDrive.Extension.SwagerUi.SearchCoursesResponseExample;
 
 namespace BEAPI.Controller
 {

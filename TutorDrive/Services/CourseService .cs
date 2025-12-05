@@ -29,6 +29,7 @@ namespace TutorDrive.Services
                 ImageUrl = dto.ImageUrl,
                 DurationDays = dto.DurationDays,
                 Price = dto.Price,
+                EndRegistrationDate = dto.EndRegistrationDate,
                 Sections = dto.Sections.Select(s => new Section
                 {
                     Title = s.Title,
@@ -62,6 +63,7 @@ namespace TutorDrive.Services
             course.ImageUrl = dto.ImageUrl;
             course.Price = dto.Price;
             course.DurationDays = dto.DurationDays;
+            course.EndRegistrationDate = dto.EndRegistrationDate;
 
             var existingSections = course.Sections.ToList();
 
@@ -95,6 +97,41 @@ namespace TutorDrive.Services
             await _courseRepo.SaveChangesAsync();
         }
 
+        public async Task<CourseDto> GetCourseDetailAsync(long id)
+        {
+            var course = await _courseRepo.Get()
+                .Include(c => c.Sections)
+                .Include(c => c.Registrations)
+                .FirstOrDefaultAsync(c => c.Id == id);
+
+            if (course == null)
+                throw new Exception("Không tìm thấy khóa học.");
+
+            int studentCount = course.Registrations.Count(r =>
+                r.Status == RegistrationStatus.Approved ||
+                r.Status == RegistrationStatus.Paid
+            );
+
+            return new CourseDto
+            {
+                Id = course.Id,
+                Name = course.Name,
+                Description = course.Description,
+                ImageUrl = course.ImageUrl,
+                DurationDays = course.DurationDays,
+                Price = course.Price,
+                Status = course.Status,
+                EndRegistrationDate = course.EndRegistrationDate,
+                StudentCount = studentCount,
+                Sections = course.Sections.Select(s => new SectionDto
+                {
+                    Id = s.Id,
+                    Title = s.Title,
+                    Description = s.Description
+                }).ToList()
+            };
+        }
+
         public async Task SoftDeleteCourseAsync(long id)
         {
             var course = await _courseRepo.Get().FirstOrDefaultAsync(c => c.Id == id);
@@ -115,7 +152,6 @@ namespace TutorDrive.Services
             await _courseRepo.SaveChangesAsync();
         }
 
-
         public async Task<List<CourseDto>> GetAllCoursesAsync()
         {
             return await _courseRepo.Get()
@@ -130,6 +166,7 @@ namespace TutorDrive.Services
                     ImageUrl = c.ImageUrl,
                     DurationDays = c.DurationDays,
                     Status = c.Status,
+                    EndRegistrationDate = c.EndRegistrationDate,
                     Price = c.Price,
                     Sections = c.Sections.Select(s => new SectionDto
                     {

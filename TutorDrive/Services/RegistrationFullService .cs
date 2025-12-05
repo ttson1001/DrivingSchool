@@ -39,6 +39,10 @@ namespace TutorDrive.Services
             {
                 throw new Exception("Không tìm thấy khóa học.");
             }
+            if (course.EndRegistrationDate.HasValue && DateTime.UtcNow > course.EndRegistrationDate.Value)
+            {
+                throw new Exception("Khóa học đã hết hạn đăng ký.");
+            }   
 
             StudyDay studyDays = StudyDay.None;
             foreach (var day in dto.StudyDays)

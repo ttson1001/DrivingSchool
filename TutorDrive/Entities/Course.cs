@@ -11,6 +11,7 @@ namespace TutorDrive.Entities
         public string ImageUrl { get; set; }
         public int? DurationDays { get; set; }
         public CourseStatus Status { get; set; } = CourseStatus.Active;
+        public DateTime? EndRegistrationDate { get; set; }
         public decimal? Price { get; set; }
         public ICollection<Section> Sections { get; set; }
         public ICollection<Registration> Registrations { get; set; }
