@@ -17,33 +17,35 @@ public class GeminiAiService
         string text = string.Join("\n- ", comments);
 
         string prompt = $@"
-Hãy phân nhóm feedback theo QUY TẮC CỐ ĐỊNH:
+Hãy phân nhóm các feedback tiếng Việt theo QUY TẮC CỐ ĐỊNH dưới đây:
 
 1. Hài lòng → câu khen, tích cực, đánh giá tốt.
 2. Cần cải thiện → góp ý nhẹ hoặc yêu cầu cải thiện.
-3. Không hài lòng → phàn nàn mạnh, trải nghiệm xấu.
-4. Giảng viên → nhận xét về chất lượng giảng dạy, thái độ, phương pháp.
-5. Nội dung khóa học → nhận xét về tài liệu, bài học, chương trình học.
-6. Thời gian – Lịch học → nhận xét về thời gian học, lịch học, thời lượng.
-7. Khác → nếu không thuộc nhóm nào ở trên.
+3. Không hài lòng → phàn nàn mạnh, phản ánh trải nghiệm xấu.
+4. Giảng viên → nhận xét về giảng viên: thái độ, phong cách, phương pháp.
+5. Nội dung khóa học → nhận xét về bài học, tài liệu, ví dụ, chương trình học.
+6. Thời gian – Lịch học → nhận xét về lịch học, thời lượng, tốc độ giảng.
+7. Khác → nếu không phù hợp nhóm nào ở trên.
 
-YÊU CẦU:
-- Phân nhóm đúng theo 7 quy tắc trên.
-- Trả về JSON đúng mẫu, không thêm giải thích.
+YÊU CẦU BẮT BUỘC:
+- Mỗi feedback phải được phân vào đúng một nhóm.
+- Trong trường 'examples', PHẢI sử dụng NGUYÊN VĂN chính xác từng feedback từ danh sách bên dưới.
+- Không được viết lại, diễn giải, rút gọn hoặc tạo thêm câu mới.
+- Nếu feedback không khớp quy tắc → đưa vào nhóm 'Khác'.
 
-Output JSON:
+ĐỊNH DẠNG TRẢ VỀ (chỉ trả JSON, không văn bản khác):
 [
   {{
     ""clusterName"": ""Tên nhóm"",
-    ""count"": số feedback,
-    ""examples"": [ danh sách feedback ]
+    ""count"": số feedback thuộc nhóm,
+    ""examples"": [ danh sách feedback nguyên văn ]
   }}
 ]
 
-Feedback:
+DANH SÁCH FEEDBACK (bắt buộc dùng EXACT):
 - {string.Join("\n- ", comments)}
 
-Chỉ trả JSON thuần, không thêm chữ nào trước hoặc sau JSON.
+Chỉ trả JSON thuần, không được kèm thêm giải thích hoặc mô tả.
 ";
 
         var response = await _client.Models.GenerateContentAsync(
