@@ -44,6 +44,31 @@ namespace BEAPI.Controller
             }
         }
 
+        [HttpGet("[action]/{id}")]
+        [SwaggerOperation(
+    Summary = "Lấy chi tiết khóa học",
+    Description = "Trả về toàn bộ thông tin khóa học, bao gồm Sections và số học viên đã đăng ký"
+)]
+        [SwaggerResponse(200, "Lấy chi tiết khóa học thành công", typeof(ResponseDto))]
+        public async Task<IActionResult> GetCourseDetail(long id)
+        {
+            var response = new ResponseDto();
+            try
+            {
+                var course = await _courseService.GetCourseDetailAsync(id);
+
+                response.Message = "Lấy chi tiết khóa học thành công";
+                response.Data = course;
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                response.Message = $"Lỗi khi lấy chi tiết khóa học: {ex.Message}";
+                return BadRequest(response);
+            }
+        }
+
         [HttpPut("[action]")]
         [SwaggerOperation(
              Summary = "Cập nhật khóa học",
