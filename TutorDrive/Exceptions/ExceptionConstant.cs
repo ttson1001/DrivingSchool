@@ -4,7 +4,7 @@
     {
         public const string UserAlreadyExists = "User already exists";
         public const string UserNotFound = "User not found";
-        public const string InvalidCredentials = "Invalid credentials";
+        public const string InvalidCredentials = "Sai tài khoản hoặc mật khẩu";
         public const string UnauthorizedAccess = "Unauthorized access";
         public const string ElderNotFound = "Elder not found";
         public const string ListOfValueAlreadyExists = "List of value already exists";

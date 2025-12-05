@@ -18,7 +18,7 @@ namespace TutorDrive.Dtos.account
 
         // Student
         public string? CMND { get; set; }
-        public DateTime? DOB { get; set; }
+        public DateTimeOffset? DOB { get; set; }
         public AddressDto? Address { get; set; }
         public string? Status { get; set; }
     }
