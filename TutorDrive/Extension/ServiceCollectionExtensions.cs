@@ -38,6 +38,9 @@ namespace TutorDrive.Extension
             services.AddScoped<PayOSService>();
             services.AddScoped<IInstructorDashboardService, InstructorDashboardService>();
             services.AddScoped<IComplaintService, ComplaintService>();
+            services.AddSingleton<GeminiAiService>();
+            services.AddScoped<IFeedbackClusterService, FeedbackClusterService>();
+
         }
     }
 }

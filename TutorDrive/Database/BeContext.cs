@@ -26,6 +26,7 @@ namespace TutorDrive.Database
         public DbSet<InstructorProfile> InstructorProfiles { get; set; }
         public DbSet<RegistrationExam> RegistrationExams { get; set; }
         public DbSet<Complaint> Complaints { get; set; }
+        public DbSet<FeedbackCluster> FeedbackClusters { get; set; }
         public BeContext(DbContextOptions<BeContext> options) : base(options) { }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
