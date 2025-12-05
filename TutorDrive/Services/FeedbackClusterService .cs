@@ -32,6 +32,13 @@ public class FeedbackClusterService : IFeedbackClusterService
         if (!comments.Any())
             throw new Exception("Không có feedback nào để phân nhóm.");
 
+        var oldClusters = await _repo.Get().ToListAsync();
+        if (oldClusters.Any())
+        {
+            _repo.DeleteRange(oldClusters);
+            await _repo.SaveChangesAsync();
+        }
+
         var clusters = await _aiService.ClusterAsync(comments);
 
         foreach (var cluster in clusters)
@@ -41,6 +48,7 @@ public class FeedbackClusterService : IFeedbackClusterService
                 ClusterName = cluster.ClusterName,
                 Count = cluster.Count,
                 ExamplesJson = JsonConvert.SerializeObject(cluster.Examples),
+                CreatedAt = DateTime.UtcNow
             };
 
             await _repo.AddAsync(entity);
@@ -50,6 +58,7 @@ public class FeedbackClusterService : IFeedbackClusterService
 
         return clusters;
     }
+
 
     public async Task<List<FeedbackCluster>> GetAllClustersAsync()
     {
