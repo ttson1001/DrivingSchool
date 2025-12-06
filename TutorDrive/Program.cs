@@ -13,6 +13,7 @@ using TutorDrive.Extension;
 using TutorDrive.Extension.Cloudary;
 using TutorDrive.Jobs;
 using TutorDrive.Model;
+using TutorDrive.Services;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -130,7 +131,14 @@ if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
     });
 }
 
-app.UseHangfireDashboard("/hangfire");
+app.UseHangfireDashboard("/hangfire", new DashboardOptions
+{
+    Authorization = new[]
+    {
+        new AllowAllDashboardAuthorizationFilter()
+    }
+});
+
 HangfireJobsConfig.ConfigureJobs();
 app.UseHttpsRedirection();
 
