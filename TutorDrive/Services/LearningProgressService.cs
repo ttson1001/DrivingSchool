@@ -50,8 +50,16 @@ namespace TutorDrive.Services
             if (studentProfile == null)
                 throw new Exception("StudentProfile không tìm thấy");
 
-            var staff = await _staffRepository.Get()
-                .FirstOrDefaultAsync(s => s.Id == dto.TeacherId);
+            var staffList = await _staffRepository.Get()
+                .Where(s => s.Account.Status == AccountStatus.Active)
+                .ToListAsync();
+
+            if (!staffList.Any())
+                throw new Exception("Không có giáo viên nào trong hệ thống.");
+
+            var random = new Random();
+            var staff = staffList[random.Next(staffList.Count)];
+
 
             if (staff == null)
                 throw new Exception("Giáo viên không tồn tại");
