@@ -3,6 +3,7 @@ using PayOS.Exceptions;
 using TutorDrive.Dtos.account;
 using TutorDrive.Dtos.Address.TutorDrive.Dtos.Address;
 using TutorDrive.Dtos.Feedbacks;
+using TutorDrive.Dtos.Jobs;
 using TutorDrive.Dtos.LearningProgress;
 using TutorDrive.Dtos.LearningProgress.TutorDrive.Dtos.LearningProgress;
 using TutorDrive.Dtos.Student;
@@ -152,7 +153,6 @@ namespace TutorDrive.Services
                         Email = f.StudentProfile.Account.Email,
                         PhoneNumber = f.StudentProfile.Account.PhoneNumber,
                         Avatar = f.StudentProfile.Account.Avatar,
-                        Status = f.StudentProfile.Status,
                         CMND = f.StudentProfile.CMND,
                         DOB = f.StudentProfile.DOB,
                         Address = f.StudentProfile.Address == null ? null : new AddressDto
@@ -524,7 +524,32 @@ namespace TutorDrive.Services
 
             return dto;
         }
+        public async Task<List<LessonReminderDto>> GetLessonsByDateAsync(DateTime date)
+        {
+            var items = await _repository.Get()
+                .Include(lp => lp.StudentProfile).ThenInclude(sp => sp.Account)
+                .Include(lp => lp.InstructorProfile).ThenInclude(ip => ip.Account)
+                .Include(lp => lp.Course)
+                .Where(lp => lp.StartDate.HasValue && lp.StartDate.Value.Date == date.Date)
+                .Select(lp => new
+                {
+                    lp.StartDate,
+                    StudentEmail = lp.StudentProfile.Account.Email,
+                    StudentName = lp.StudentProfile.Account.FullName,
+                    InstructorName = lp.InstructorProfile.Account.FullName,
+                    CourseName = lp.Course.Name
+                })
+                .ToListAsync();
 
+            return items.Select(lp => new LessonReminderDto
+            {
+                StudentEmail = lp.StudentEmail,
+                StudentName = lp.StudentName,
+                InstructorName = lp.InstructorName,
+                CourseName = lp.CourseName,
+                LessonTime = lp.StartDate?.ToString("HH:mm") ?? "Không rõ"
+            }).ToList();
+        }
         public async Task<List<CompletedCourseDto>> GetCompletedCoursesByStudentAsync(long accountId)
         {
             var progresses = await _repository.Get()
