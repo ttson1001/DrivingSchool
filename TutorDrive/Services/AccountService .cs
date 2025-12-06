@@ -9,6 +9,7 @@
     using TutorDrive.Dtos.Address.TutorDrive.Dtos.Address;
     using TutorDrive.Dtos.Common;
     using TutorDrive.Dtos.Staff.TutorDrive.Dtos.Accounts;
+    using TutorDrive.Entities.Enum;
     using TutorDrive.Exceptions;
     using TutorDrive.Services.IService.TutorDrive.Services.IService;
     using TutorDrive.Services.IServices;
@@ -69,6 +70,29 @@
             return account;
         }
 
+        public async Task SetStatusAsync(long accountId, bool isActive)
+        {
+            var account = await _accountRepo.Get()
+                .FirstOrDefaultAsync(x => x.Id == accountId)
+                ?? throw new Exception("Không tìm thấy tài khoản.");
+
+            if (account.RoleId == 1)
+                throw new Exception("Không thể khóa tài khoản Admin.");
+
+            account.Status = isActive ? AccountStatus.Active : AccountStatus.Inactive;
+
+            _accountRepo.Update(account);
+            await _accountRepo.SaveChangesAsync();
+
+            string html = EmailTemplateHelper.BuildAccountStatusEmail(account.FullName, isActive);
+
+            await _emailService.SendEmailAsync(
+                account.Email,
+                isActive ? "Tài khoản đã được mở khóa" : "Tài khoản đã bị khóa",
+                html
+            );
+        }
+
         public async Task ResetPasswordAsync(ResetPasswordRequest dto)
         {
             var account = await _accountRepo.Get()
@@ -120,19 +144,42 @@
 
         public async Task<LoginReponseDto> LoginAsync(LoginDto dto)
         {
-            var user = await _accountRepo.Get().Include(x => x.Role).FirstOrDefaultAsync(u => u.Email == dto.Email) ?? throw new KeyNotFoundException("User not found");
+            var user = await _accountRepo.Get()
+                .Include(x => x.Role)
+                .FirstOrDefaultAsync(u => u.Email == dto.Email)
+                ?? throw new KeyNotFoundException("Không tìm thấy tài khoảng");
 
-            if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
+            if (user.Status == AccountStatus.Inactive)
+                throw new Exception("Tài khoản đã bị vô hiệu hóa. Vui lòng liên hệ quản trị viên.");
+
+            if (!BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
                 throw new Exception(ExceptionConstant.InvalidCredentials);
 
             var token = _jwtService.GenerateToken(user, null);
-            await _accountRepo.SaveChangesAsync();
+
             return new LoginReponseDto
             {
                 Token = token
             };
         }
 
+        public async Task<List<InstructorDto>> GetAllInstructorsAsync()
+        {
+            var instructors = await _staffRepo.Get()
+                .Include(i => i.Account)
+                .OrderBy(i => i.Account.FullName)
+                .Where(i => i.Account.Status == AccountStatus.Active)
+                .ToListAsync();
+
+            return instructors.Select(i => new InstructorDto
+            {
+                Id = i.Id,
+                FullName = i.Account.FullName,
+                Avatar = i.Account.Avatar,
+                ExperienceYears = i.ExperienceYears,
+                Description = i.Description
+            }).ToList();
+        }
         private string HashPassword(string password)
         {
             return BCrypt.Net.BCrypt.HashPassword(password);
@@ -175,7 +222,8 @@
                     FullName = account.FullName,
                     Role = account.Role.Name,
                     PhoneNumber = account.PhoneNumber,
-                    Avatar = account.Avatar
+                    Avatar = account.Avatar,
+                    Status = account.Status,
                 };
 
                 if (account.Role.Name == "Instructor")
@@ -200,7 +248,6 @@
                     {
                         me.CMND = student.CMND;
                         me.DOB = student.DOB;
-                        me.Status = student.Status;
 
                         if (student.Address != null)
                         {
@@ -354,6 +401,7 @@
                 Role = account.Role.Name,
                 PhoneNumber = account.PhoneNumber,
                 Avatar = account.Avatar,
+                Status = account.Status,
             };
 
             if (roleName == "Instructor")
@@ -379,7 +427,6 @@
                 {
                     me.CMND = student.CMND;
                     me.DOB = student.DOB;
-                    me.Status = student.Status;
 
                     if (student.Address != null)
                     {
@@ -433,7 +480,6 @@
                 profile = new StudentProfile
                 {
                     Account = account,
-                    Status = "Active"
                 };
 
                 isNewProfile = true;

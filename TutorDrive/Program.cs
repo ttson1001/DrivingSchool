@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Hangfire;
+using Hangfire.SqlServer;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -9,7 +11,9 @@ using System.Text.Json.Serialization;
 using TutorDrive.Database;
 using TutorDrive.Extension;
 using TutorDrive.Extension.Cloudary;
+using TutorDrive.Jobs;
 using TutorDrive.Model;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -90,6 +94,17 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+builder.Services.AddHangfire(config =>
+{
+    config
+        .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+        .UseSimpleAssemblyNameTypeSerializer()
+        .UseRecommendedSerializerSettings()
+        .UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection"));
+});
+builder.Services.AddHangfireServer();
+
+
 builder.Services.Configure<FormOptions>(options =>
 {
     options.MultipartBodyLengthLimit = 50 * 1024 * 1024; // 50MB
@@ -115,6 +130,8 @@ if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
     });
 }
 
+app.UseHangfireDashboard("/hangfire");
+HangfireJobsConfig.ConfigureJobs();
 app.UseHttpsRedirection();
 
 app.UseAuthentication();

@@ -40,6 +40,8 @@ namespace TutorDrive.Extension
             services.AddScoped<IComplaintService, ComplaintService>();
             services.AddSingleton<GeminiAiService>();
             services.AddScoped<IFeedbackClusterService, FeedbackClusterService>();
+            services.AddScoped<ILearningProgressReminderService, LearningProgressReminderService>();
+            services.AddScoped<IExamReminderService, ExamReminderService>();
 
         }
     }

@@ -9,6 +9,7 @@ using TutorDrive.Dtos.common;
 using TutorDrive.Dtos.Staff.TutorDrive.Dtos.Accounts;
 using TutorDrive.Exceptions;
 using TutorDrive.Extension.SwagerUi;
+using TutorDrive.Services;
 using TutorDrive.Services.IService;
 
 namespace TutorDrive.Controller
@@ -59,6 +60,29 @@ namespace TutorDrive.Controller
         {
             await _accountService.ResetPasswordAsync(dto);
             return Ok(new { message = "Đặt lại mật khẩu thành công." });
+        }
+
+        [HttpPut("status/{id}")]
+        [SwaggerOperation(Summary = "Cập nhật trạng thái tài khoản (Admin)")]
+        public async Task<IActionResult> UpdateStatus(long id, [FromQuery] bool isActive)
+        {
+            var response = new ResponseDto();
+
+            try
+            {
+                await _accountService.SetStatusAsync(id, isActive);
+
+                response.Message = isActive
+                    ? "Mở khóa tài khoản thành công"
+                    : "Khóa tài khoản thành công";
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                response.Message = $"Lỗi: {ex.Message}";
+                return BadRequest(response);
+            }
         }
 
         [HttpPost("[action]")]
@@ -267,6 +291,30 @@ namespace TutorDrive.Controller
                     success = true,
                     message = "Cập nhật hồ sơ học viên thành công",
                     data = updatedProfile
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
+        }
+
+        [HttpGet("[action]")]
+        public async Task<IActionResult> GetAllInstructors()
+        {
+            try
+            {
+                var instructors = await _accountService.GetAllInstructorsAsync();
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Lấy danh sách giáo viên thành công",
+                    data = instructors
                 });
             }
             catch (Exception ex)

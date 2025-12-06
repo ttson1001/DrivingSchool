@@ -186,7 +186,6 @@ public class ExamResultService : IExamResultService
 
                 CMND = x.StudentProfile.CMND,
                 DOB = x.StudentProfile.DOB,
-                Status = x.StudentProfile.Status,
 
                 Address = x.StudentProfile.Address == null ? null : new AddressDto
                 {
@@ -248,7 +247,6 @@ public class ExamResultService : IExamResultService
 
                 CMND = x.StudentProfile.CMND,
                 DOB = x.StudentProfile.DOB,
-                Status = x.StudentProfile.Status,
 
                 Address = x.StudentProfile.Address == null ? null : new AddressDto
                 {

@@ -1,4 +1,5 @@
-﻿using TutorDrive.Dtos.LearningProgress;
+﻿using TutorDrive.Dtos.Jobs;
+using TutorDrive.Dtos.LearningProgress;
 using TutorDrive.Dtos.LearningProgress.TutorDrive.Dtos.LearningProgress;
 
 namespace TutorDrive.Services.IService
@@ -16,5 +17,7 @@ namespace TutorDrive.Services.IService
         Task<List<CourseProgressGroupDto>> GetAdminLearningProgressAsync(bool? isCompleted = null);
         Task UpdateStudentTrainingAsync(long studentId, UpdateStudentTrainingDto dto, long teacherAccountId);
         Task<List<CompletedCourseDto>> GetCompletedCoursesByStudentAsync(long accountId);
+        Task<List<LessonReminderDto>> GetLessonsByDateAsync(DateTime date);
+
     }
 }

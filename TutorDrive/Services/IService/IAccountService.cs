@@ -11,6 +11,7 @@ namespace TutorDrive.Services.IService
         Task<Account> RegisterAsync(CreateAccountRequest request);
         Task ForgotPasswordAsync(ForgotPasswordRequest dto);
         Task ResetPasswordAsync(ResetPasswordRequest dto);
+        Task SetStatusAsync(long accountId, bool isActive);
         Task<LoginReponseDto> LoginAsync(LoginDto dto);
         Task<PagedResult<MeDto>> SearchAccountsAsync(string? keyword, long? roleId, int page, int pageSize);
         Task<AccountDto> GetAccountByIdAsync(long id);
@@ -20,5 +21,6 @@ namespace TutorDrive.Services.IService
         Task<StudentProfile> UpdateAsync(long id, UpdateStudentProfileDto dto);
         Task ChangePasswordAsync(long accountId, ChangePasswordRequest dto);
         Task<InstructorProfile> UpdateInstructorProfileAsync(long accountId, UpdateInstructorProfileDto dto);
+        Task<List<InstructorDto>> GetAllInstructorsAsync();
     }
 }

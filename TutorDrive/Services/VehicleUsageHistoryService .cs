@@ -129,7 +129,6 @@ namespace TutorDrive.Services
                     ExperienceYears = x.Account.InstructorProfile?.ExperienceYears,
                     CMND = x.Account.StudentProfile?.CMND,
                     DOB = x.Account.StudentProfile?.DOB,
-                    Status = x.Account.StudentProfile?.Status
                 },
 
                 Vehicle = new VehicleDto
@@ -170,7 +169,6 @@ namespace TutorDrive.Services
                     ExperienceYears = x.Account.InstructorProfile?.ExperienceYears,
                     CMND = x.Account.StudentProfile?.CMND,
                     DOB = x.Account.StudentProfile?.DOB,
-                    Status = x.Account.StudentProfile?.Status
                 },
 
                 Vehicle = new VehicleDto

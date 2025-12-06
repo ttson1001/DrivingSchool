@@ -58,7 +58,7 @@ namespace TutorDrive.Services
 
                         CMND = x.Account.StudentProfile == null ? null : x.Account.StudentProfile.CMND,
                         DOB = x.Account.StudentProfile == null ? null : x.Account.StudentProfile.DOB,
-                        Status = x.Account.StudentProfile == null ? null : x.Account.StudentProfile.Status,
+                        Status = x.Account.Status,
                     }
                 })
                 .ToListAsync();

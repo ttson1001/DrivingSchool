@@ -76,7 +76,6 @@ namespace TutorDrive.Services.Service
                         FullName = f.StudentProfile.Account.FullName,
                         PhoneNumber = f.StudentProfile.Account.PhoneNumber,
                         Avatar = f.StudentProfile.Account.Avatar,
-                        Status = f.StudentProfile.Status,
 
                         CMND = f.StudentProfile.CMND,
                         DOB = f.StudentProfile.DOB,
@@ -134,7 +133,6 @@ namespace TutorDrive.Services.Service
                     FullName = f.StudentProfile.Account.FullName,
                     PhoneNumber = f.StudentProfile.Account.PhoneNumber,
                     Avatar = f.StudentProfile.Account.Avatar,
-                    Status = f.StudentProfile.Status,
 
                     CMND = f.StudentProfile.CMND,
                     DOB = f.StudentProfile.DOB,
@@ -203,7 +201,6 @@ namespace TutorDrive.Services.Service
                         FullName = f.StudentProfile.Account.FullName,
                         PhoneNumber = f.StudentProfile.Account.PhoneNumber,
                         Avatar = f.StudentProfile.Account.Avatar,
-                        Status = f.StudentProfile.Status,
 
                         CMND = f.StudentProfile.CMND,
                         DOB = f.StudentProfile.DOB,
@@ -326,7 +323,6 @@ namespace TutorDrive.Services.Service
                         FullName = f.StudentProfile.Account.FullName,
                         PhoneNumber = f.StudentProfile.Account.PhoneNumber,
                         Avatar = f.StudentProfile.Account.Avatar,
-                        Status = f.StudentProfile.Status,
 
                         CMND = f.StudentProfile.CMND,
                         DOB = f.StudentProfile.DOB,
@@ -393,7 +389,6 @@ namespace TutorDrive.Services.Service
                     FullName = f.StudentProfile.Account.FullName,
                     PhoneNumber = f.StudentProfile.Account.PhoneNumber,
                     Avatar = f.StudentProfile.Account.Avatar,
-                    Status = f.StudentProfile.Status,
                     CMND = f.StudentProfile.CMND,
                     DOB = f.StudentProfile.DOB,
                     Address = f.StudentProfile.Address == null ? null :

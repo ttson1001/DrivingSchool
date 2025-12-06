@@ -1,4 +1,5 @@
 ﻿using TutorDrive.Dtos.Address.TutorDrive.Dtos.Address;
+using TutorDrive.Entities.Enum;
 
 namespace TutorDrive.Dtos.account
 {
@@ -20,6 +21,6 @@ namespace TutorDrive.Dtos.account
         public string? CMND { get; set; }
         public DateTimeOffset? DOB { get; set; }
         public AddressDto? Address { get; set; }
-        public string? Status { get; set; }
+        public AccountStatus? Status { get; set; }
     }
 }
