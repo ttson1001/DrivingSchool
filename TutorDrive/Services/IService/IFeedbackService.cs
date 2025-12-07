@@ -13,7 +13,7 @@ namespace TutorDrive.Services.IService
         Task<PagedResult<FeedbackDto>> SearchAsync(string? keyword, int page, int pageSize);
         Task UpdateAsync(long id, FeedbackUpdateDto dto);
         Task<List<TopTeacherDto>> GetTopTeachersAsync(int top = 5);
-        Task<List<FeedbackDto>> GetHistoryAsync(long accountId);
+        Task<List<FeedbackDto>> GetHistoryAsync(long accountId, string role);
         Task<HomepageDto> GetHomepageAsync();
     }
 }

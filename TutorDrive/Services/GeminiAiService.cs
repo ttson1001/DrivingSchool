@@ -26,6 +26,7 @@ Hãy phân nhóm các feedback tiếng Việt theo QUY TẮC CỐ ĐỊNH dướ
 5. Nội dung khóa học → nhận xét về bài học, tài liệu, ví dụ, chương trình học.
 6. Thời gian – Lịch học → nhận xét về lịch học, thời lượng, tốc độ giảng.
 7. Khác → nếu không phù hợp nhóm nào ở trên.
+8. Về xe -> về xe, những gì liên quan tới xe.
 
 YÊU CẦU BẮT BUỘC:
 - Mỗi feedback phải được phân vào đúng một nhóm.
@@ -55,7 +56,6 @@ Chỉ trả JSON thuần, không được kèm thêm giải thích hoặc mô t�
 
         string raw = response.Candidates[0].Content.Parts[0].Text;
 
-        // 🔥 Lọc ra chỉ phần JSON (fix lỗi output có ký tự thừa)
         string json = ExtractJson(raw);
 
         return JsonConvert.DeserializeObject<List<FeedbackClusterDto>>(json);

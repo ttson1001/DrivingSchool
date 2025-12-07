@@ -172,6 +172,24 @@ namespace TutorDrive.Services.Payment
                 registration.Status = RegistrationStatus.Paid;
                 registration.Note = $"Đã thanh toán PayOS - {DateTime.Now:dd/MM/yyyy HH:mm}";
                 _registrationRepo.Update(registration);
+
+                var teacher = await _instructorRepo.Get()
+                    .OrderByDescending(s => s.ExperienceYears)
+                    .FirstOrDefaultAsync();
+
+                if (teacher == null)
+                    throw new Exception("Không tìm thấy giáo viên khả dụng.");
+
+                var dto = new GenerateProgressDto
+                {
+                    StudentId = registration.StudentProfileId,
+                    TeacherId = teacher.Id,
+                    CourseId = registration.CourseId,
+                    RegisterId = registrationId,
+                    StartDate = registration.StartDateTime
+                };
+
+                await _learningProgressService.GenerateProgressForCourseAsync(dto);
             }
 
             await _transactionRepo.SaveChangesAsync();
@@ -179,7 +197,7 @@ namespace TutorDrive.Services.Payment
 
             return new ResponseDto
             {
-                Message = "Thanh toán thành công.",
+                Message = isSuccess ? "Thanh toán thành công." : "Thanh toán thất bại.",
                 Data = new
                 {
                     RegistrationId = registration.Id,

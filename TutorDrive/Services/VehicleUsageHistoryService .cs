@@ -13,15 +13,18 @@ namespace TutorDrive.Services
         private readonly IRepository<VehicleUsageHistory> _historyRepo;
         private readonly IRepository<Vehicle> _vehicleRepo;
         private readonly IRepository<Account> _accountRepo;
+        private readonly IRepository<InstructorProfile> _instructorProfileRepo;
 
         public VehicleUsageHistoryService(
             IRepository<VehicleUsageHistory> historyRepo,
             IRepository<Vehicle> vehicleRepo,
-            IRepository<Account> accountRepo)
+            IRepository<Account> accountRepo,
+            IRepository<InstructorProfile> instructorProfileRepo)
         {
             _historyRepo = historyRepo;
             _vehicleRepo = vehicleRepo;
             _accountRepo = accountRepo;
+            _instructorProfileRepo = instructorProfileRepo;
         }
 
         public async Task<List<VehicleUsageHistoryDto>> GetAllAsync()
@@ -185,6 +188,9 @@ namespace TutorDrive.Services
 
         public async Task CreateAsync(long accountId, VehicleUsageHistoryCreateDto dto)
         {
+            if (dto.EndTime <= dto.StartTime)
+                throw new Exception("Thời gian kết thúc phải lớn hơn thời gian bắt đầu.");
+
             var vehicle = await _vehicleRepo.Get()
                 .FirstOrDefaultAsync(x => x.Id == dto.VehicleId);
             if (vehicle == null)
@@ -194,6 +200,22 @@ namespace TutorDrive.Services
                 .FirstOrDefaultAsync(x => x.Id == accountId);
             if (account == null)
                 throw new Exception($"Người dùng với Id {accountId} không tồn tại");
+
+            var instructor = await _instructorProfileRepo.Get()
+                .FirstOrDefaultAsync(x => x.AccountId == accountId);
+            if (instructor == null)
+                throw new Exception("Người dùng này không phải là giảng viên.");
+
+            var now = DateTime.UtcNow;
+
+            var hiệnĐangMượnXe = await _historyRepo.Get()
+                .AnyAsync(h =>
+                    h.AccountId == accountId &&
+                    h.EndTime > now
+                );
+
+            if (hiệnĐangMượnXe)
+                throw new Exception("Giáo viên hiện đang sử dụng một xe khác. Không thể mượn thêm.");
 
             var entity = new VehicleUsageHistory
             {
@@ -206,6 +228,7 @@ namespace TutorDrive.Services
             await _historyRepo.AddAsync(entity);
             await _historyRepo.SaveChangesAsync();
         }
+
 
         public async Task UpdateAsync(long accountId, VehicleUsageHistoryUpdateDto dto)
         {

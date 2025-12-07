@@ -276,29 +276,35 @@ namespace TutorDrive.Services.Service
             };
         }
 
-        public async Task<List<FeedbackDto>> GetHistoryAsync(long accountId)
+        public async Task<List<FeedbackDto>> GetHistoryAsync(long accountId, string role)
         {
-            var student = await _studentProfileRepository.Get()
-                            .Include(x => x.Account)
-                            .FirstOrDefaultAsync(x => x.AccountId == accountId);
+            IQueryable<Feedback> query = _repository.Get();
 
-            var instructor = await _staffRepository.Get()
-                                .Include(x => x.Account)
-                                .FirstOrDefaultAsync(x => x.AccountId == accountId);
-
-            var query = _repository.Get();
-
-            if (student != null)
+            if (role == "Student")
             {
+                var student = await _studentProfileRepository.Get()
+                    .Include(x => x.Account)
+                    .FirstOrDefaultAsync(x => x.AccountId == accountId);
+
+                if (student == null)
+                    throw new Exception("Không tìm thấy hồ sơ học viên.");
+
                 query = query.Where(f => f.StudentProfileId == student.Id);
             }
-            else if (instructor != null)
+            else if (role == "Instructor")
             {
+                var instructor = await _staffRepository.Get()
+                    .Include(x => x.Account)
+                    .FirstOrDefaultAsync(x => x.AccountId == accountId);
+
+                if (instructor == null)
+                    throw new Exception("Không tìm thấy hồ sơ giảng viên.");
+
                 query = query.Where(f => f.InstructorProfileId == instructor.Id);
             }
             else
             {
-                throw new Exception("Không tìm thấy hồ sơ người dùng để lấy lịch sử phản hồi.");
+                throw new Exception("Vai trò không hợp lệ.");
             }
 
             return await query
@@ -323,10 +329,8 @@ namespace TutorDrive.Services.Service
                         FullName = f.StudentProfile.Account.FullName,
                         PhoneNumber = f.StudentProfile.Account.PhoneNumber,
                         Avatar = f.StudentProfile.Account.Avatar,
-
                         CMND = f.StudentProfile.CMND,
                         DOB = f.StudentProfile.DOB,
-
                         Address = f.StudentProfile.Address == null ? null : new AddressDto
                         {
                             FullAddress = f.StudentProfile.Address.FullAddress,

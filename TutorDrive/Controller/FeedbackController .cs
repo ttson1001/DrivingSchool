@@ -206,13 +206,18 @@ namespace TutorDrive.Controller
             try
             {
                 var userIdStr = User.FindFirstValue("UserId");
+                var role = User.FindFirstValue("Role");
+
                 if (string.IsNullOrEmpty(userIdStr))
                     return Unauthorized(new { success = false, message = "Không tìm thấy thông tin người dùng trong token" });
+
+                if (string.IsNullOrEmpty(role))
+                    return Unauthorized(new { success = false, message = "Không tìm thấy vai trò trong token" });
 
                 if (!long.TryParse(userIdStr, out var userId))
                     return BadRequest(new { success = false, message = "ID người dùng không hợp lệ" });
 
-                var history = await _feedbackService.GetHistoryAsync(userId);
+                var history = await _feedbackService.GetHistoryAsync(userId, role);
 
                 return Ok(new
                 {
