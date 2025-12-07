@@ -40,6 +40,7 @@ namespace TutorDrive.Services
                     Id = x.Id,
                     StartTime = x.StartTime,
                     EndTime = x.EndTime,
+                    Status = x.Status,
 
                     Account = new MeDto
                     {
@@ -83,6 +84,7 @@ namespace TutorDrive.Services
                 Id = x.Id,
                 StartTime = x.StartTime,
                 EndTime = x.EndTime,
+                Status = x.Status,
 
                 Account = new MeDto
                 {
@@ -120,6 +122,7 @@ namespace TutorDrive.Services
                 Id = x.Id,
                 StartTime = x.StartTime,
                 EndTime = x.EndTime,
+                Status = x.Status,
 
                 Account = new MeDto
                 {
@@ -160,6 +163,7 @@ namespace TutorDrive.Services
                 Id = x.Id,
                 StartTime = x.StartTime,
                 EndTime = x.EndTime,
+                Status = x.Status,
 
                 Account = new MeDto
                 {

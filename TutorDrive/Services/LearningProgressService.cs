@@ -187,13 +187,17 @@ namespace TutorDrive.Services
                 }
             );
 
-            var regExamMap = await _registrationExamRepository.Get()
-                .Where(r => r.StudentProfileId == student.Id &&
-                            r.CourseId.HasValue &&
-                            courseIds.Contains(r.CourseId.Value))
-                .Select(r => r.CourseId.Value)
-                .Distinct()
-                .ToDictionaryAsync(cid => cid, cid => true);
+
+            var regExamList = await _registrationExamRepository.Get()
+                 .Where(r => r.StudentProfileId == student.Id &&
+                             r.CourseId.HasValue &&
+                             courseIds.Contains(r.CourseId.Value))
+                 .Select(r => r.CourseId)
+                 .Distinct()
+                 .ToListAsync();
+
+            var regExamMap = regExamList.ToDictionary(cid => cid, cid => true);
+
 
             var result = grouped.Select(g => new CourseLearningProgressGroupDto
             {
