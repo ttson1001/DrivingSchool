@@ -19,7 +19,7 @@ namespace TutorDrive.Repositories
 
         public IQueryable<T> Get()
         {
-            return _set.Where(x => true);
+            return _set.Where(x => true).AsNoTracking();
         }
 
         public async Task<List<T>?> GetValuesAsync(CancellationToken cancellationToken = default)

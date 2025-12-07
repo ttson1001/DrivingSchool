@@ -50,7 +50,7 @@ Chỉ trả JSON thuần, không được kèm thêm giải thích hoặc mô t�
 ";
 
         var response = await _client.Models.GenerateContentAsync(
-            model: "gemini-2.0-flash",
+            model: "gemini-2.5-flash-lite",
             contents: prompt
         );
 

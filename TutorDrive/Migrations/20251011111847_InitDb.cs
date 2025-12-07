@@ -477,7 +477,7 @@ namespace TutorDrive.Migrations
                 name: "IX_LearningProgresses_StudentProfileId",
                 table: "LearningProgresses",
                 column: "StudentProfileId",
-                unique: true);
+                unique: false);
 
             migrationBuilder.CreateIndex(
                 name: "IX_RegistrationFile_RegistrationId",

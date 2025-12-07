@@ -60,10 +60,6 @@ namespace TutorDrive.Services
             var random = new Random();
             var staff = staffList[random.Next(staffList.Count)];
 
-
-            if (staff == null)
-                throw new Exception("Giáo viên không tồn tại");
-
             var sections = await _sectionRepository.Get()
                 .Where(s => s.CourseId == dto.CourseId)
                 .ToListAsync();
@@ -71,17 +67,16 @@ namespace TutorDrive.Services
             if (!sections.Any())
                 throw new Exception("Khóa học chưa có phần học (Section)");
 
-            // Lấy Registration để biết StudyDays
             var registration = await _registrationRepository.Get()
                 .FirstOrDefaultAsync(r => r.Id == dto.RegisterId);
 
             if (registration == null)
                 throw new Exception("Không tìm thấy thông tin đăng ký học");
 
-            // Tính danh sách ngày học theo StudyDays
             var studyDates = GenerateStudyDates(registration.StartDateTime, registration.StudyDays, sections.Count);
 
-            // Gắn ngày học cho từng Section
+            var newItems = new List<LearningProgress>();
+
             for (int i = 0; i < sections.Count; i++)
             {
                 var section = sections[i];
@@ -92,7 +87,7 @@ namespace TutorDrive.Services
 
                 if (!exists)
                 {
-                    var lp = new LearningProgress
+                    newItems.Add(new LearningProgress
                     {
                         StudentProfileId = dto.StudentId,
                         CourseId = dto.CourseId,
@@ -102,14 +97,17 @@ namespace TutorDrive.Services
                         IsCompleted = false,
                         StartDate = lessonDate != default ? lessonDate : dto.StartDate,
                         LastUpdated = DateTime.UtcNow
-                    };
-
-                    await _repository.AddAsync(lp);
+                    });
                 }
             }
 
-            await _repository.SaveChangesAsync();
+            if (newItems.Any())
+            {
+                await _repository.AddRangeAsync(newItems);
+                await _repository.SaveChangesAsync();
+            }
         }
+
 
         public async Task<List<CourseLearningProgressGroupDto>> GetByStudentGroupedAsync(long accountId, bool? isCompleted = null)
         {
@@ -195,9 +193,8 @@ namespace TutorDrive.Services
                  .Select(r => r.CourseId)
                  .Distinct()
                  .ToListAsync();
-
+            
             var regExamMap = regExamList.ToDictionary(cid => cid, cid => true);
-
 
             var result = grouped.Select(g => new CourseLearningProgressGroupDto
             {
