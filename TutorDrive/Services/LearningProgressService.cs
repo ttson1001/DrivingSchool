@@ -97,7 +97,7 @@ namespace TutorDrive.Services
                         StudentProfileId = dto.StudentId,
                         CourseId = dto.CourseId,
                         SectionId = section.Id,
-                        InstructorProfileId = dto.TeacherId,
+                        InstructorProfileId = staff.Id,
                         Comment = "",
                         IsCompleted = false,
                         StartDate = lessonDate != default ? lessonDate : dto.StartDate,
