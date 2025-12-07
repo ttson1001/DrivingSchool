@@ -50,7 +50,7 @@ namespace TutorDrive.Services
             if (studentProfile == null)
                 throw new Exception("StudentProfile không tìm thấy");
 
-            var staffList = await _staffRepository.Get()
+            var staffList = await _staffRepository.Get().Include(s => s.Account)
                 .Where(s => s.Account.Status == AccountStatus.Active)
                 .ToListAsync();
 
