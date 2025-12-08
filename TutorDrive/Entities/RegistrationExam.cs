@@ -16,8 +16,8 @@ namespace TutorDrive.Entities
         public string ApplicationForm { get; set; }
         public RegistrationStatus Status { get; set; } = RegistrationStatus.Pending;
         public string? Comment { get; set; }
-        public DateTime? UpdatedAt { get; set; } = DateTime.UtcNow;
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTimeOffset? UpdatedAt { get; set; } = DateTime.UtcNow;
+        public DateTimeOffset CreatedAt { get; set; } = DateTime.UtcNow;
         public Exam? Exam { get; set; }
         public long? ExamId { get; set; }
     }

@@ -11,8 +11,8 @@ namespace TutorDrive.Entities
         public long AccountId { get; set; }
         public Account Account { get; set; }
 
-        public DateTime StartTime { get; set; }
-        public DateTime? EndTime { get; set; }
+        public DateTimeOffset StartTime { get; set; }
+        public DateTimeOffset? EndTime { get; set; }
 
         public VehicleUsageStatus Status { get; set; } = VehicleUsageStatus.Pending;
     }

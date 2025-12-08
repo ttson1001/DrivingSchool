@@ -145,7 +145,7 @@
             var user = await _accountRepo.Get()
                 .Include(x => x.Role)
                 .FirstOrDefaultAsync(u => u.Email == dto.Email)
-                ?? throw new KeyNotFoundException("Không tìm thấy tài khoảng");
+                ?? throw new KeyNotFoundException("Không tìm thấy tài khoản");
 
             if (user.Status == AccountStatus.Inactive)
                 throw new Exception("Tài khoản đã bị vô hiệu hóa. Vui lòng liên hệ quản trị viên.");
@@ -308,6 +308,7 @@
             {
                 Email = dto.Email,
                 FullName = dto.FullName,
+                Avatar = dto.Avartar,
                 PhoneNumber = dto.PhoneNumber,
                 PasswordHash = hashedPassword,
                 RoleId = dto.RoleId,

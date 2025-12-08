@@ -9,7 +9,7 @@ namespace TutorDrive.Dtos.Exam
         public long CourseId { get; set; }
         public string CourseName { get; set; }
 
-        public DateTime ExamDate { get; set; }
+        public DateTimeOffset ExamDate { get; set; }
 
         public bool Theory { get; set; }
         public bool Simulation { get; set; }

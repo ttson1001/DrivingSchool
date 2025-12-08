@@ -9,7 +9,7 @@
         public string TeacherName { get; set; }
         public string TeacherEmail { get; set; }
 
-        public DateTime CompletedDate { get; set; }
+        public DateTimeOffset CompletedDate { get; set; }
         public int TotalSections { get; set; }
     }
 

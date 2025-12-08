@@ -21,11 +21,11 @@ namespace TutorDrive.Dtos.Registration
 
         public RegistrationStatus Status { get; set; }
         public string? Note { get; set; }
-        public DateTime RegisterDate { get; set; }
+        public DateTimeOffset RegisterDate { get; set; }
 
         public List<string>? FileUrls { get; set; }
 
-        public DateTime StartDateTime { get; set; }
+        public DateTimeOffset StartDateTime { get; set; }
         public string StudyDays { get; set; }
         public decimal? Price { get; set; }
     }

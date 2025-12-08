@@ -10,6 +10,6 @@ namespace TutorDrive.Entities
         public Registration Registration { get; set; }
         public string Url { get; set; }
         public FileType FileType { get; set; }
-        public DateTime UploadedAt { get; set; } = DateTime.UtcNow;
+        public DateTimeOffset UploadedAt { get; set; } = DateTime.UtcNow;
     }
 }

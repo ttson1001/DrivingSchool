@@ -35,7 +35,7 @@ namespace TutorDrive.Dtos.Course
         public string ImageUrl { get; set; }
         public int? DurationDays { get; set; }
         public decimal? Price { get; set; }
-        public DateTime? EndRegistrationDate { get; set; }
+        public DateTimeOffset? EndRegistrationDate { get; set; }
         public int StudentCount { get; set; }
         public CourseStatus Status { get; set; }
 

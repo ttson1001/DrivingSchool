@@ -5,8 +5,8 @@
         public long Id { get; set; }
         public long? SectionId { get; set; }
         public string? SectionName { get; set; }
-        public DateTime? StartDate { get; set; }
-        public DateTime? EndDate { get; set; }
+        public DateTimeOffset? StartDate { get; set; }
+        public DateTimeOffset? EndDate { get; set; }
         public bool IsCompleted { get; set; }
         public long? InstructorId { get; set; }
         public string? InstructorName { get; set; }

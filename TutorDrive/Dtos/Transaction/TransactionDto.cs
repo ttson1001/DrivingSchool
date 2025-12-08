@@ -10,7 +10,7 @@ namespace TutorDrive.Dtos.Transaction
         public decimal? Amount { get; set; }
         public string? PaymentMethod { get; set; }
         public PaymentStatus PaymentStatus { get; set; }
-        public DateTime CreatedAt { get; set; }
+        public DateTimeOffset CreatedAt { get; set; }
 
         public AccountDto? User { get; set; }
         public RegistrationListItemDto? Registration { get; set; }

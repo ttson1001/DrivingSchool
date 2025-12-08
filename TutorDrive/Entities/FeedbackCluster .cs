@@ -8,6 +8,6 @@
         public int Count { get; set; }
         public string ExamplesJson { get; set; }
 
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTimeOffset CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }

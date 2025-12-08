@@ -9,7 +9,7 @@ namespace TutorDrive.Entities
         public string ExamCode { get; set; }
         public long CourseId { get; set; }
         public Course Course { get; set; }
-        public DateTime ExamDate { get; set; }
+        public DateTimeOffset ExamDate { get; set; }
         public bool Theory { get; set; }
         public bool Simulation { get; set; }
         public bool Track { get; set; }

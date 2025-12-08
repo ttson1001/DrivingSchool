@@ -17,14 +17,14 @@
         public List<FeedbackDto> RecentFeedbacks { get; set; }
 
         public int TotalVehicleUsage { get; set; }
-        public DateTime? LastVehicleUsage { get; set; }
+        public DateTimeOffset? LastVehicleUsage { get; set; }
     }
 
     public class FeedbackDto
     {
         public int Rating { get; set; }
         public string Comment { get; set; }
-        public DateTime CreatedAt { get; set; }
+        public DateTimeOffset CreatedAt { get; set; }
         public string StudentName { get; set; }
     }
 

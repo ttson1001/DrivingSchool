@@ -14,7 +14,7 @@ namespace TutorDrive.Entities
         public long RoleId { get; set; }
         public Role Role { get; set; }
         public string? ResetOtp { get; set; }
-        public DateTime? ResetOtpExpiry { get; set; }
+        public DateTimeOffset? ResetOtpExpiry { get; set; }
         public AccountStatus Status { get; set; } = AccountStatus.Active;
         public StudentProfile? StudentProfile { get; set; }
         public InstructorProfile? InstructorProfile { get; set; }

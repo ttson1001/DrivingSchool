@@ -26,7 +26,7 @@ namespace TutorDrive.Dtos.Feedbacks
         public long? CourseId { get; set; }
         public int Rating { get; set; }
         public string Comment { get; set; }
-        public DateTime CreatedAt { get; set; }
+        public DateTimeOffset CreatedAt { get; set; }
     }
 
 }

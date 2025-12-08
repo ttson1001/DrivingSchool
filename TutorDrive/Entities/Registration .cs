@@ -14,11 +14,11 @@ namespace TutorDrive.Entities
         public long CourseId { get; set; }
         public Course Course { get; set; }
         public decimal? Price { get; set; }
-        public DateTime RegisterDate { get; set; } = DateTime.UtcNow;
+        public DateTimeOffset RegisterDate { get; set; } = DateTime.UtcNow;
         public RegistrationStatus Status { get; set; }
         public string? Note { get; set; }
         public ICollection<RegistrationFile> Files { get; set; }
-        public DateTime StartDateTime { get; set; }
+        public DateTimeOffset StartDateTime { get; set; }
         public StudyDay StudyDays { get; set; }
     }
 }

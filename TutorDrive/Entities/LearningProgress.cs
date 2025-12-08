@@ -20,9 +20,9 @@ namespace TutorDrive.Entities
 
         public bool IsCompleted { get; set; } = false;
         public string? Comment { get; set; }
-        public DateTime? LastUpdated { get; set; } = DateTime.UtcNow;
+        public DateTimeOffset? LastUpdated { get; set; } = DateTime.UtcNow;
 
-        public DateTime? StartDate { get; set; }
-        public DateTime? EndDate { get; set; }
+        public DateTimeOffset? StartDate { get; set; }
+        public DateTimeOffset? EndDate { get; set; }
     }
 }

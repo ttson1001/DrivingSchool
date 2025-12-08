@@ -23,8 +23,8 @@ namespace TutorDrive.Dtos.RegistrationExam
         public RegistrationStatus Status { get; set; }
         public string? Comment { get; set; }
 
-        public DateTime CreatedAt { get; set; }
-        public DateTime? UpdatedAt { get; set; }
+        public DateTimeOffset CreatedAt { get; set; }
+        public DateTimeOffset? UpdatedAt { get; set; }
 
         public CourseDto Course { get; set; }
     }

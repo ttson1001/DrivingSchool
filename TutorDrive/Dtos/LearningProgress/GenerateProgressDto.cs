@@ -7,6 +7,6 @@
         public long CourseId { get; set; }
         public long RegisterId { get; set; }
 
-        public DateTime StartDate { get; set; }
+        public DateTimeOffset StartDate { get; set; }
     }
 }

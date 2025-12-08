@@ -339,7 +339,7 @@ namespace TutorDrive.Services
                 .ToListAsync();
         }
 
-        private List<DateTime> GenerateStudyDates(DateTime startDate, StudyDay studyDays, int count)
+        private List<DateTime> GenerateStudyDates(DateTimeOffset startDate, StudyDay studyDays, int count)
         {
             var dates = new List<DateTime>();
             var date = startDate.Date;
