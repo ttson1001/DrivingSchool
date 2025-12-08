@@ -104,11 +104,9 @@ namespace TutorDrive.Services
             {
                 _repository.ClearChangeTracking();
                 await _repository.AddRangeAsync(newItems);
-                await _repository.SaveChangesAsync(); // 🔥 BẮT BUỘC PHẢI CÓ
+                await _repository.SaveChangesAsync();
             }
         }
-
-
 
         public async Task<List<CourseLearningProgressGroupDto>> GetByStudentGroupedAsync(long accountId, bool? isCompleted = null)
         {
