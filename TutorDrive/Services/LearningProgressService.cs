@@ -50,7 +50,8 @@ namespace TutorDrive.Services
             if (studentProfile == null)
                 throw new Exception("StudentProfile không tìm thấy");
 
-            var staffList = await _staffRepository.Get().Include(s => s.Account)
+            var staffList = await _staffRepository.Get()
+                .Include(s => s.Account)
                 .Where(s => s.Account.Status == AccountStatus.Active)
                 .ToListAsync();
 
@@ -73,7 +74,11 @@ namespace TutorDrive.Services
             if (registration == null)
                 throw new Exception("Không tìm thấy thông tin đăng ký học");
 
-            var studyDates = GenerateStudyDates(registration.StartDateTime, registration.StudyDays, sections.Count);
+            var studyDates = GenerateStudyDates(
+                registration.StartDateTime,
+                registration.StudyDays,
+                sections.Count
+            );
 
             var newItems = new List<LearningProgress>();
 
@@ -82,31 +87,27 @@ namespace TutorDrive.Services
                 var section = sections[i];
                 var lessonDate = studyDates.ElementAtOrDefault(i);
 
-                bool exists = await _repository.Get()
-                    .AnyAsync(lp => lp.StudentProfileId == dto.StudentId && lp.SectionId == section.Id);
-
-                if (!exists)
+                newItems.Add(new LearningProgress
                 {
-                    newItems.Add(new LearningProgress
-                    {
-                        StudentProfileId = dto.StudentId,
-                        CourseId = dto.CourseId,
-                        SectionId = section.Id,
-                        InstructorProfileId = staff.Id,
-                        Comment = "",
-                        IsCompleted = false,
-                        StartDate = lessonDate != default ? lessonDate : dto.StartDate,
-                        LastUpdated = DateTime.UtcNow
-                    });
-                }
+                    StudentProfileId = dto.StudentId,
+                    CourseId = dto.CourseId,
+                    SectionId = section.Id,
+                    InstructorProfileId = staff.Id,
+                    Comment = "",
+                    IsCompleted = false,
+                    StartDate = lessonDate != default ? lessonDate : dto.StartDate,
+                    LastUpdated = DateTime.UtcNow
+                });
             }
 
             if (newItems.Any())
             {
+                _repository.ClearChangeTracking();
                 await _repository.AddRangeAsync(newItems);
-                await _repository.SaveChangesAsync();
+                await _repository.SaveChangesAsync(); // 🔥 BẮT BUỘC PHẢI CÓ
             }
         }
+
 
 
         public async Task<List<CourseLearningProgressGroupDto>> GetByStudentGroupedAsync(long accountId, bool? isCompleted = null)
