@@ -2,8 +2,6 @@
 using TutorDrive.Repositories;
 using TutorDrive.Services;
 using TutorDrive.Services.IService;
-using TutorDrive.Services.IService.TutorDrive.Services.IService;
-using TutorDrive.Services.IServices;
 using TutorDrive.Services.Payment;
 using TutorDrive.Services.Service;
 

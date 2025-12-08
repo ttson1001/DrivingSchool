@@ -1,7 +1,7 @@
 ﻿namespace TutorDrive.Controller
 {
     using global::TutorDrive.Dtos.common;
-    using global::TutorDrive.Services.IService.TutorDrive.Services.IService;
+    using global::TutorDrive.Services.IService;
     using Microsoft.AspNetCore.Mvc;
     using Swashbuckle.AspNetCore.Annotations;
 

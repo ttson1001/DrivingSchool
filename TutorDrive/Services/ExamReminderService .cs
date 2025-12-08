@@ -3,7 +3,6 @@ using TutorDrive.Entities;
 using TutorDrive.Entities.Enum;
 using TutorDrive.Repositories;
 using TutorDrive.Services.IService;
-using TutorDrive.Services.IService.TutorDrive.Services.IService;
 
 public class ExamReminderService : IExamReminderService
 {

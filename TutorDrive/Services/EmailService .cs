@@ -1,7 +1,7 @@
 ﻿using MailKit.Net.Smtp;
 using MailKit.Security;
 using MimeKit;
-using TutorDrive.Services.IService.TutorDrive.Services.IService;
+using TutorDrive.Services.IService;
 
 namespace TutorDrive.Services
 {

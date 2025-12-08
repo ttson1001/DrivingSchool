@@ -1,7 +1,7 @@
 ﻿using TutorDrive.Entities;
 using System.Security.Claims;
 
-namespace TutorDrive.Services.IServices
+namespace TutorDrive.Services.IService
 {
     public interface IJwtService
     {

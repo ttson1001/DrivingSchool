@@ -11,8 +11,6 @@
     using TutorDrive.Dtos.Staff.TutorDrive.Dtos.Accounts;
     using TutorDrive.Entities.Enum;
     using TutorDrive.Exceptions;
-    using TutorDrive.Services.IService.TutorDrive.Services.IService;
-    using TutorDrive.Services.IServices;
 
     public class AccountService : IAccountService
     {
