@@ -107,7 +107,7 @@ namespace TutorDrive.Controller
         [SwaggerOperation(
     Summary = "Học viên cập nhật lại hồ sơ đăng ký thi",
     Description = "Dùng khi hồ sơ bị sai hoặc bị từ chối, chỉ sửa được khi đang Pending hoặc Rejected.")]
-        public async Task<IActionResult> UpdateMyRegistration([FromForm] RegistrationExamUpdateDto dto)
+        public async Task<IActionResult> UpdateMyRegistration([FromBody] RegistrationExamUpdateDto dto)
         {
             var response = new ResponseDto();
             try
