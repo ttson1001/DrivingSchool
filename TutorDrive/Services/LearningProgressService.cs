@@ -413,6 +413,8 @@ namespace TutorDrive.Services
                 .Where(lp => lp.StudentProfileId == dto.StudentId &&
                              lp.CourseId == dto.CourseId).Select(x => x.InstructorProfileId).FirstOrDefaultAsync();
 
+            var newId = await _staffRepository.Get().Where(x => x.AccountId == dto.NewStaffId).Select(x => x.Id).FirstOrDefaultAsync();
+
             if (currentTeacher == null)
                 throw new Exception("Không tìm thấy giáo viên hiện tại");
             if (currentTeacher == dto.NewStaffId)
@@ -430,7 +432,7 @@ namespace TutorDrive.Services
 
             foreach (var lp in progresses)
             {
-                lp.InstructorProfileId = dto.NewStaffId;
+                lp.InstructorProfileId = newId;
                 lp.LastUpdated = DateTime.UtcNow;
             }
             await _repository.SaveChangesAsync();
