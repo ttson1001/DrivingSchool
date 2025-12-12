@@ -90,16 +90,7 @@ namespace TutorDrive.Controllers
 
             try
             {
-                var accountIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-                if (string.IsNullOrEmpty(accountIdClaim))
-                {
-                    response.Message = "Không tìm thấy thông tin giáo viên trong token";
-                    return Unauthorized(response);
-                }
-
-                long accountId = long.Parse(accountIdClaim);
-
-                await _service.ChangeStaffForCourseAsync(dto, accountId);
+                await _service.ChangeStaffForCourseAsync(dto);
 
                 response.Message = "Đổi giáo viên phụ trách thành công cho toàn bộ tiến độ";
                 return Ok(response);

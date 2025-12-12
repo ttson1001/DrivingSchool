@@ -95,7 +95,7 @@ namespace TutorDrive.Services
                     InstructorProfileId = staff.Id,
                     Comment = "",
                     IsCompleted = false,
-                    StartDate = lessonDate != default ? lessonDate : dto.StartDate,
+                    StartDate = lessonDate,
                     LastUpdated = DateTime.UtcNow
                 });
             }
@@ -406,13 +406,18 @@ namespace TutorDrive.Services
             await _repository.SaveChangesAsync();
         }
 
-        public async Task ChangeStaffForCourseAsync(ChangeStaffDto dto, long accountId)
+        public async Task ChangeStaffForCourseAsync(ChangeStaffDto dto)
         {
-            var currentTeacher = await _staffRepository.Get()
-                .FirstOrDefaultAsync(s => s.AccountId == accountId);
+
+            var currentTeacher = await _repository.Get()
+                .Where(lp => lp.StudentProfileId == dto.StudentId &&
+                             lp.CourseId == dto.CourseId).Select(x => x.InstructorProfileId).FirstOrDefaultAsync();
 
             if (currentTeacher == null)
                 throw new Exception("Không tìm thấy giáo viên hiện tại");
+            if (currentTeacher == dto.NewStaffId)
+                throw new Exception("Giáo viên giống giáo viên hiện tại");
+
 
             var progresses = await _repository.Get()
                 .Where(lp => lp.StudentProfileId == dto.StudentId &&
@@ -425,9 +430,6 @@ namespace TutorDrive.Services
 
             foreach (var lp in progresses)
             {
-                if (lp.InstructorProfileId != currentTeacher.Id)
-                    throw new Exception($"Bạn không có quyền đổi tiến độ ID {lp.Id}");
-
                 lp.InstructorProfileId = dto.NewStaffId;
                 lp.LastUpdated = DateTime.UtcNow;
             }

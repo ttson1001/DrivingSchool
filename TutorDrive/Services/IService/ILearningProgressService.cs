@@ -8,7 +8,7 @@ namespace TutorDrive.Services.IService
     {
         Task GenerateProgressForCourseAsync(GenerateProgressDto dto);
         Task UpdateProgressAsync(LearningProgressUpdateDto dto, long teacherId);
-        Task ChangeStaffForCourseAsync(ChangeStaffDto dto, long accountId);
+        Task ChangeStaffForCourseAsync(ChangeStaffDto dto);
         Task<LearningProgressDetailDto> GetByIdAsync(long id);
         Task<TeacherProgressStatsDto> GetTeacherOverviewAsync(long accountId);
         Task<List<LearningProgressDetailDto>> GetByTeacherAndStudentAsync(long teacherId, long studentId);
