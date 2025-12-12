@@ -4,6 +4,6 @@
     {
         public long StudentId { get; set; }
         public long CourseId { get; set; }
-        public long NewStaffId { get; set; }
+        public long InstructorId { get; set; }
     }
 }
