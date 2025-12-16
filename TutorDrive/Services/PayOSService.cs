@@ -181,11 +181,11 @@ namespace TutorDrive.Services.Payment
                 _registrationRepo.Update(registration);
 
                 await _context.SaveChangesAsync();
-
+                await dbTransaction.CommitAsync();
                 var teacher = await _instructorRepo.Get()
-                    .OrderByDescending(t => t.ExperienceYears)
-                    .FirstOrDefaultAsync()
-                    ?? throw new Exception("Không tìm thấy giáo viên.");
+                .OrderByDescending(t => t.ExperienceYears)
+                .FirstOrDefaultAsync()
+                ?? throw new Exception("Không tìm thấy giáo viên.");
 
                 await _learningProgressService.GenerateProgressForCourseAsync(new GenerateProgressDto
                 {
@@ -195,9 +195,6 @@ namespace TutorDrive.Services.Payment
                     RegisterId = registration.Id,
                     StartDate = registration.StartDateTime
                 });
-
-                await dbTransaction.CommitAsync();
-
                 return new ResponseDto
                 {
                     Message = "Thanh toán thành công.",
@@ -214,6 +211,8 @@ namespace TutorDrive.Services.Payment
                 await dbTransaction.RollbackAsync();
                 throw;
             }
+
+          
         }
     }
 }

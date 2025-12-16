@@ -132,11 +132,17 @@ namespace BEAPI.PaymentService.VnPay
                     registration.Status = RegistrationStatus.Paid;
                     registration.Note = $"Đã thanh toán VNPay ({txnRef}) - {DateTime.Now:dd/MM/yyyy HH:mm}";
                     _repository.Update(registration);
+                }
 
+                await _context.SaveChangesAsync();
+                await dbTransaction.CommitAsync();
+
+                if (isSuccess)
+                {
                     var teacher = await _staffRepository.Get()
-                        .OrderByDescending(s => s.ExperienceYears)
-                        .FirstOrDefaultAsync()
-                        ?? throw new Exception("Không tìm thấy giáo viên khả dụng.");
+                            .OrderByDescending(s => s.ExperienceYears)
+                            .FirstOrDefaultAsync()
+                            ?? throw new Exception("Không tìm thấy giáo viên khả dụng.");
 
                     var dto = new GenerateProgressDto
                     {
@@ -149,9 +155,6 @@ namespace BEAPI.PaymentService.VnPay
 
                     await _learningProgressService.GenerateProgressForCourseAsync(dto);
                 }
-
-                await _context.SaveChangesAsync();
-                await dbTransaction.CommitAsync();
 
                 return new ResponseDto
                 {
