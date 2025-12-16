@@ -44,11 +44,13 @@ namespace TutorDrive.Services
 
         public async Task GenerateProgressForCourseAsync(GenerateProgressDto dto)
         {
-            var studentProfile = await _studentProfileRepository.Get()
-                .FirstOrDefaultAsync(sp => sp.Id == dto.StudentId);
+            bool exists = await _repository.Get()
+                .AnyAsync(lp =>
+                    lp.StudentProfileId == dto.StudentId &&
+                    lp.CourseId == dto.CourseId);
 
-            if (studentProfile == null)
-                throw new Exception("StudentProfile không tìm thấy");
+            if (exists)
+                return;
 
             var staffList = await _staffRepository.Get()
                 .Include(s => s.Account)
@@ -58,21 +60,19 @@ namespace TutorDrive.Services
             if (!staffList.Any())
                 throw new Exception("Không có giáo viên nào trong hệ thống.");
 
-            var random = new Random();
-            var staff = staffList[random.Next(staffList.Count)];
+            var staff = staffList[Random.Shared.Next(staffList.Count)];
 
             var sections = await _sectionRepository.Get()
                 .Where(s => s.CourseId == dto.CourseId)
+                .OrderBy(s => s.Id)
                 .ToListAsync();
 
             if (!sections.Any())
                 throw new Exception("Khóa học chưa có phần học (Section)");
 
             var registration = await _registrationRepository.Get()
-                .FirstOrDefaultAsync(r => r.Id == dto.RegisterId);
-
-            if (registration == null)
-                throw new Exception("Không tìm thấy thông tin đăng ký học");
+                .FirstOrDefaultAsync(r => r.Id == dto.RegisterId)
+                ?? throw new Exception("Không tìm thấy thông tin đăng ký học");
 
             var studyDates = GenerateStudyDates(
                 registration.StartDateTime,
@@ -80,32 +80,20 @@ namespace TutorDrive.Services
                 sections.Count
             );
 
-            var newItems = new List<LearningProgress>();
-
-            for (int i = 0; i < sections.Count; i++)
+            var newItems = sections.Select((section, index) => new LearningProgress
             {
-                var section = sections[i];
-                var lessonDate = studyDates.ElementAtOrDefault(i);
+                StudentProfileId = dto.StudentId,
+                CourseId = dto.CourseId,
+                SectionId = section.Id,
+                InstructorProfileId = staff.Id,
+                Comment = "",
+                IsCompleted = false,
+                StartDate = studyDates[index],
+                LastUpdated = DateTime.UtcNow
+            }).ToList();
 
-                newItems.Add(new LearningProgress
-                {
-                    StudentProfileId = dto.StudentId,
-                    CourseId = dto.CourseId,
-                    SectionId = section.Id,
-                    InstructorProfileId = staff.Id,
-                    Comment = "",
-                    IsCompleted = false,
-                    StartDate = lessonDate,
-                    LastUpdated = DateTime.UtcNow
-                });
-            }
-
-            if (newItems.Any())
-            {
-                _repository.ClearChangeTracking();
-                await _repository.AddRangeAsync(newItems);
-                await _repository.SaveChangesAsync();
-            }
+            await _repository.AddRangeAsync(newItems);
+            await _repository.SaveChangesAsync();
         }
 
         public async Task<List<CourseLearningProgressGroupDto>> GetByStudentGroupedAsync(long accountId, bool? isCompleted = null)

@@ -4,6 +4,7 @@ using PayOS;
 using PayOS.Models;
 using PayOS.Models.V2.PaymentRequests;
 using PayOS.Models.Webhooks;
+using TutorDrive.Database;
 using TutorDrive.Dtos.common;
 using TutorDrive.Dtos.LearningProgress;
 using TutorDrive.Entities;
@@ -16,6 +17,7 @@ namespace TutorDrive.Services.Payment
 {
     public class PayOSService
     {
+        private readonly BeContext _context;
         private readonly PayOSClient _client;
         private readonly PayOsSettings _settings;
         private readonly IRepository<Registration> _registrationRepo;
@@ -25,6 +27,7 @@ namespace TutorDrive.Services.Payment
 
         public PayOSService(
             IRepository<Registration> registrationRepo,
+            BeContext context,
             IRepository<Transaction> transactionRepo,
             ILearningProgressService learningProgressService,
             IRepository<InstructorProfile> instructorRepo,
@@ -39,7 +42,8 @@ namespace TutorDrive.Services.Payment
                 ChecksumKey = _settings.ChecksumKey
             });
 
-            _registrationRepo = registrationRepo;
+            _registrationRepo = registrationRepo; 
+            _context = context;
             _transactionRepo = transactionRepo;
             _learningProgressService = learningProgressService;
             _instructorRepo = instructorRepo;
@@ -144,70 +148,72 @@ namespace TutorDrive.Services.Payment
         {
             var registration = await _registrationRepo.Get()
                 .Include(r => r.Course)
-                .Include(r => r.StudentProfile).ThenInclude(sp => sp.Account)
+                .Include(r => r.StudentProfile)
+                    .ThenInclude(sp => sp.Account)
                 .FirstOrDefaultAsync(r => r.Id == registrationId);
 
             if (registration == null)
+            {
                 return new ResponseDto
                 {
                     Message = "Không tìm thấy đơn đăng ký.",
                     Data = null
                 };
+            }
 
-            bool isSuccess = true;
+            using var dbTransaction = await _context.Database.BeginTransactionAsync();
 
-            var transaction = new Transaction
+            try
             {
-                Amount = registration.Course.Price,
-                UserId = registration.StudentProfile.Account.Id,
-                PaymentMethod = "PayOS",
-                RegistrationId = registration.Id,
-                PaymentStatus = PaymentStatus.Paid
-            };
+                var transaction = new Transaction
+                {
+                    Amount = registration.Course.Price,
+                    UserId = registration.StudentProfile.Account.Id,
+                    PaymentMethod = "PayOS",
+                    RegistrationId = registration.Id,
+                    PaymentStatus = PaymentStatus.Paid
+                };
 
-            await _transactionRepo.AddAsync(transaction);
+                await _transactionRepo.AddAsync(transaction);
 
-            if (isSuccess)
-            {
                 registration.Status = RegistrationStatus.Paid;
                 registration.Note = $"Đã thanh toán PayOS - {DateTime.Now:dd/MM/yyyy HH:mm}";
                 _registrationRepo.Update(registration);
 
+                await _context.SaveChangesAsync();
+
                 var teacher = await _instructorRepo.Get()
-                    .OrderByDescending(s => s.ExperienceYears)
-                    .FirstOrDefaultAsync();
+                    .OrderByDescending(t => t.ExperienceYears)
+                    .FirstOrDefaultAsync()
+                    ?? throw new Exception("Không tìm thấy giáo viên.");
 
-                if (teacher == null)
-                    throw new Exception("Không tìm thấy giáo viên khả dụng.");
-
-                var dto = new GenerateProgressDto
+                await _learningProgressService.GenerateProgressForCourseAsync(new GenerateProgressDto
                 {
                     StudentId = registration.StudentProfileId,
                     TeacherId = teacher.Id,
                     CourseId = registration.CourseId,
-                    RegisterId = registrationId,
+                    RegisterId = registration.Id,
                     StartDate = registration.StartDateTime
-                };
+                });
 
-                await _learningProgressService.GenerateProgressForCourseAsync(dto);
-            }
+                await dbTransaction.CommitAsync();
 
-            await _transactionRepo.SaveChangesAsync();
-            await _registrationRepo.SaveChangesAsync();
-
-            return new ResponseDto
-            {
-                Message = isSuccess ? "Thanh toán thành công." : "Thanh toán thất bại.",
-                Data = new
+                return new ResponseDto
                 {
-                    RegistrationId = registration.Id,
-                    TransactionId = transaction.Id,
-                    Amount = transaction.Amount,
-                    PaymentStatus = transaction.PaymentStatus.ToString(),
-                    RegistrationStatus = registration.Status.ToString()
-                }
-            };
+                    Message = "Thanh toán thành công.",
+                    Data = new
+                    {
+                        RegistrationId = registration.Id,
+                        TransactionId = transaction.Id,
+                        Amount = transaction.Amount
+                    }
+                };
+            }
+            catch
+            {
+                await dbTransaction.RollbackAsync();
+                throw;
+            }
         }
-
     }
 }

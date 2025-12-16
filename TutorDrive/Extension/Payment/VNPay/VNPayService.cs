@@ -5,6 +5,7 @@ using Microsoft.Identity.Client;
 using System.Globalization;
 using System.Net;
 using System.Text.RegularExpressions;
+using TutorDrive.Database;
 using TutorDrive.Dtos.common;
 using TutorDrive.Dtos.LearningProgress;
 using TutorDrive.Entities;
@@ -19,6 +20,7 @@ namespace BEAPI.PaymentService.VnPay
     public class VNPayService
     {
         private readonly VnPaySettings _settings;
+        private readonly BeContext _context;
         private readonly IRepository<Registration> _repository;
         private readonly IRepository<Transaction> _transactionRepository;
         private readonly ILearningProgressService _learningProgressService;
@@ -29,14 +31,17 @@ namespace BEAPI.PaymentService.VnPay
             IRepository<Transaction> transactionRepository,
             ILearningProgressService learningProgressService,
             IRepository<InstructorProfile> staffRepository,
-            IOptions<VnPaySettings> options)
+            IOptions<VnPaySettings> options,
+            BeContext context)
         {
             _settings = options.Value;
             _repository = registrationRepository;
             _transactionRepository = transactionRepository;
             _learningProgressService = learningProgressService;
             _staffRepository = staffRepository;
+            _context = context;
         }
+
 
         public async Task<string> VNPayAsync(HttpContext context, VnPayRequest vnPayRequest)
         {
@@ -83,7 +88,7 @@ namespace BEAPI.PaymentService.VnPay
             bool isValidSignature = vnpay.ValidateSignature(vnp_SecureHash, _settings.HashSecret);
 
             if (!isValidSignature)
-                return new ResponseDto { Message = "Chữ ký VNPay không hợp lệ.", Data = null };
+                return new ResponseDto { Message = "Chữ ký VNPay không hợp lệ." };
 
             string orderInfo = WebUtility.UrlDecode(vnpay.GetResponseData("vnp_OrderInfo"));
             string responseCode = vnpay.GetResponseData("vnp_ResponseCode");
@@ -93,72 +98,80 @@ namespace BEAPI.PaymentService.VnPay
 
             var match = Regex.Match(orderInfo, @"RegistrationId=(\d+)");
             if (!match.Success)
-                return new ResponseDto { Message = "Không tìm thấy mã đăng ký trong OrderInfo.", Data = null };
+                return new ResponseDto { Message = "Không tìm thấy mã đăng ký trong OrderInfo." };
 
             long registrationId = long.Parse(match.Groups[1].Value);
             bool isSuccess = responseCode == "00" && transactionStatus == "00";
 
             var registration = await _repository.Get()
                 .Include(r => r.Course)
-                .Include(r => r.StudentProfile).ThenInclude(sp => sp.Account)
+                .Include(r => r.StudentProfile)
+                    .ThenInclude(sp => sp.Account)
                 .FirstOrDefaultAsync(r => r.Id == registrationId);
 
             if (registration == null)
-                return new ResponseDto { Message = "Không tìm thấy đơn đăng ký.", Data = null };
+                return new ResponseDto { Message = "Không tìm thấy đơn đăng ký." };
 
-            var transaction = new Transaction
+            using var dbTransaction = await _context.Database.BeginTransactionAsync();
+
+            try
             {
-                Amount = amount,
-                UserId = registration.StudentProfile.Account.Id,
-                PaymentMethod = "VNPay",
-                RegistrationId = registration.Id,
-                PaymentStatus = PaymentStatus.Paid
-            };
-
-            await _transactionRepository.AddAsync(transaction);
-            if (isSuccess)
-            {
-                // Cập nhật trạng thái đăng ký
-                registration.Status = RegistrationStatus.Paid;
-                registration.Note = $"Đã thanh toán VNPay ({txnRef}) - {DateTime.Now:dd/MM/yyyy HH:mm}";
-                _repository.Update(registration);
-
-                // Tạm chọn giáo viên bất kỳ (có thể chọn theo ExperienceYears)
-                var teacher = await _staffRepository.Get()
-                    .OrderByDescending(s => s.ExperienceYears)
-                    .FirstOrDefaultAsync();
-
-                if (teacher == null)
-                    throw new Exception("Không tìm thấy giáo viên khả dụng.");
-
-                // Gọi service tạo tiến trình học theo lịch đăng ký (thứ, ngày bắt đầu)
-                var dto = new GenerateProgressDto
+                var transaction = new Transaction
                 {
-                    StudentId = registration.StudentProfileId,
-                    TeacherId = teacher.Id,
-                    CourseId = registration.CourseId,
-                    RegisterId = registrationId,
-                    StartDate = registration.StartDateTime
+                    Amount = amount,
+                    UserId = registration.StudentProfile.Account.Id,
+                    PaymentMethod = "VNPay",
+                    RegistrationId = registration.Id,
+                    PaymentStatus = PaymentStatus.Paid
                 };
 
-                await _learningProgressService.GenerateProgressForCourseAsync(dto);
-            }
+                await _transactionRepository.AddAsync(transaction);
 
-            await _transactionRepository.SaveChangesAsync();
-            await _repository.SaveChangesAsync();
-
-            return new ResponseDto
-            {
-                Message = isSuccess ? "Thanh toán thành công." : "Thanh toán thất bại.",
-                Data = new
+                if (isSuccess)
                 {
-                    RegistrationId = registration.Id,
-                    TransactionId = txnRef,
-                    Amount = amount,
-                    PaymentStatus = transaction.PaymentStatus.ToString(),
-                    RegistrationStatus = registration.Status.ToString()
+                    registration.Status = RegistrationStatus.Paid;
+                    registration.Note = $"Đã thanh toán VNPay ({txnRef}) - {DateTime.Now:dd/MM/yyyy HH:mm}";
+                    _repository.Update(registration);
+
+                    var teacher = await _staffRepository.Get()
+                        .OrderByDescending(s => s.ExperienceYears)
+                        .FirstOrDefaultAsync()
+                        ?? throw new Exception("Không tìm thấy giáo viên khả dụng.");
+
+                    var dto = new GenerateProgressDto
+                    {
+                        StudentId = registration.StudentProfileId,
+                        TeacherId = teacher.Id,
+                        CourseId = registration.CourseId,
+                        RegisterId = registrationId,
+                        StartDate = registration.StartDateTime
+                    };
+
+                    await _learningProgressService.GenerateProgressForCourseAsync(dto);
                 }
-            };
+
+                await _context.SaveChangesAsync();
+                await dbTransaction.CommitAsync();
+
+                return new ResponseDto
+                {
+                    Message = isSuccess ? "Thanh toán thành công." : "Thanh toán thất bại.",
+                    Data = new
+                    {
+                        RegistrationId = registration.Id,
+                        TransactionId = txnRef,
+                        Amount = amount,
+                        PaymentStatus = transaction.PaymentStatus.ToString(),
+                        RegistrationStatus = registration.Status.ToString()
+                    }
+                };
+            }
+            catch
+            {
+                await dbTransaction.RollbackAsync();
+                throw;
+            }
         }
+
     }
 }
