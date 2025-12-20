@@ -368,7 +368,7 @@ namespace TutorDrive.Services
 
                 if (studyDays.HasFlag(dayOfWeek))
                 {
-                    dates.Add(date.Add(startDate.TimeOfDay));
+                    dates.Add(date.Add(startDate.TimeOfDay.Add(TimeSpan.FromHours(7))));
                     added++;
                 }
 
